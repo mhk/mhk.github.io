@@ -5,7 +5,7 @@
  * `output`, and `clock` are elements (or element ID strings).
  */
 
-function TypeJig(exercise, display, results, input, clock, hint, speed) {
+function TypeJig(exercise, display, results, input, clock, hint, speed, qwerty) {
 	this.exercise = exercise;
 	this.display = documentElement(display);
 	this.input = documentElement(input);
@@ -28,6 +28,11 @@ function TypeJig(exercise, display, results, input, clock, hint, speed) {
 
 	this.changeHandler = this.answerChanged.bind(this);
 	bindEvent(document.body, 'keydown', this.keyDown.bind(this));
+    if("yes" == qwerty) {
+        bindEvent(document.body, 'keyup', this.keyUpQwerty.bind(this));
+        bindEvent(document.body, 'keydown', this.keyDownQwerty.bind(this));
+        this.input.readOnly = true;
+    }
 	bindEvent(this.input, 'input', function() {
 		if(!self.pendingChange) {
 			self.pendingChange = setTimeout(self.changeHandler, 5);
@@ -62,9 +67,12 @@ TypeJig.prototype.reset = function() {
 		this.hint.update(word, rect.left, rect.top);
 	}
 
+
 	this.display.previousElementSibling.textContent = '';
 
 	this.pendingChange = true;
+    this.keys = {pressed : {}, active : {}};
+    this.chords = [];
 	this.input.value = '';
 	this.input.blur();
 	this.input.focus();
@@ -251,6 +259,81 @@ TypeJig.prototype.keyDown = function (e) {
         }
     }
 };
+
+TypeJig.prototype.keyDownQwerty = function (e) {
+    this.keyDown(e);
+    this.keys.pressed[e.key] = true;
+    this.keys.active[e.key] = true;
+}
+
+TypeJig.prototype.keyUpQwerty = function (e) {
+    delete this.keys.active[e.key];
+    if(0 == Object.keys(this.keys.active).length) {
+        var qwerty = '';
+        for(const key of Object.keys(this.keys.pressed)) {
+            qwerty += key;
+        }
+        const chord = this.qwerty2chord(qwerty);
+        if('*' == chord) {
+            this.chords.pop();
+        } else {
+            this.chords.push(chord)
+        }
+
+        this.input.value = '';
+        if(this.chords.length) {
+            this.input.value = this.chords.reduce(function(accumulator, currentValue) {
+                return accumulator + ' ' + currentValue;
+            }
+            );
+        }
+    	this.keys.pressed = {};
+        this.answerChanged();
+    }
+};
+
+TypeJig.prototype.qwerty2chord = function(qwertyInput) {
+    const stenoOrder = [ "#", "S", "T", "K", "P", "W", "H", "R", "A", "O", "*", "e", "u", "f", "r", "p", "b", "l", "g", "t", "s", "d", "z"];
+    const qwertyKey2stenoKey = {
+        "q" : "S", "w" : "T", "e" : "P", "r" : "H", "c" : "A", "t" : "*", "g" : "*", "n" : "e", "u" : "f", "i" : "p", "o" : "l", "p" : "t", "[" : "d",
+        "a" : "S", "s" : "K", "d" : "W", "f" : "R", "v" : "O", "y" : "*", "h" : "*", "m" : "u", "j" : "r", "k" : "b", "l" : "g", ";" : "s", "'" : "z"
+    };
+
+    let steno = new Set();
+    for(const c of qwertyInput) {
+        if(!qwertyKey2stenoKey.hasOwnProperty(c)) {
+            return '?';
+        }
+        steno.add(qwertyKey2stenoKey[c]);
+    }
+
+    let chord = "";
+    for(const s of stenoOrder) {
+        if(steno.has(s)) {
+            chord += s;
+        }
+    }
+
+    let brief = "";
+    let hyphen_added = false
+    let seen_vowel = false
+    for(const c of chord) {
+        if(['A', 'O', '*', 'e', 'u'].includes(c)) {
+            seen_vowel = true;
+        }
+        if(c == c.toLowerCase() && !hyphen_added) {
+            if(!seen_vowel) {
+                brief += "-";
+            }
+            hyphen_added = true
+        }
+        brief += c.toUpperCase();
+    }
+
+    return brief;
+}
+
+
 
 TypeJig.prototype.getWords = function(n) {
 	// Split the exercise text into words (keeping the whitespace).

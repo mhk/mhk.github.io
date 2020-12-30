@@ -104,7 +104,7 @@ function saveFormState(form) {
         hints: form.hints.checked,
         qwerty: form.qwerty.checked,
         times: form.times.value,
-        timeLimit: form.timeLimit.value,
+        speed: {wpm: form.wpm.value},
     });
 }
 
@@ -116,8 +116,8 @@ function loadFormState(form) {
     form.hints.checked = loaded.hints;
     form.qwerty.checked = loaded.qwerty;
     form.times.value = loaded.times;
-    if (loaded.timeLimit) {
-        form.timeLimit.value = loaded.timeLimit;
+    if (loaded.speed) {
+        form.wpm.value = loaded.speed.wpm;
     }
 }
 

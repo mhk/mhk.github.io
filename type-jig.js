@@ -262,18 +262,14 @@ TypeJig.prototype.keyDown = function (e) {
 
 TypeJig.prototype.keyDownQwerty = function (e) {
     this.keyDown(e);
-    this.keys.pressed[e.key] = true;
-    this.keys.active[e.key] = true;
+    this.keys.pressed[e.keyCode] = true;
+    this.keys.active[e.keyCode] = true;
 }
 
 TypeJig.prototype.keyUpQwerty = function (e) {
-    delete this.keys.active[e.key];
+    delete this.keys.active[e.keyCode];
     if(0 == Object.keys(this.keys.active).length) {
-        var qwerty = '';
-        for(const key of Object.keys(this.keys.pressed)) {
-            qwerty += key;
-        }
-        const chord = this.qwerty2chord(qwerty);
+        const chord = this.qwerty2chord(this.keys.pressed);
         if('*' == chord) {
             this.chords.pop();
         } else {
@@ -292,12 +288,25 @@ TypeJig.prototype.keyUpQwerty = function (e) {
     }
 };
 
-TypeJig.prototype.qwerty2chord = function(qwertyInput) {
+TypeJig.prototype.qwerty2chord = function(qwertyKeyCodes) {
     const stenoOrder = [ "#", "S", "T", "K", "P", "W", "H", "R", "A", "O", "*", "e", "u", "f", "r", "p", "b", "l", "g", "t", "s", "d", "z"];
     const qwertyKey2stenoKey = {
         "q" : "S", "w" : "T", "e" : "P", "r" : "H", "c" : "A", "t" : "*", "g" : "*", "n" : "e", "u" : "f", "i" : "p", "o" : "l", "p" : "t", "[" : "d",
         "a" : "S", "s" : "K", "d" : "W", "f" : "R", "v" : "O", "y" : "*", "h" : "*", "m" : "u", "j" : "r", "k" : "b", "l" : "g", ";" : "s", "'" : "z"
     };
+    const qwertyKeyCode2qwertyKey = {
+        "59": ";", "65": "a", "66": "b", "67": "c", "68": "d", "69": "e", "70": "f", "71": "g", "72": "h", "73": "i", "74": "j", "75": "k", "76": "l",
+        "77": "m", "78": "n", "79": "o", "80": "p", "81": "q", "82": "r", "83": "s", "84": "t", "85": "u", "86": "v", "87": "w", "88": "x", "89": "y",
+        "90": "z", "186": ";", "219": "[", "222": "'"
+    };
+
+    let qwertyInput = '';
+    for(const code of Object.keys(qwertyKeyCodes)) {
+        if(!qwertyKeyCode2qwertyKey.hasOwnProperty(code)) {
+            return '?';
+        }
+        qwertyInput += qwertyKeyCode2qwertyKey[code];
+    }
 
     let steno = new Set();
     for(const c of qwertyInput) {

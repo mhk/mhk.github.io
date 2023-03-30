@@ -3,7 +3,7 @@ from collections import namedtuple
 
 import pkg_resources
 
-# from plover.oslayer.config import HAS_GUI_QT, PLUGINS_PLATFORM
+from plover.oslayer.config import HAS_GUI_QT, PLUGINS_PLATFORM
 from plover import log
 
 
@@ -90,6 +90,7 @@ class Registry:
                 self.register_plugin_from_entrypoint(plugin_type, entrypoint)
             if PLUGINS_PLATFORM is not None:
                 entrypoint_type = 'plover.%s.%s' % (PLUGINS_PLATFORM, plugin_type)
+                print(entrypoint_type)
                 for entrypoint in pkg_resources.iter_entry_points(entrypoint_type):
                     self.register_plugin_from_entrypoint(plugin_type, entrypoint)
 

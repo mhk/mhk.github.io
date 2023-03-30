@@ -4,7 +4,6 @@ from functools import wraps
 from queue import Queue
 import os
 import shutil
-import threading
 
 from plover import log, system
 from plover.dictionary.loading_manager import DictionaryLoadingManager
@@ -19,7 +18,10 @@ from plover.suggestions import Suggestions
 from plover.translation import Translator
 
 
-StartingStrokeState = namedtuple('StartingStrokeState', 'attach capitalize')
+StartingStrokeState = namedtuple('StartingStrokeState',
+                                 'attach capitalize space_char',
+                                 defaults=(False, False, ' '))
+
 
 MachineParams = namedtuple('MachineParams', 'type options keymap')
 
@@ -97,7 +99,6 @@ class StenoEngine:
         self._controller = controller
         self._is_running = False
         self._queue = Queue()
-        self._lock = threading.RLock()
         self._machine = None
         self._machine_state = None
         self._machine_params = MachineParams(None, None, None)
@@ -115,18 +116,20 @@ class StenoEngine:
         self._dictionaries = self._translator.get_dictionary()
         self._dictionaries_manager = DictionaryLoadingManager()
         self._running_state = self._translator.get_state()
+        self._translator.clear_state()
         self._keyboard_emulation = keyboard_emulation
         self._hooks = { hook: [] for hook in self.HOOKS }
         self._running_extensions = {}
 
     def __enter__(self):
-        self._lock.__enter__()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self._lock.__exit__(exc_type, exc_value, traceback)
+        # self._lock.__exit__(exc_type, exc_value, traceback)
+        pass
 
     def _in_engine_thread(self):
+        return True
         raise NotImplementedError()
 
     def _same_thread_hook(self, func, *args, **kwargs):
@@ -139,9 +142,9 @@ class StenoEngine:
         while True:
             func, args, kwargs = self._queue.get()
             try:
-                with self._lock:
-                    if func(*args, **kwargs):
-                        break
+                # with self._lock:
+                if func(*args, **kwargs):
+                    break
             except Exception:
                 log.error('engine %s failed', func.__name__[1:], exc_info=True)
 
@@ -175,9 +178,8 @@ class StenoEngine:
         if not dictionaries_changed(dictionaries, self._dictionaries.dicts):
             # No change.
             return
-        self._dictionaries = StenoDictionaryCollection(dictionaries)
-        self._translator.set_dictionary(self._dictionaries)
-        self._trigger_hook('dictionaries_loaded', self._dictionaries)
+        self._dictionaries.set_dicts(dictionaries)
+        self._trigger_hook('dictionaries_loaded', StenoDictionaryCollection(dictionaries))
 
     def _update(self, config_update=None, full=False, reset_machine=False):
         original_config = self._config.as_dict()
@@ -523,20 +525,23 @@ class StenoEngine:
     def clear_translator_state(self, undo=False):
         if undo:
             state = self._translator.get_state()
-            self._formatter.format(state.translations, (), None)
+            if state.translations:
+                self._formatter.format(state.translations, (), None)
         self._translator.clear_state()
 
     @property
     @with_lock
     def starting_stroke_state(self):
         return StartingStrokeState(self._formatter.start_attached,
-                                   self._formatter.start_capitalized)
+                                   self._formatter.start_capitalized,
+                                   self._formatter.space_char)
 
     @starting_stroke_state.setter
     @with_lock
     def starting_stroke_state(self, state):
         self._formatter.start_attached = state.attach
         self._formatter.start_capitalized = state.capitalize
+        self._formatter.space_char = state.space_char
 
     @with_lock
     def add_translation(self, strokes, translation, dictionary_path=None):

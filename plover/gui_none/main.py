@@ -1,23 +1,46 @@
-from threading import Event
+# from plover.gui_none.engine import Engine
 
-from plover.oslayer.keyboardcontrol import KeyboardEmulation
-
-from plover.gui_none.engine import Engine
-
+from plover.engine import StenoEngine
+from plover.config import Config
 
 def show_error(title, message):
     print('%s: %s' % (title, message))
 
+class FakeKeyboardEmulation:
+
+    def send_backspaces(self, count):
+        print(f"{count}xBackSpace")
+
+    def send_string(self, s):
+        print(s)
+
+    def send_key_combination(self, combo):
+        print(combo)
+
+class FakeController:
+
+    def send_command(self, command):
+        pass
+
+    def start(self, message_cb):
+        pass
+
+    def stop(self):
+        pass
+
+def main2():
+    main(None, None)
 
 def main(config, controller):
-    engine = Engine(config, controller, KeyboardEmulation())
+    config = Config('./plover.cfg')
+    engine = StenoEngine(config, FakeController(), FakeKeyboardEmulation())
+    # engine = Engine(config, controller, FakeKeyboardEmulation())
     if not engine.load_config():
         return 3
-    quitting = Event()
-    engine.hook_connect('quit', quitting.set)
     engine.start()
     try:
-        quitting.wait()
+        return engine.run()
     except KeyboardInterrupt:
         engine.quit()
+        engine.run()
     return engine.join()

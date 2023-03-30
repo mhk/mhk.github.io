@@ -1,0 +1,65 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+    <script type="text/javascript">
+      async function main() {
+/*
+        let pyodide = await loadPyodide();
+        await pyodide.loadPackage("micrcpip");
+        const micropip = pyodide.pyimport("micropip");
+        await micropip.install("setuptools");
+        await pyodide.runPython(`
+        import setuptools
+        `);
+*/
+        await pyodide.loadPackage(["setuptools"]);
+      }
+      main();
+        function createObject(object, variableName) {
+            //Bind a variable whose name is the string variableName
+            // to the object called 'object'
+            let execString = variableName + " = object"
+            console.log("Running '" + execString + "'");
+            eval(execString)
+        }
+
+        document.addEventListener('keydown', (event) => { logKeyDown(event) }, false);
+        function logKeyDown(event) {
+            log.textContent += ` Down ${event.code} (${event.key})`;
+            pyKeyDown(event.key);
+        }
+
+        document.addEventListener('keyup', (event) => { logKeyUp(event) }, false);
+        function logKeyUp(event) {
+            if('Backspace' === event.code) {
+                log.textContent = ''; 
+            }
+            log.textContent += ` UP ${event.code} (${event.key})`;
+            pyKeyUp(event.key);
+        }
+    </script>
+  </head>
+  <body>
+    <py-config>
+        packages = ["setuptools"]
+        [[fetch]]
+        files = ['plover/gui_none/main.py', 'plover/engine.py', 'plover/log.py',
+                'plover/system/__init__.py', 'plover/system/english_stenotype.py',
+                'plover/resource.py', 'plover/registry.py', 'plover/steno.py',
+                'plover/dictionary/__init__.py',  'plover/dictionary/json_dict.py',        'plover/dictionary/rtfcre_dict.py',
+                'plover/dictionary/base.py',      'plover/dictionary/loading_manager.py',  'plover/dictionary/rtfcre_parse.py',
+                'plover/exception.py', 'plover/formatting.py', 'plover/misc.py',
+                'plover/steno_dictionary.py', 'plover/suggestions.py', 'plover/translation.py',
+                'plover/config.py', 'plover/machine/keymap.py', 'plover.cfg',
+                ]
+        from = './'
+        to_folder = './'
+    </py-config>
+    <py-script>
+        from plover.gui_none.main import main2
+        main2()
+    </py-script>
+    <p id="log">THIS IS A TEST</p>
+  </body>
+</html>

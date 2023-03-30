@@ -11,11 +11,9 @@ import traceback
 from logging.handlers import RotatingFileHandler
 from logging import DEBUG, INFO, WARNING, ERROR
 
-from plover.oslayer.config import CONFIG_DIR, PLATFORM
-
 
 LOG_FORMAT = '%(asctime)s [%(threadName)s] %(levelname)s: %(message)s'
-LOG_FILENAME = os.path.realpath(os.path.join(CONFIG_DIR, 'plover.log'))
+LOG_FILENAME = os.path.realpath(os.path.join('.', 'plover.log'))
 LOG_MAX_BYTES = 10000000
 LOG_COUNT = 9
 
@@ -84,15 +82,7 @@ class Logger:
             return
         handler_class = None
         try:
-            if PLATFORM == 'linux':
-                from plover.oslayer.log_dbus import DbusNotificationHandler
-                handler_class = DbusNotificationHandler
-            elif PLATFORM == 'mac':
-                from plover.oslayer.log_osx import OSXNotificationHandler
-                handler_class = OSXNotificationHandler
-            elif PLATFORM == 'win':
-                from plover.oslayer.log_plyer import PlyerNotificationHandler
-                handler_class = PlyerNotificationHandler
+            pass
         except Exception:
             self.info('could not import platform gui log', exc_info=True)
         if handler_class is None:

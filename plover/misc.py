@@ -3,7 +3,6 @@
 
 import os
 
-from plover.oslayer.config import CONFIG_DIR
 from plover.resource import ASSET_SCHEME
 
 
@@ -23,7 +22,7 @@ def expand_path(path):
     if path.startswith(ASSET_SCHEME):
         return path
     path = os.path.expanduser(path)
-    path = normalize_path(os.path.join(CONFIG_DIR, path))
+    path = normalize_path(os.path.join('.', path))
     return path
 
 def shorten_path(path):
@@ -36,8 +35,8 @@ def shorten_path(path):
     '''
     if path.startswith(ASSET_SCHEME):
         return path
-    path = normalize_path(os.path.join(CONFIG_DIR, path))
-    config_dir = normalize_path(CONFIG_DIR)
+    path = normalize_path(os.path.join('.', path))
+    config_dir = normalize_path('.')
     if not config_dir.endswith(os.sep):
         config_dir += os.sep
     if path.startswith(config_dir):

@@ -3,7 +3,7 @@ from collections import namedtuple
 
 import pkg_resources
 
-from plover.oslayer.config import HAS_GUI_QT, PLUGINS_PLATFORM
+# from plover.oslayer.config import HAS_GUI_QT, PLUGINS_PLATFORM
 from plover import log
 
 

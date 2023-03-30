@@ -1,7 +1,7 @@
 # Copyright (c) 2013 Hesky Fisher
 # See LICENSE.txt for details.
 
-# TODO: maybe move this code into the StenoDictionary itself. The current saver 
+# TODO: maybe move this code into the StenoDictionary itself. The current saver
 # structure is odd and awkward.
 # TODO: write tests for this file
 
@@ -9,7 +9,6 @@
 
 from os.path import splitext
 import functools
-import threading
 
 from plover.registry import registry
 
@@ -25,22 +24,7 @@ def _get_dictionary_class(filename):
                                   registry.list_plugins('dictionary'))))
     return dict_module
 
-def _locked(fn):
-    lock = threading.Lock()
-    @functools.wraps(fn)
-    def wrapper(*args, **kwargs):
-        with lock:
-            fn(*args, **kwargs)
-    return wrapper
-
-def _threaded(fn):
-    @functools.wraps(fn)
-    def wrapper(*args, **kwargs):
-        t = threading.Thread(target=fn, args=args, kwargs=kwargs)
-        t.start()
-    return wrapper
-
-def create_dictionary(resource, threaded_save=True):
+def create_dictionary(resource):
     '''Create a new dictionary.
 
     The format is inferred from the extension.
@@ -49,16 +33,12 @@ def create_dictionary(resource, threaded_save=True):
     method must be called to finalize the creation on disk.
     '''
     d = _get_dictionary_class(resource).create(resource)
-    if threaded_save:
-        d.save = _threaded(_locked(d.save))
     return d
 
-def load_dictionary(resource, threaded_save=True):
+def load_dictionary(resource):
     '''Load a dictionary from a file.
 
     The format is inferred from the extension.
     '''
     d = _get_dictionary_class(resource).load(resource)
-    if not d.readonly and threaded_save:
-        d.save = _threaded(_locked(d.save))
     return d

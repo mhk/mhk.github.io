@@ -4,7 +4,6 @@ from io import open
 import os
 import re
 
-from plover.oslayer.config import CONFIG_DIR
 from plover.resource import resource_filename
 from plover.registry import registry
 
@@ -13,7 +12,7 @@ def _load_wordlist(filename, assets_dir):
     if filename is None:
         return {}
     path = None
-    for directory in (CONFIG_DIR, assets_dir):
+    for directory in ('.', assets_dir):
         if directory is None:
             continue
         path = os.path.join(resource_filename(directory), filename)

@@ -65,11 +65,14 @@ class Keyboard(StenotypeBase):
         super().set_keymap(keymap)
         self._update_bindings()
 
+    def get_keyboard_capture(self):
+        return KeyboardCapture()
+
     def start_capture(self):
         """Begin listening for output from the stenotype machine."""
         self._initializing()
         try:
-            self._keyboard_capture = KeyboardCapture()
+            self._keyboard_capture = self.get_keyboard_capture()
             self._keyboard_capture.key_down = self._key_down
             self._keyboard_capture.key_up = self._key_up
             self._suppress()

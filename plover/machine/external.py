@@ -13,22 +13,22 @@ _._('External')
 
 class ExternalKeyboardCapture(Capture):
     def __init__(self):
-        self.web = True
+        self.web = False
         if self.web:
             import js
             from pyodide.ffi import create_proxy
             js.createObject(create_proxy(self.pyKeyDown), "pyKeyDown")
             js.createObject(create_proxy(self.pyKeyUp)  , "pyKeyUp")
-            self.start = web_start
-            self.cancel = web_cancel
-            self.suppress = web_suppress
+            self.start = self.web_start
+            self.cancel = self.web_cancel
+            self.suppress_keyboard = self.web_suppress
         else:
             import threading
             self._thread = threading.Thread(name='ExternalKeyboardCapture', target=self._run)
             self._cancelled = False
-            self.start = thread_start
-            self.cancel = thread_cancel
-            self.suppress = thread_suppress
+            self.start = self.thread_start
+            self.cancel = self.thread_cancel
+            self.suppress_keyboard = self.thread_suppress
 
     def pyKeyDown(self, key):
         print(f"pyKeyDown: {key}")

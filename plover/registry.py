@@ -83,50 +83,18 @@ class Registry:
         return [dist for dist_id, dist in sorted(self._distributions.items())]
 
     def update(self):
-        from importlib import metadata as importlib_metadata
-        mypath = os.getcwd()
-        p(f'sys.path: {sys.path}')
-        p(f'os.getcwd: {os.getcwd()}')
-        p(f'files: {[f for f in listdir(mypath) if join(mypath, f)]}')
-        HERE = os.path.dirname(os.path.abspath(__file__))
-        sys.path.insert(0, HERE)
-        from importlib import import_module
-        import_module('plover.command')
-        from importlib.metadata import files
-        from importlib.resources import files as files2
-        # p(f'uuu {files2("plover")}')
-        # p(f'uuu {[p for p in files2("plover")]}')
-        # p(f'uuu {[p for p in files("plover")]}')
         for plugin_type in self.PLUGIN_TYPES:
             if plugin_type.startswith('gui.qt.') and not HAS_GUI_QT:
                 continue
             entrypoint_type = 'plover.%s' % plugin_type
-            p(f'WWW {entrypoint_type}')
-            # iter = pkg_resources.iter_entry_points(entrypoint_type)
-            # p(f'www {sum(1 for _ in iter)}')
-            iter = importlib_metadata.entry_points().get(entrypoint_type, [])
-            p(f'www {sum(1 for _ in iter)}')
             for entrypoint in pkg_resources.iter_entry_points(entrypoint_type):
-                p(f'YYY {entrypoint}')
                 if 'gui_qt' in entrypoint.extras and not HAS_GUI_QT:
                     continue
                 self.register_plugin_from_entrypoint(plugin_type, entrypoint)
             if PLUGINS_PLATFORM is not None:
                 entrypoint_type = 'plover.%s.%s' % (PLUGINS_PLATFORM, plugin_type)
-                p(f'XXX {entrypoint_type}')
                 for entrypoint in pkg_resources.iter_entry_points(entrypoint_type):
-                    p(f'ZZZ {plugin_type}, {entrypoint}')
                     self.register_plugin_from_entrypoint(plugin_type, entrypoint)
-
-
-def p(s):
-    try:
-        import js
-        js.console.log(s)
-    except ImportError:
-        pass
-    print(s)
-
 
 registry = Registry()
 

@@ -14,16 +14,18 @@
 
         document.addEventListener('keydown', (event) => { logKeyDown(event) }, false);
         function logKeyDown(event) {
-            log.textContent += ` Down ${event.code} (${event.key})`;
+            // log.textContent += ` Down ${event.code} (${event.key})`;
             pyKeyDown(event.key);
         }
 
         document.addEventListener('keyup', (event) => { logKeyUp(event) }, false);
         function logKeyUp(event) {
+            /*
             if('Backspace' === event.code) {
                 log.textContent = ''; 
             }
             log.textContent += ` UP ${event.code} (${event.key})`;
+             */
             pyKeyUp(event.key);
         }
     </script>
@@ -71,7 +73,6 @@
     <py-script>
         import js
         from plover.gui_none.main import main2
-        js.console.log('LOG> XXX YYY')
         main2()
     </py-script>
     <p id="log">THIS IS A TEST</p>

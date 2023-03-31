@@ -139,7 +139,10 @@ class StenoEngine:
             self._queue.put((func, args, kwargs))
 
     def run(self):
+        self._machine.run()
+        return
         while True:
+            print('Waiting for key press/release')
             func, args, kwargs = self._queue.get()
             try:
                 # with self._lock:

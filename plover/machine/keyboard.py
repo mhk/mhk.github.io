@@ -13,6 +13,7 @@ from plover.machine.keyboard_capture import Capture
 class ExternalKeyboardCapture(Capture):
     def __init__(self):
         try:
+        # if True:
             import js
             from pyodide.ffi import create_proxy
             js.createObject(create_proxy(self.pyKeyDown), "pyKeyDown")
@@ -20,23 +21,30 @@ class ExternalKeyboardCapture(Capture):
             self.start = self.web_start
             self.cancel = self.web_cancel
             self.suppress_keyboard = self.web_suppress
+            self.run = self.web_run
         except ImportError:
+        # else:
             import threading
-            self._thread = threading.Thread(name='ExternalKeyboardCapture', target=self._run)
             self._cancelled = False
-            self.start = self.thread_start
+            self.start = self.web_start
             self.cancel = self.thread_cancel
             self.suppress_keyboard = self.thread_suppress
+            self._thread = threading.Thread(name='ExternalKeyboardCapture', target=self.thread_run)
+            self.start = self.thread_start
+            self.run = self.thread_run
 
     def pyKeyDown(self, key):
-        print(f"pyKeyDown: {key}")
+        # print(f"pyKeyDown: {key}")
         self.key_down(key);
 
     def pyKeyUp(self, key):
-        print(f"pyKeyUp: {key}")
+        # print(f"pyKeyUp: {key}")
         self.key_up(key);
 
     def web_start(self):
+        pass
+
+    def web_run(self):
         pass
 
     def web_cancel(self):
@@ -58,14 +66,14 @@ class ExternalKeyboardCapture(Capture):
                 self.key_up(evt)
         return True
 
-    def _run(self):
+    def thread_run(self):
         finished = False
         while not (finished or self._cancelled):
             key_events = input('--> ');
             finished = not self._handler(key_events)
 
     def thread_start(self):
-        self._thread.start()
+        pass
 
     def thread_cancel(self):
         self._cancelled = True
@@ -140,6 +148,7 @@ class Keyboard(StenotypeBase):
             self._keyboard_capture.key_up = self._key_up
             self._suppress()
             self._keyboard_capture.start()
+            self.run = self._keyboard_capture.run
         except:
             self._error()
             raise
@@ -153,6 +162,9 @@ class Keyboard(StenotypeBase):
             self._keyboard_capture.cancel()
             self._keyboard_capture = None
         self._stopped()
+
+    def _run(self):
+        pass
 
     def set_suppression(self, enabled):
         self._is_suppressed = enabled

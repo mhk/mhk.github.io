@@ -1,9 +1,17 @@
 <html>
   <head>
+    <style>
+    textarea {
+      font-family: monospace;
+      font-size: 22px;
+      line-height: 1.5em;
+      width: 75%;
+      height: 150px;
+    }
+    </style>
     <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
     <script defer src="https://pyscript.net/latest/pyscript.js"></script>
     <script type="text/javascript">
-        console.log("LOG> TESTSTSTST");
         function createObject(object, variableName) {
             //Bind a variable whose name is the string variableName
             // to the object called 'object'
@@ -27,6 +35,9 @@
             log.textContent += ` UP ${event.code} (${event.key})`;
              */
             pyKeyUp(event.key);
+        }
+        function update_text(s) {
+            steno.textContent = s;
         }
     </script>
   </head>
@@ -76,5 +87,6 @@
         main2()
     </py-script>
     <p id="log">THIS IS A TEST</p>
+    <textarea id='steno'></textarea>
   </body>
 </html>

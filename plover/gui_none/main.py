@@ -8,12 +8,23 @@ def show_error(title, message):
     print('%s: %s' % (title, message))
 
 class FakeKeyboardEmulation:
+    def __init__(self):
+        self.text = ''
+
+    def _update_text(self, s):
+        try:
+            import js
+            js.update_text(self.text)
+        except ImportError:
+            print(s)
 
     def send_backspaces(self, count):
-        print(f"{count}xBackSpace")
+        self.text = self.text[:-count]
+        self._update_text(f" {count}xBackSpace")
 
     def send_string(self, s):
-        print(s)
+        self.text += s
+        self._update_text(s)
 
     def send_key_combination(self, combo):
         print(combo)

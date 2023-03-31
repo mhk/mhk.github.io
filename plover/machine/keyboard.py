@@ -12,8 +12,7 @@ from plover.machine.keyboard_capture import Capture
 
 class ExternalKeyboardCapture(Capture):
     def __init__(self):
-        self.web = False
-        if self.web:
+        try:
             import js
             from pyodide.ffi import create_proxy
             js.createObject(create_proxy(self.pyKeyDown), "pyKeyDown")
@@ -21,7 +20,7 @@ class ExternalKeyboardCapture(Capture):
             self.start = self.web_start
             self.cancel = self.web_cancel
             self.suppress_keyboard = self.web_suppress
-        else:
+        except ImportError:
             import threading
             self._thread = threading.Thread(name='ExternalKeyboardCapture', target=self._run)
             self._cancelled = False
@@ -40,10 +39,10 @@ class ExternalKeyboardCapture(Capture):
     def web_start(self):
         pass
 
-    def cancel(self):
+    def web_cancel(self):
         pass
 
-    def suppress(self, suppressed_keys=()):
+    def web_suppress(self, suppressed_keys=()):
         pass
 
     def _handler(self, key_events):

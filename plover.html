@@ -3,19 +3,7 @@
     <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
     <script defer src="https://pyscript.net/latest/pyscript.js"></script>
     <script type="text/javascript">
-      async function main() {
-/*
-        let pyodide = await loadPyodide();
-        await pyodide.loadPackage("micrcpip");
-        const micropip = pyodide.pyimport("micropip");
-        await micropip.install("setuptools");
-        await pyodide.runPython(`
-        import setuptools
-        `);
-*/
-        await pyodide.loadPackage(["setuptools"]);
-      }
-      main();
+        console.log("LOG> TESTSTSTST");
         function createObject(object, variableName) {
             //Bind a variable whose name is the string variableName
             // to the object called 'object'
@@ -49,16 +37,41 @@
                 'plover/resource.py', 'plover/registry.py', 'plover/steno.py',
                 'plover/dictionary/__init__.py',  'plover/dictionary/json_dict.py',        'plover/dictionary/rtfcre_dict.py',
                 'plover/dictionary/base.py',      'plover/dictionary/loading_manager.py',  'plover/dictionary/rtfcre_parse.py',
-                'plover/exception.py', 'plover/formatting.py', 'plover/misc.py',
-                'plover/steno_dictionary.py', 'plover/suggestions.py', 'plover/translation.py',
-                'plover/config.py', 'plover/machine/keymap.py', 'plover.cfg',
-                './plover/machine/external.py', 'plover/gui_none/add_translation.py'
+
+                'plover/machine/keymap.py', 'plover.cfg',
+                './plover/machine/external.py', 'plover/gui_none/add_translation.py',
+                'plover/command/__init__.py',  'plover/command/set_config.py',
+                'plover/dictionary/__init__.py',  'plover/dictionary/json_dict.py',        'plover/dictionary/rtfcre_dict.py',
+                'plover/dictionary/base.py',      'plover/dictionary/loading_manager.py',  'plover/dictionary/rtfcre_parse.py',
+                'plover/machine/__init__.py',  'plover/machine/geminipr.py',  'plover/machine/passport.py',  'plover/machine/txbolt.py',
+                'plover/machine/base.py',      'plover/machine/keyboard.py',  'plover/machine/procat.py',
+                'plover/machine/external.py',  'plover/machine/keymap.py',    'plover/machine/stentura.py',
+                'plover/macro/__init__.py',  'plover/macro/repeat.py',  'plover/macro/retrospective.py',  'plover/macro/undo.py',
+                'plover/meta/__init__.py',  'plover/meta/command.py',      'plover/meta/glue.py',       'plover/meta/punctuation.py',
+                'plover/meta/attach.py',    'plover/meta/conditional.py',  'plover/meta/key_combo.py',  'plover/meta/word_end.py',
+                'plover/meta/case.py',      'plover/meta/currency.py',     'plover/meta/mode.py',
+                'plover/system/__init__.py',  'plover/system/english_stenotype.py',
+                'commands.json', 'main.json', 'user.json',
+                'plover/oslayer/config.py',
+                'plover.egg-info/PKG-INFO', 'plover.egg-info/dependency_links.txt', 'plover.egg-info/requires.txt',
+                'plover.egg-info/zip-safe', 'plover.egg-info/SOURCES.txt', 'plover.egg-info/entry_points.txt', 
+                'plover.egg-info/top_level.txt', 'plover/oslayer/keyboardcontrol.py',
+
+                'plover/translation.py',
+                'plover/__init__.py',  'plover/exception.py',   'plover/log.py',          'plover/resource.py',          
+                'plover/__main__.py',  'plover/formatting.py',  'plover/misc.py',         'plover/steno.py',
+                'plover/config.py',    'plover/i18n.py',        'plover/orthography.py',  'plover/steno_dictionary.py',
+                'plover/engine.py',    'plover/key_combo.py',   'plover/registry.py',     'plover/suggestions.py',
+
+                'plover/machine/keyboard_capture/__init__.py',
                 ]
         from = './'
         to_folder = './'
     </py-config>
     <py-script>
+        import js
         from plover.gui_none.main import main2
+        js.console.log('LOG> XXX YYY')
         main2()
     </py-script>
     <p id="log">THIS IS A TEST</p>

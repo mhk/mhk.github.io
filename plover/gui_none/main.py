@@ -30,6 +30,8 @@ class FakeController:
         pass
 
 def main2():
+    from plover.registry import registry
+    registry.update()
     main(None, None)
 
 def main(config, controller):

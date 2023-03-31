@@ -7,9 +7,6 @@
 """Base classes for machine types. Do not use directly."""
 
 import binascii
-import threading
-
-import serial
 
 from plover import _, log
 from plover.machine.keymap import Keymap
@@ -81,7 +78,7 @@ class StenotypeBase:
 
     def add_state_callback(self, callback):
         self.state_subscribers.append(callback)
-        
+
     def remove_state_callback(self, callback):
         self.state_subscribers.remove(callback)
 
@@ -123,7 +120,7 @@ class StenotypeBase:
 
     def _ready(self):
         self._set_state(STATE_RUNNING)
-            
+
     def _error(self):
         self._set_state(STATE_ERROR)
 
@@ -141,140 +138,3 @@ class StenotypeBase:
         """Get the default options for this machine."""
         return {}
 
-
-class ThreadedStenotypeBase(StenotypeBase, threading.Thread):
-    """Base class for thread based machines.
-    
-    Subclasses should override run.
-    """
-    def __init__(self):
-        threading.Thread.__init__(self)
-        self.name += '-machine'
-        StenotypeBase.__init__(self)
-        self.finished = threading.Event()
-
-    def run(self):
-        """This method should be overridden by a subclass."""
-        pass
-
-    def start_capture(self):
-        """Begin listening for output from the stenotype machine."""
-        self.finished.clear()
-        self._initializing()
-        self.start()
-
-    def stop_capture(self):
-        """Stop listening for output from the stenotype machine."""
-        self.finished.set()
-        try:
-            self.join()
-        except RuntimeError:
-            pass
-        self._stopped()
-
-class SerialStenotypeBase(ThreadedStenotypeBase):
-    """For use with stenotype machines that connect via serial port.
-
-    This class implements the three methods necessary for a standard
-    stenotype interface: start_capture, stop_capture, and
-    add_callback.
-
-    """
-
-    # Default serial parameters.
-    SERIAL_PARAMS = {
-        'port': None,
-        'baudrate': 9600,
-        'bytesize': 8,
-        'parity': 'N',
-        'stopbits': 1,
-        'timeout': 2.0,
-    }
-
-    def __init__(self, serial_params):
-        """Monitor the stenotype over a serial port.
-
-        The key-value pairs in the <serial_params> dict are the same
-        as the keyword arguments for a serial.Serial object.
-
-        """
-        ThreadedStenotypeBase.__init__(self)
-        self.serial_port = None
-        self.serial_params = serial_params
-
-    def _close_port(self):
-        if self.serial_port is None:
-            return
-        self.serial_port.close()
-        self.serial_port = None
-
-    def start_capture(self):
-        self._close_port()
-
-        try:
-            self.serial_port = serial.Serial(**self.serial_params)
-        except (serial.SerialException, OSError):
-            log.warning('Can\'t open serial port', exc_info=True)
-            self._error()
-            return
-
-        if not self.serial_port.isOpen():
-            log.warning('Serial port is not open: %s', self.serial_params.get('port'))
-            self._error()
-            return
-
-        return ThreadedStenotypeBase.start_capture(self)
-
-    def stop_capture(self):
-        """Stop listening for output from the stenotype machine."""
-        ThreadedStenotypeBase.stop_capture(self)
-        self._close_port()
-
-    @classmethod
-    def get_option_info(cls):
-        """Get the default options for this machine."""
-        sb = lambda s: int(float(s)) if float(s).is_integer() else float(s)
-        converters = {
-            'port': str,
-            'baudrate': int,
-            'bytesize': int,
-            'parity': str,
-            'stopbits': sb,
-            'timeout': float,
-            'xonxoff': boolean,
-            'rtscts': boolean,
-        }
-        return {
-            setting: (default, converters[setting])
-            for setting, default in cls.SERIAL_PARAMS.items()
-        }
-
-    def _iter_packets(self, packet_size):
-        """Yield packets of <packets_size> bytes until the machine is stopped.
-
-        N.B.: to workaround the fact that the Toshiba Bluetooth stack
-        on Windows does not correctly handle the read timeout setting
-        (returning immediately if some data is already available):
-        - the effective timeout is re-configured to <timeout/packet_size>
-        - multiple reads are  done (until a packet is complete)
-        - an incomplete packet will only be discarded if one of
-          those reads return no data (but not on short read)
-        """
-        self.serial_port.timeout = max(
-            self.serial_params.get('timeout', 1.0) / packet_size,
-            0.01,
-        )
-        packet = b''
-        while not self.finished.isSet():
-            raw = self.serial_port.read(packet_size - len(packet))
-            if not raw:
-                if packet:
-                    log.error('discarding incomplete packet: %s',
-                              binascii.hexlify(packet))
-                packet = b''
-                continue
-            packet += raw
-            if len(packet) != packet_size:
-                continue
-            yield packet
-            packet = b''

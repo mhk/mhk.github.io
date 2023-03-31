@@ -3,7 +3,6 @@
 
 """Centralized place for dictionary loading operation."""
 
-import threading
 import time
 
 from plover.dictionary.base import load_dictionary
@@ -55,10 +54,9 @@ class DictionaryLoadingManager:
 class DictionaryLoadingOperation:
 
     def __init__(self, filename):
-        self.loading_thread = threading.Thread(target=self.load)
         self.filename = filename
         self.result = None
-        self.loading_thread.start()
+        self.load()
 
     def needs_reloading(self):
         try:
@@ -93,5 +91,4 @@ class DictionaryLoadingOperation:
             self.result.timestamp = timestamp
 
     def get(self):
-        self.loading_thread.join()
         return self.result

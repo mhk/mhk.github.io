@@ -13,6 +13,7 @@ import subprocess
 import traceback
 
 import pkg_resources
+from plover.gui_none.main import main2
 
 from plover.config import Config
 from plover.oslayer.controller import Controller
@@ -38,6 +39,8 @@ def init_config_dir():
 
 
 def main():
+    main2()
+    return
     """Launch plover."""
     description = "Run the plover stenotype engine. This is a graphical application."
     parser = argparse.ArgumentParser(description=description)

@@ -2,6 +2,7 @@
 
 from plover.engine import StenoEngine
 from plover.config import Config
+from plover.gui_none.add_translation import AddTranslation
 
 def show_error(title, message):
     print('%s: %s' % (title, message))
@@ -34,6 +35,7 @@ def main2():
 def main(config, controller):
     config = Config('./plover.cfg')
     engine = StenoEngine(config, FakeController(), FakeKeyboardEmulation())
+    engine._add_translation = AddTranslation(engine)
     # engine = Engine(config, controller, FakeKeyboardEmulation())
     if not engine.load_config():
         return 3

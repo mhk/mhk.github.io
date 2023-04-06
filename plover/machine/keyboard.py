@@ -180,11 +180,21 @@ class Keyboard(StenotypeBase):
         self._stroke_key_down_count += 1
         self._down_keys.add(key)
         self._stroke_keys.add(key)
+        steno_keys = {self._bindings.get(k) for k in self._stroke_keys}
+        steno_keys -= {None}
+        try:
+            import js
+            for key in steno_keys:
+                js.on(key)
+        except ImportError:
+            pass
 
     def _key_up(self, key):
         """Called when a key is released."""
         assert key is not None
         self._down_keys.discard(key)
+
+        steno_keys = self._bindings.get(key)
         # A stroke is complete if all pressed keys have been released,
         # and — when arpeggiate mode is enabled — the arpeggiate key
         # is part of it.
@@ -197,6 +207,12 @@ class Keyboard(StenotypeBase):
         self._last_stroke_key_down_count = self._stroke_key_down_count
         steno_keys = {self._bindings.get(k) for k in self._stroke_keys}
         steno_keys -= {None}
+        try:
+            import js
+            for key in steno_keys:
+                js.off(key)
+        except ImportError:
+            pass
         if steno_keys:
             self._notify(steno_keys)
         self._stroke_keys.clear()

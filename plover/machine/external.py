@@ -2,6 +2,12 @@
 # Copyright (c) 2010 Joshua Harlan Lifton.
 # See LICENSE.txt for details.
 
+# NOT USED
+# NOT USED
+# NOT USED
+# NOT USED
+# NOT USED
+
 "For use with a computer keyboard (preferably NKRO) as a steno machine."
 from plover import _
 from plover.machine.keyboard import Keyboard

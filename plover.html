@@ -114,6 +114,15 @@
                 }
             }
         }
+        function flipStenoKeyboard() {
+            if(document.getElementById('svgg').getAttribute('transform') === null) {
+                document.getElementById('svgg').setAttribute('transform', 'scale (-1, 1)');
+                document.getElementById('svgg').setAttribute('transform-origin', 'center');
+            } else {
+                document.getElementById('svgg').removeAttribute('transform');
+                document.getElementById('svgg').removeAttribute('transform-origin');
+            }
+        }
     </script>
   </head>
   <body>
@@ -168,7 +177,7 @@
     <clippath id="p.0">
       <path d="m0 0l1120.6011 0l0 341.19946l-1120.6011 0l0 -341.19946z" clip-rule="nonzero"></path>
     </clippath>
-    <g clip-path="url(#p.0)">
+    <g id='svgg' clip-path="url(#p.0)">
       <path class='key' id='-B' onclick="toggle('-B');" fill="#666666" d="m392.0 216.0l0 0l0 0c-12.730377 0 -24.939392 -5.057129 -33.94113 -14.058868c-9.0017395 -9.001755 -14.058868 -21.21074 -14.058868 -33.94113l0 -48.0c0 -4.4250488E-4 3.6621094E-4 -8.010864E-4 7.9345703E-4 -8.010864E-4l95.99921 8.010864E-4l0 0c4.5776367E-4 0 7.9345703E-4 3.5858154E-4 7.9345703E-4 8.010864E-4l-7.9345703E-4 47.9992l0 0c0 26.509674 -21.490326 48.0 -48.0 48.0z" fill-rule="evenodd"></path>
       <path stroke="#000000" stroke-width="1.0" stroke-linejoin="round" stroke-linecap="butt" d="m392.0 216.0l0 0l0 0c-12.730377 0 -24.939392 -5.057129 -33.94113 -14.058868c-9.0017395 -9.001755 -14.058868 -21.21074 -14.058868 -33.94113l0 -48.0c0 -4.4250488E-4 3.6621094E-4 -8.010864E-4 7.9345703E-4 -8.010864E-4l95.99921 8.010864E-4l0 0c4.5776367E-4 0 7.9345703E-4 3.5858154E-4 7.9345703E-4 8.010864E-4l-7.9345703E-4 47.9992l0 0c0 26.509674 -21.490326 48.0 -48.0 48.0z" fill-rule="evenodd"></path>
       <path class='key' id='T-' onclick="toggle('T-');" fill="#666666" d="m1000.0 8.0l-96.0 0l0 96.0l96.0 0z" fill-rule="evenodd"></path>

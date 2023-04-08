@@ -11,20 +11,20 @@ class FakeKeyboardEmulation:
     def __init__(self):
         self.text = ''
 
-    def _update_text(self, s):
+    def _update_text(self, text, s):
         try:
             import js
-            js.update_text(self.text)
+            js.update_text(text, s)
         except ImportError:
             print(s)
 
     def send_backspaces(self, count):
         self.text = self.text[:-count]
-        self._update_text(f" {count}xBackSpace")
+        self._update_text(self.text, f" {count}xBackSpace")
 
     def send_string(self, s):
         self.text += s
-        self._update_text(s)
+        self._update_text(self.text, s)
 
     def send_key_combination(self, combo):
         print(combo)

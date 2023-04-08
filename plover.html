@@ -7,8 +7,9 @@
       font-size: 22px;
       line-height: 1.5em;
       width: 100%;
-      height: 150px;
+      height: 2.5em;
       resize: none;
+      overflow: hidden;
       background-color: #666666;
       color: #FFFFFF;
     }
@@ -29,11 +30,15 @@
         height: 100vh;
     }
     </style>
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>    
     <!-- <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" /> -->
     <!-- <script defer src="https://pyscript.net/latest/pyscript.js"></script>     -->
-    <link rel="stylesheet" href="./pyscript.css" /> 
-    <script defer src="./pyscript.js"></script>     
+    <!-- <link rel="stylesheet" href="./pyscript.css" /> -->
+    <!-- <script defer src="./pyscript.js"></script>     -->
     <script type="text/javascript">
+        let exercises = {};
+        let exerciseHandler = (t, s) => t;
         function createObject(object, variableName) {
             //Bind a variable whose name is the string variableName
             // to the object called 'object'
@@ -58,8 +63,8 @@
              */
             pyKeyUp(event.key);
         }
-        function update_text(s) {
-            steno.textContent = s;
+        function update_text(t, s) {
+            steno.textContent = exerciseHandler(t, s);
         }
         function on(key) {
             document.getElementById(key).setAttribute('fill', '#f3f70f');
@@ -128,6 +133,49 @@
                 document.getElementById('svgg').removeAttribute('transform-origin');
             }
         }
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+        function getExerciseData(ex, chap) {
+            for(let i = 0; i < exercises.length; ++i) {
+                if(exercises[i].name !== ex) continue;
+                for(let j = 0; j < exercises[i].chapters.length; ++j) {
+                    const chapter = exercises[i].chapters[j];
+                    if(chapter.name !== chap) continue;
+                    return chapter.data;
+                }
+            }
+            return '';
+        }
+        function loadExercise(ex, chap) {
+            const data = getExerciseData(ex, chap);
+            if('' === data) {
+                exercise.textContent = '';
+                return ;
+            }
+            exerciseCopy = [...data];
+            shuffleArray(exerciseCopy)
+            exercise.textContent = exerciseCopy.join(' ');
+            exerciseHandler = (t, s) => {
+                if(exerciseCopy.length === 0) return s;
+                if(s.trim() === exerciseCopy[0]) {
+                    exerciseCopy.shift();
+                    exercise.textContent = exerciseCopy.join(' ');
+                    return '';
+                }
+                return s;
+            };
+        }
+        fetch("exercises.json")
+            .then(response => response.json())
+            .then(json => {
+                console.log('exercises loaded')
+                exercises = json;
+                loadExercise('Plover', 'One Syllable Words');
+            });
     </script>
   </head>
   <body>
@@ -175,6 +223,7 @@
         from plover.gui_none.main import main2
         main2()
     </py-script>
+    <textarea id='exercise' readonly></textarea>
     <textarea id='steno' readonly></textarea>
     <br/>
     <button type="button" class="block" onclick="release(event)">release</button>

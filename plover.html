@@ -150,6 +150,20 @@
             }
             return '';
         }
+        function loadExercises() {
+            const dropdown = document.getElementById('select-exercise');
+            for(let i = 0; i < exercises.length; ++i) {
+                const optgroup = document.createElement("optgroup");
+                optgroup.label = exercises[i].name;
+                for(let j = 0; j < exercises[i].chapters.length; ++j) {
+                    const opt = document.createElement("option");
+                    const chapter = exercises[i].chapters[j];
+                    opt.value = opt.innerHTML = chapter.name;
+                    optgroup.appendChild(opt);
+                }
+                dropdown.appendChild(optgroup);
+            }
+        }
         function loadExercise(ex, chap) {
             const data = getExerciseData(ex, chap);
             if('' === data) {
@@ -169,11 +183,17 @@
                 return s;
             };
         }
+        function changeExercise() {
+            const exercise = document.querySelector('#select-exercise option:checked').parentElement.label
+            const chapter = document.getElementById('select-exercise').value;
+            loadExercise(exercise, chapter);
+        }
         fetch("exercises.json")
             .then(response => response.json())
             .then(json => {
                 console.log('exercises loaded')
                 exercises = json;
+                loadExercises();
                 loadExercise('Plover', 'One Syllable Words');
             });
     </script>
@@ -223,6 +243,7 @@
         from plover.gui_none.main import main2
         main2()
     </py-script>
+    <select name='exercises' id='select-exercise' onchange='changeExercise();'></select>
     <textarea id='exercise' readonly></textarea>
     <textarea id='steno' readonly></textarea>
     <br/>

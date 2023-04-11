@@ -138,8 +138,22 @@ class StenoEngine:
         else:
             self._queue.put((func, args, kwargs))
 
+    def hints(self, s):
+        hs = self.reverse_lookup(s)
+        if(False and len(hs) == 0): # not working because casereserve returns a set
+            s = self.casereverse_lookup(s.lower())
+            print(s)
+            hs = self.reverse_lookup(s)
+        return ', '.join(map(lambda h : '/'.join(h), hs))
+
     def run(self):
         self._machine.run()
+        try:
+            import js
+            from pyodide.ffi import create_proxy
+            js.createObject(create_proxy(self.hints), "steno_hints")
+        except ImportError:
+            pass
         return
         while True:
             print('Waiting for key press/release')

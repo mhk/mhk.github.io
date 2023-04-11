@@ -13,6 +13,29 @@
       background-color: #666666;
       color: #FFFFFF;
     }
+    .textarea60 {
+      font-family: monospace;
+      font-size: 18px;
+      line-height: 1.2em;
+      width: 59%;
+      right: 0px;
+      height: 1.5em;
+      resize: none;
+      overflow: hidden;
+      background-color: #666666;
+      color: #FFFFFF;
+    }
+    .textarea40 {
+      font-family: monospace;
+      font-size: 18px;
+      line-height: 1.2em;
+      width: 39%;
+      height: 1.5em;
+      resize: none;
+      overflow: hidden;
+      background-color: #666666;
+      color: #FFFFFF;
+    }
     .block {
         display: block;
         width: 100%;
@@ -29,6 +52,9 @@
         background-color: black;
         height: 100vh;
     }
+    .disable-dbl-tap-zoom {
+      touch-action: manipulation;
+    }
     </style>
     <link rel="stylesheet" href="./pyscript.css" />
     <script defer src="./pyscript.js"></script>
@@ -38,6 +64,9 @@
     <!-- <script defer src="./pyscript.js"></script>     -->
     <script type="text/javascript">
         let exercises = {};
+        let currentExercise = {};
+        let MAX_FAILURE = 1;
+        let failCount = 0;
         let exerciseHandler = (t, s) => t;
         function createObject(object, variableName) {
             //Bind a variable whose name is the string variableName
@@ -46,15 +75,20 @@
             console.log("Running '" + execString + "'");
             eval(execString)
         }
+        function ignoreKeyEvent(event) {
+            return event.target.classList.contains('ignoreKeyEvent');
+        }
 
         document.addEventListener('keydown', (event) => { logKeyDown(event) }, false);
         function logKeyDown(event) {
+            if(ignoreKeyEvent(event)) return ;
             // log.textContent += ` Down ${event.code} (${event.key})`;
             pyKeyDown(event.key);
         }
 
         document.addEventListener('keyup', (event) => { logKeyUp(event) }, false);
         function logKeyUp(event) {
+            if(ignoreKeyEvent(event)) return ;
             /*
             if('Backspace' === event.code) {
                 log.textContent = ''; 
@@ -164,20 +198,40 @@
                 dropdown.appendChild(optgroup);
             }
         }
+        function changeMax(event, val) {
+            MAX_FAILURE = parseInt(val);
+            showHint(0);
+        }
+        function showHint(i=1) {
+            if(currentExercise.length === 0) return ;
+            if(-1 === MAX_FAILURE) return ;
+            if(failCount + i < MAX_FAILURE) return ;
+            failCount += i;
+            hints.textContent = steno_hints(currentExercise[0]);
+        }
+        function resetHint() {
+            failCount = 0;
+            hints.textContent = '';
+            showHint(0);
+        }
         function loadExercise(ex, chap) {
             const data = getExerciseData(ex, chap);
             if('' === data) {
                 exercise.textContent = '';
                 return ;
             }
-            exerciseCopy = [...data];
-            shuffleArray(exerciseCopy)
-            exercise.textContent = exerciseCopy.join(' ');
+            currentExercise = [...data];
+            shuffleArray(currentExercise)
+            exercise.textContent = currentExercise.join(' ');
+            showHint(0);
             exerciseHandler = (t, s) => {
-                if(exerciseCopy.length === 0) return s;
-                if(s.trim() === exerciseCopy[0]) {
-                    exerciseCopy.shift();
-                    exercise.textContent = exerciseCopy.join(' ');
+                console.log(t);
+                if(currentExercise.length === 0) return s;
+                showHint();
+                if(s.trim() === currentExercise[0]) {
+                    currentExercise.shift();
+                    exercise.textContent = currentExercise.join(' ');
+                    resetHint();
                     return '';
                 }
                 return s;
@@ -244,11 +298,12 @@
         main2()
     </py-script>
     <select name='exercises' id='select-exercise' onchange='changeExercise();'></select>
+    <input class='ignoreKeyEvent' style="text-align:right;" type='number' name='failcount' id='failcount' value=1 onchange='changeMax(event, this.value)'/>
     <textarea id='exercise' readonly></textarea>
-    <textarea id='steno' readonly></textarea>
+    <textarea class="textarea40" id='steno' readonly></textarea><textarea class="textarea60" id='hints' readonly></textarea>
     <br/>
     <button type="button" class="block" onclick="release(event)">release</button>
-    <svg version="1.1" viewbox="0.0 0.0 1120.6010498687665 341.1994750656168" fill="none" stroke="none" stroke-linecap="square" stroke-miterlimit="10" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
+    <svg class="disable-dbl-tap-zoom" version="1.1" viewbox="0.0 0.0 1120.6010498687665 341.1994750656168" fill="none" stroke="none" stroke-linecap="square" stroke-miterlimit="10" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
     <clippath id="p.0">
       <path d="m0 0l1120.6011 0l0 341.19946l-1120.6011 0l0 -341.19946z" clip-rule="nonzero"></path>
     </clippath>

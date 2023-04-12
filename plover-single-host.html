@@ -1,7 +1,10 @@
 <html>
   <head>
-    <link href='https://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet'>
+    <link href='./Inconsolata' rel='stylesheet'>
     <style>
+    table {
+        width: 100%;
+    }
     textarea {
       font-family: monospace;
       font-size: 22px;
@@ -13,23 +16,13 @@
       background-color: #666666;
       color: #FFFFFF;
     }
-    .textarea60 {
+    .textareaSmall {
       font-family: monospace;
       font-size: 18px;
       line-height: 1.2em;
-      width: 59%;
+      /* width: 59%; */
+      width: 100%;
       right: 0px;
-      height: 1.5em;
-      resize: none;
-      overflow: hidden;
-      background-color: #666666;
-      color: #FFFFFF;
-    }
-    .textarea40 {
-      font-family: monospace;
-      font-size: 18px;
-      line-height: 1.2em;
-      width: 39%;
       height: 1.5em;
       resize: none;
       overflow: hidden;
@@ -299,9 +292,21 @@
     </py-script>
     <select name='exercises' id='select-exercise' onchange='changeExercise();'></select>
     <input class='ignoreKeyEvent' style="text-align:right;" type='number' name='failcount' id='failcount' value=1 onchange='changeMax(event, this.value)'/>
-    <textarea id='exercise' readonly></textarea>
-    <textarea class="textarea40" id='steno' readonly></textarea><textarea class="textarea60" id='hints' readonly></textarea>
-    <br/>
+    <table>
+        <tr>
+            <td colspan=2>
+                <textarea id='exercise' readonly></textarea>
+            </td>
+        </tr>
+        <tr>
+            <td style="width: 35%">
+                <textarea class="textareaSmall" id='steno' readonly></textarea>
+            </td>
+            <td style="width: 65%">
+                <textarea class="textareaSmall" id='hints' readonly></textarea>
+            </td>
+        </tr>
+    </table>
     <button type="button" class="block" onclick="release(event)">release</button>
     <svg class="disable-dbl-tap-zoom" version="1.1" viewbox="0.0 0.0 1120.6010498687665 341.1994750656168" fill="none" stroke="none" stroke-linecap="square" stroke-miterlimit="10" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
     <clippath id="p.0">

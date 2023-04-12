@@ -51,3 +51,5 @@ nosetests.xml
 .#*
 
 /windows/.wine/
+*.swp
+vim.session

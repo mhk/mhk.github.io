@@ -2,15 +2,30 @@
   <head>
     <link href='./Inconsolata' rel='stylesheet'>
     <style>
+    body {
+        font-family: 'Inconsolata';font-size: 22px;
+        background-color: black;
+        height: 100vh;
+    }
+    #Test {
+        position: absolute;
+        visibility: hidden;
+        font-family: monospace;
+        font-size: 22px;
+        background-color: white;
+        height: auto;
+        width: auto;
+        white-space: nowrap; /* Thanks to Herb Caudill comment */
+    }
     table {
         width: 100%;
     }
-    textarea {
+    .textareaNormal {
       font-family: monospace;
       font-size: 22px;
-      line-height: 1.5em;
+      line-height: 1.25em;
       width: 100%;
-      height: 2.5em;
+      height: 2.75em;
       resize: none;
       overflow: hidden;
       background-color: #666666;
@@ -18,7 +33,7 @@
     }
     .textareaSmall {
       font-family: monospace;
-      font-size: 18px;
+      font-size: 12px;
       line-height: 1.2em;
       /* width: 59%; */
       width: 100%;
@@ -40,21 +55,12 @@
         cursor: pointer;
         text-align: center;
     }
-    body {
-        font-family: 'Inconsolata';font-size: 22px;
-        background-color: black;
-        height: 100vh;
-    }
     .disable-dbl-tap-zoom {
       touch-action: manipulation;
     }
     </style>
     <link rel="stylesheet" href="./pyscript.css" />
     <script defer src="./pyscript.js"></script>
-    <!-- <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" /> -->
-    <!-- <script defer src="https://pyscript.net/latest/pyscript.js"></script>     -->
-    <!-- <link rel="stylesheet" href="./pyscript.css" /> -->
-    <!-- <script defer src="./pyscript.js"></script>     -->
     <script type="text/javascript">
         let exercises = {};
         let currentExercise = {};
@@ -62,7 +68,7 @@
         let failCount = 0;
         let exerciseHandler = (t, s) => t;
         function createObject(object, variableName) {
-            //Bind a variable whose name is the string variableName
+            // Bind a variable whose name is the string variableName
             // to the object called 'object'
             let execString = variableName + " = object"
             console.log("Running '" + execString + "'");
@@ -235,6 +241,28 @@
             const chapter = document.getElementById('select-exercise').value;
             loadExercise(exercise, chapter);
         }
+        function textToLength() {
+            if(currentExercise.length <= 0) return ;
+            const fontSize = 22;
+            const exc = document.getElementById('exercise');
+            // TODO: Fix proper handling of units
+            // const padding = window.getComputedStyle(exc, null).getPropertyValue('padding-right') + window.getComputedStyle(exc, null).getPropertyValue('padding-left');
+            // console.log(padding);
+            const maxWidth = exc.clientWidth - 4;
+            const test = document.getElementById("Test");
+            test.style.fontSize = fontSize;
+            let s = currentExercise[0];
+            let p = '';
+            for(let i = 1; i < currentExercise.length; ++i) {
+                test.innerHTML = s;
+                const height = (test.clientHeight + 1);
+                const width = (test.clientWidth + 1);
+                if(width > maxWidth) break;
+                p = s;
+                s += ' ' + currentExercise[i];
+            }
+            console.log(p);
+        }
         fetch("exercises.json")
             .then(response => response.json())
             .then(json => {
@@ -243,6 +271,7 @@
                 loadExercises();
                 loadExercise('Plover', 'One Syllable Words');
             });
+
     </script>
   </head>
   <body>
@@ -290,12 +319,13 @@
         from plover.gui_none.main import main2
         main2()
     </py-script>
+    <div id="Test">abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ</div>
     <select name='exercises' id='select-exercise' onchange='changeExercise();'></select>
     <input class='ignoreKeyEvent' style="text-align:right;" type='number' name='failcount' id='failcount' value=1 onchange='changeMax(event, this.value)'/>
-    <table>
+    <table id='outputTable'>
         <tr>
             <td colspan=2>
-                <textarea id='exercise' readonly></textarea>
+                <textarea class='textareaNormal' id='exercise' readonly></textarea>
             </td>
         </tr>
         <tr>

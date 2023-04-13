@@ -20,7 +20,7 @@
     table {
         width: 100%;
     }
-    .textareaNormal {
+    .textNormal {
       font-family: monospace;
       font-size: 22px;
       line-height: 1.25em;
@@ -31,7 +31,7 @@
       background-color: #666666;
       color: #FFFFFF;
     }
-    .textareaSmall {
+    .textSmall {
       font-family: monospace;
       font-size: 12px;
       line-height: 1.2em;
@@ -97,10 +97,10 @@
             pyKeyUp(event.key);
         }
         window.addEventListener('resize', (event) => {
-            exercise.textContent = textToLength().join('\n');
+            exercise.innerHTML = textToLength().join('\n');
         });
         function update_text(t, s) {
-            steno.textContent = exerciseHandler(t, s);
+            steno.innerHTML = exerciseHandler(t, s);
         }
         function on(key) {
             document.getElementById(key).setAttribute('fill', '#f3f70f');
@@ -209,22 +209,22 @@
             if(-1 === MAX_FAILURE) return ;
             if(failCount + i < MAX_FAILURE) return ;
             failCount += i;
-            hints.textContent = steno_hints(currentExercise[0]);
+            hints.innerHTML = steno_hints(currentExercise[0]);
         }
         function resetHint() {
             failCount = 0;
-            hints.textContent = '';
+            hints.innerHTML = '';
             showHint(0);
         }
         function loadExercise(ex, chap) {
             const data = getExerciseData(ex, chap);
             if('' === data) {
-                exercise.textContent = '';
+                exercise.innerHTML = '';
                 return ;
             }
             currentExercise = [...data];
             shuffleArray(currentExercise)
-            exercise.textContent = textToLength().join('\n');
+            exercise.innerHTML = textToLength().join('\n');
             showHint(0);
             exerciseHandler = (t, s) => {
                 console.log(t);
@@ -232,7 +232,7 @@
                 showHint();
                 if(s.trim() === currentExercise[0]) {
                     currentExercise.shift();
-                    exercise.textContent = textToLength().join('\n');
+                    exercise.innerHTML = textToLength().join('\n');
                     resetHint();
                     return '';
                 }
@@ -336,15 +336,15 @@
     <table id='outputTable'>
         <tr>
             <td colspan=2>
-                <textarea class='textareaNormal' id='exercise' readonly></textarea>
+                <div class='textNormal' id='exercise' readonly></div>
             </td>
         </tr>
         <tr>
             <td style="width: 35%">
-                <textarea class="textareaSmall" id='steno' readonly></textarea>
+                <div class="textSmall" id='steno' readonly></div>
             </td>
             <td style="width: 65%">
-                <textarea class="textareaSmall" id='hints' readonly></textarea>
+                <div class="textSmall" id='hints' readonly></div>
             </td>
         </tr>
     </table>

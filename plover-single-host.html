@@ -96,6 +96,9 @@
              */
             pyKeyUp(event.key);
         }
+        window.addEventListener('resize', (event) => {
+            exercise.textContent = textToLength().join('\n');
+        });
         function update_text(t, s) {
             steno.textContent = exerciseHandler(t, s);
         }
@@ -221,7 +224,7 @@
             }
             currentExercise = [...data];
             shuffleArray(currentExercise)
-            exercise.textContent = currentExercise.join(' ');
+            exercise.textContent = textToLength().join('\n');
             showHint(0);
             exerciseHandler = (t, s) => {
                 console.log(t);
@@ -229,7 +232,7 @@
                 showHint();
                 if(s.trim() === currentExercise[0]) {
                     currentExercise.shift();
-                    exercise.textContent = currentExercise.join(' ');
+                    exercise.textContent = textToLength().join('\n');
                     resetHint();
                     return '';
                 }
@@ -242,26 +245,34 @@
             loadExercise(exercise, chapter);
         }
         function textToLength() {
-            if(currentExercise.length <= 0) return ;
-            const fontSize = 22;
             const exc = document.getElementById('exercise');
             // TODO: Fix proper handling of units
             // const padding = window.getComputedStyle(exc, null).getPropertyValue('padding-right') + window.getComputedStyle(exc, null).getPropertyValue('padding-left');
             // console.log(padding);
             const maxWidth = exc.clientWidth - 4;
+            return textToLength2(maxWidth, 2);
+        }
+        function textToLength2(maxWidth, rowCount) {
+            if(currentExercise.length <= 0) return ;
+            const fontSize = 22;
             const test = document.getElementById("Test");
             test.style.fontSize = fontSize;
-            let s = currentExercise[0];
-            let p = '';
-            for(let i = 1; i < currentExercise.length; ++i) {
-                test.innerHTML = s;
-                const height = (test.clientHeight + 1);
-                const width = (test.clientWidth + 1);
-                if(width > maxWidth) break;
-                p = s;
-                s += ' ' + currentExercise[i];
+            let rows = [];
+            let i = 1;
+            for(let r = 0; r < rowCount; ++r) {
+                let s = currentExercise[i - 1];
+                let p = '';
+                for(; i < currentExercise.length; ++i) {
+                    test.innerHTML = s;
+                    const height = (test.clientHeight + 1);
+                    const width = (test.clientWidth + 1);
+                    if(width > maxWidth) break;
+                    p = s;
+                    s += ' ' + currentExercise[i];
+                }
+                rows.push(p);
             }
-            console.log(p);
+            return rows;
         }
         fetch("exercises.json")
             .then(response => response.json())

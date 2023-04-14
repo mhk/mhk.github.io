@@ -65,6 +65,7 @@
         let exercises = {};
         let currentExercise = {};
         let currentExerciseIndex = 0;
+        let repeatExercise = true;
         let MAX_FAILURE = 1;
         let failCount = 0;
         let exerciseHandler = (t, s) => t;
@@ -229,6 +230,7 @@
             showHint(0);
             exerciseHandler = (t, s) => {
                 console.log(currentExercise.length, t);
+                if(currentExercise.length === 0 && repeatExercise) changeExercise();
                 if(currentExercise.length === 0) return s;
                 showHint();
                 if(s.trim() === currentExercise[currentExerciseIndex]) {
@@ -282,9 +284,6 @@
                     ++k;
                     if(i === currentExercise.length) break;
                     s += ' ' + currentExercise[i];
-                }
-                if(k !== i) {
-                    console.log('k !== i');
                 }
                 if(r === 0 && p.endsWith('</span>')) {
                     // remove first row

@@ -260,34 +260,14 @@
             const maxWidth = exc.clientWidth - 4;
             return textToLength3(maxWidth, 2);
         }
-        function textToLength2(maxWidth, rowCount) {
-            if(currentExercise.length <= 0) return ;
-            const fontSize = 22;
-            const test = document.getElementById("Test");
-            test.style.fontSize = fontSize;
-            let rows = [];
-            let i = 1;
-            for(let r = 0; r < rowCount; ++r) {
-                let s = currentExercise[i - 1];
-                let p = '';
-                for(; i <= currentExercise.length; ++i) {
-                    test.innerHTML = s;
-                    const height = (test.clientHeight + 1);
-                    const width = (test.clientWidth + 1);
-                    if(width > maxWidth) break;
-                    p = s;
-                    s += (i === currentExercise.length)? '' : ' ' + currentExercise[i];
-                }
-                rows.push(p);
-            }
-            return rows;
-        }
         function textToLength3(maxWidth, rowCount) {
             if(currentExercise.length <= 0) return ;
             const test = document.getElementById("Test");
             let rows = [];
+            let counts = [];
             let i = 1;
             for(let r = 0; r < rowCount && i < currentExercise.length; ++r) {
+                let k = 0;
                 let s = '<span style="color:#005a00">';
                 if(i-1 >= currentExerciseIndex) s += '</span>';
                 s += currentExercise[i - 1];
@@ -299,12 +279,16 @@
                     if(width > maxWidth) break;
                     if(i === currentExerciseIndex) s += '</span>';
                     p = s;
+                    ++k;
                     if(i === currentExercise.length) break;
                     s += ' ' + currentExercise[i];
                 }
-                if(r === 0 && i > 1 && p.endsWith('</span>')) {
+                if(k !== i) {
+                    console.log('k !== i');
+                }
+                if(r === 0 && p.endsWith('</span>')) {
                     // remove first row
-                    for(k = 0; k < i-1; ++k) currentExercise.shift();
+                    for(; k > 0; --k) currentExercise.shift();
                     r = -1;
                     i = 1;
                     currentExerciseIndex = 0;

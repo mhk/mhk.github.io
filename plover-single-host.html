@@ -228,11 +228,10 @@
             exercise.innerHTML = textToLength().join('\n');
             showHint(0);
             exerciseHandler = (t, s) => {
-                console.log(t);
+                console.log(currentExercise.length, t);
                 if(currentExercise.length === 0) return s;
                 showHint();
                 if(s.trim() === currentExercise[currentExerciseIndex]) {
-                    // currentExercise.shift();
                     ++currentExerciseIndex;
                     exercise.innerHTML = textToLength().join('\n');
                     resetHint();
@@ -245,6 +244,12 @@
             const exercise = document.querySelector('#select-exercise option:checked').parentElement.label
             const chapter = document.getElementById('select-exercise').value;
             currentExerciseIndex = 0;
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('exercise', exercise);
+            urlParams.set('chapter', chapter);
+            const refresh = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + urlParams.toString();
+            console.log("'" + exercise + "' '" + chapter + "'" + " --> " + refresh);
+            window.history.pushState({ path: refresh }, '', refresh);
             loadExercise(exercise, chapter);
         }
         function textToLength() {
@@ -265,13 +270,13 @@
             for(let r = 0; r < rowCount; ++r) {
                 let s = currentExercise[i - 1];
                 let p = '';
-                for(; i < currentExercise.length; ++i) {
+                for(; i <= currentExercise.length; ++i) {
                     test.innerHTML = s;
                     const height = (test.clientHeight + 1);
                     const width = (test.clientWidth + 1);
                     if(width > maxWidth) break;
                     p = s;
-                    s += ' ' + currentExercise[i];
+                    s += (i === currentExercise.length)? '' : ' ' + currentExercise[i];
                 }
                 rows.push(p);
             }
@@ -282,18 +287,19 @@
             const test = document.getElementById("Test");
             let rows = [];
             let i = 1;
-            for(let r = 0; r < rowCount; ++r) {
+            for(let r = 0; r < rowCount && i < currentExercise.length; ++r) {
                 let s = '<span style="color:#005a00">';
                 if(i-1 >= currentExerciseIndex) s += '</span>';
                 s += currentExercise[i - 1];
                 let p = '';
-                for(; i < currentExercise.length; ++i) {
+                for(; i <= currentExercise.length; ++i) {
                     test.innerHTML = s;
                     const height = (test.clientHeight + 1);
                     const width = (test.clientWidth + 1);
                     if(width > maxWidth) break;
                     if(i === currentExerciseIndex) s += '</span>';
                     p = s;
+                    if(i === currentExercise.length) break;
                     s += ' ' + currentExercise[i];
                 }
                 if(r === 0 && i > 1 && p.endsWith('</span>')) {
@@ -314,7 +320,11 @@
                 console.log('exercises loaded')
                 exercises = json;
                 loadExercises();
-                loadExercise('Plover', 'One Syllable Words');
+                const urlParams = new URLSearchParams(window.location.search);
+                const exercise = urlParams.get('exercise') || 'Plover';
+                const chapter = urlParams.get('chapter') || 'One Syllable Words';
+                document.getElementById('select-exercise').value = chapter;
+                loadExercise(exercise, chapter);
             });
 
     </script>

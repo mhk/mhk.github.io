@@ -64,6 +64,7 @@
     <script type="text/javascript">
         let exercises = {};
         let currentExercise = {};
+        let currentExerciseIndex = 0;
         let MAX_FAILURE = 1;
         let failCount = 0;
         let exerciseHandler = (t, s) => t;
@@ -209,7 +210,7 @@
             if(-1 === MAX_FAILURE) return ;
             if(failCount + i < MAX_FAILURE) return ;
             failCount += i;
-            hints.innerHTML = steno_hints(currentExercise[0]);
+            hints.innerHTML = steno_hints(currentExercise[currentExerciseIndex]);
         }
         function resetHint() {
             failCount = 0;
@@ -230,8 +231,9 @@
                 console.log(t);
                 if(currentExercise.length === 0) return s;
                 showHint();
-                if(s.trim() === currentExercise[0]) {
-                    currentExercise.shift();
+                if(s.trim() === currentExercise[currentExerciseIndex]) {
+                    // currentExercise.shift();
+                    ++currentExerciseIndex;
                     exercise.innerHTML = textToLength().join('\n');
                     resetHint();
                     return '';
@@ -242,6 +244,7 @@
         function changeExercise() {
             const exercise = document.querySelector('#select-exercise option:checked').parentElement.label
             const chapter = document.getElementById('select-exercise').value;
+            currentExerciseIndex = 0;
             loadExercise(exercise, chapter);
         }
         function textToLength() {
@@ -250,7 +253,7 @@
             // const padding = window.getComputedStyle(exc, null).getPropertyValue('padding-right') + window.getComputedStyle(exc, null).getPropertyValue('padding-left');
             // console.log(padding);
             const maxWidth = exc.clientWidth - 4;
-            return textToLength2(maxWidth, 2);
+            return textToLength3(maxWidth, 2);
         }
         function textToLength2(maxWidth, rowCount) {
             if(currentExercise.length <= 0) return ;
@@ -271,6 +274,37 @@
                     s += ' ' + currentExercise[i];
                 }
                 rows.push(p);
+            }
+            return rows;
+        }
+        function textToLength3(maxWidth, rowCount) {
+            if(currentExercise.length <= 0) return ;
+            const test = document.getElementById("Test");
+            let rows = [];
+            let i = 1;
+            for(let r = 0; r < rowCount; ++r) {
+                let s = '<span style="color:#005a00">';
+                if(i-1 >= currentExerciseIndex) s += '</span>';
+                s += currentExercise[i - 1];
+                let p = '';
+                for(; i < currentExercise.length; ++i) {
+                    test.innerHTML = s;
+                    const height = (test.clientHeight + 1);
+                    const width = (test.clientWidth + 1);
+                    if(width > maxWidth) break;
+                    if(i === currentExerciseIndex) s += '</span>';
+                    p = s;
+                    s += ' ' + currentExercise[i];
+                }
+                if(r === 0 && i > 1 && p.endsWith('</span>')) {
+                    // remove first row
+                    for(k = 0; k < i-1; ++k) currentExercise.shift();
+                    r = -1;
+                    i = 1;
+                    currentExerciseIndex = 0;
+               } else {
+                   rows.push(p);
+               }
             }
             return rows;
         }

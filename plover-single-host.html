@@ -26,7 +26,8 @@
       font-family: monospace;
       font-size: 22px;
       line-height: 1.25em;
-      width: 100%;
+      /* width: 100%; */ /* removed as it does not play nice with padding */
+      padding: 4px;
       height: 2.75em;
       resize: none;
       overflow: hidden;
@@ -37,8 +38,8 @@
       font-family: monospace;
       font-size: 12px;
       line-height: 1.2em;
-      /* width: 59%; */
-      width: 100%;
+      /* width: 100%; */ /* removed as it does not play nice with padding */
+      padding: 4px;
       right: 0px;
       height: 1.5em;
       resize: none;
@@ -259,9 +260,9 @@
         function textToLength() {
             const exc = document.getElementById('exercise');
             // TODO: Fix proper handling of units
-            // const padding = window.getComputedStyle(exc, null).getPropertyValue('padding-right') + window.getComputedStyle(exc, null).getPropertyValue('padding-left');
-            // console.log(padding);
-            const maxWidth = exc.clientWidth - 4;
+            const padding = window.getComputedStyle(exc, null).getPropertyValue('padding'); // left vs right ...
+            if(padding != '4px') alert('Wrong padding. Padding is not dynamical, yet.');
+            const maxWidth = exc.clientWidth - (4 * 2);
             return textToLength3(maxWidth, 2);
         }
         function textToLength3(maxWidth, rowCount) {
@@ -376,8 +377,12 @@
                 <div class="textSmall" id='hints' readonly></div>
             </td>
         </tr>
+        <tr>
+            <td colspan=2>
+                <button type="button" class="block" onclick="release(event)">release</button>
+            </td>
+        </tr>
     </table>
-    <button type="button" class="block" onclick="release(event)">release</button>
     <svg class="disable-dbl-tap-zoom" version="1.1" viewbox="0.0 0.0 1120.6010498687665 341.1994750656168" fill="none" stroke="none" stroke-linecap="square" stroke-miterlimit="10" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
     <clippath id="p.0">
       <path d="m0 0l1120.6011 0l0 341.19946l-1120.6011 0l0 -341.19946z" clip-rule="nonzero"></path>

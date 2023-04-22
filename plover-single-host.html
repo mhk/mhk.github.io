@@ -311,6 +311,30 @@
                 "0.0 0.0 1120.6010498687665 341.1994750656168"
             );
         }
+        function openFullscreen() {
+            /* Get the documentElement (<html>) to display the page in fullscreen */
+            const elem = document.documentElement;
+
+            /* View in fullscreen */
+            if (elem.requestFullscreen) {
+              elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) { /* Safari */
+              elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) { /* IE11 */
+              elem.msRequestFullscreen();
+            }
+        }
+
+        /* Close fullscreen */
+        function closeFullscreen() {
+            if (document.exitFullscreen) {
+              document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) { /* Safari */
+              document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) { /* IE11 */
+              document.msExitFullscreen();
+            }
+        }
         fetch("exercises.json")
             .then(response => response.json())
             .then(json => {
@@ -375,6 +399,7 @@
     <select name='exercises' id='select-exercise' onchange='changeExercise();'></select>
     <input class='ignoreKeyEvent' style="text-align:right;" type='number' name='failcount' id='failcount' value=1 onchange='changeMax(event, this.value)'/>
     <input type="checkbox" id="randomizeExercises" name="randomizeExercise" value="randomizeExercise" checked=true /> <label style="color: white;" for="randomizeExercises">randomize</label>
+    <input type="button" id="toggleFullscreen" value="fullscreen" onclick='openFullscreen();' />
     <table id='outputTable'>
         <tr>
             <td colspan=2>

@@ -323,6 +323,7 @@
             } else if (elem.msRequestFullscreen) { /* IE11 */
               elem.msRequestFullscreen();
             }
+            screen.orientation.lock('landscape');
         }
 
         /* Close fullscreen */

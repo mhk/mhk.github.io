@@ -59,6 +59,7 @@
         cursor: pointer;
         text-align: center;
         color: #FFFFFF;
+        touch-action: manipulation;
     }
     .disable-dbl-tap-zoom {
       touch-action: manipulation;
@@ -152,7 +153,12 @@
             '-D'        : '[',
             '-Z'        : '\'',
         };
-        function release() {
+        function release(event) {
+            console.log(event.detail);
+            if(event.detail === 2) {
+                openFullscreen();
+                return ;
+            }
             const collection = document.getElementsByClassName("key");
             for (let i = 0; i < collection.length; i++) {
                 const stenoKey = collection[i].getAttribute('id');
@@ -348,7 +354,9 @@
                 document.getElementById('select-exercise').value = chapter;
                 loadExercise(exercise, chapter);
             });
-        setStenoKeyboardWidth(mobileStenoKeyboard);
+        document.addEventListener("DOMContentLoaded", function(event) {
+            setStenoKeyboardWidth(mobileStenoKeyboard);
+        });
     </script>
   </head>
   <body>
@@ -417,7 +425,7 @@
         </tr>
         <tr>
             <td colspan=2>
-                <button type="button" class="block" onclick="release(event)">release keys</button>
+                <button type="button" class="block" onclick="release(event);">release keys</button>
             </td>
         </tr>
     </table>

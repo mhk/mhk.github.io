@@ -68,6 +68,7 @@
     <link rel="stylesheet" href="./pyscript.css" />
     <script defer src="./pyscript.js"></script>
     <script type="text/javascript">
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
         let exercises = {};
         let currentExercise = {};
         let currentExerciseIndex = 0;
@@ -105,8 +106,31 @@
              */
             pyKeyUp(event.key);
         }
+        function hideFullScreenButton() {
+            const row = document.getElementById("toggleFullscreenRow");
+            row.style.display = 'none';
+        }
+        function showFullScreenButton() {
+            const row = document.getElementById("toggleFullscreenRow");
+            row.style.display = '';
+        }
         window.addEventListener('resize', (event) => {
-            exercise.innerHTML = textToLength().join('\n');
+            const txt = textToLength();
+            if(txt === undefined) return;
+            const row = document.getElementById("toggleFullscreenRow");
+            exercise.innerHTML = txt.join('\n');
+            switch (screen.orientation.type) {
+              case "landscape-primary":
+              case "landscape-secondary":
+                hideFullScreenButton();
+                break;
+              case "portrait-secondary":
+              case "portrait-primary":
+                showFullScreenButton();
+                break;
+              default:
+                // do nothing
+            }
         });
         function update_text(t, s) {
             steno.innerHTML = exerciseHandler(t, s);
@@ -155,10 +179,6 @@
         };
         function release(event) {
             console.log(event.detail);
-            if(event.detail === 2) {
-                openFullscreen();
-                return ;
-            }
             const collection = document.getElementsByClassName("key");
             for (let i = 0; i < collection.length; i++) {
                 const stenoKey = collection[i].getAttribute('id');
@@ -356,6 +376,7 @@
             });
         document.addEventListener("DOMContentLoaded", function(event) {
             setStenoKeyboardWidth(mobileStenoKeyboard);
+            if(!isMobile) hideFullScreenButton();
         });
     </script>
   </head>
@@ -408,8 +429,12 @@
     <select name='exercises' id='select-exercise' onchange='changeExercise();'></select>
     <input class='ignoreKeyEvent' style="text-align:right;" type='number' name='failcount' id='failcount' value=1 onchange='changeMax(event, this.value)'/>
     <input type="checkbox" id="randomizeExercises" name="randomizeExercise" value="randomizeExercise" checked=true /> <label style="color: white;" for="randomizeExercises">randomize</label>
-    <input type="button" id="toggleFullscreen" value="fullscreen" onclick='openFullscreen();' />
     <table id='outputTable'>
+        <tr id='toggleFullscreenRow'>
+            <td colspan=2>
+                <button id='toggleFullscreen' type="button" style='background-color: #966606;' class="block" onclick="openFullscreen();">fullscreen</button>
+            </td>
+        </tr>
         <tr>
             <td colspan=2>
                 <div class='textNormal' id='exercise' readonly></div>

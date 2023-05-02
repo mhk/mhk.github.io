@@ -146,6 +146,10 @@
         function isOff(key) {
             return (document.getElementById(key).getAttribute('fill') == '#666666');
         }
+        function toggleEvent(event) {
+            console.log(event.target.id);
+            toggle(event.target.id);
+        }
         function toggle(key) {
             if(isOff(key)) {
                 on(key);
@@ -178,7 +182,6 @@
             '-Z'        : '\'',
         };
         function release(event) {
-            console.log(event.detail);
             const collection = document.getElementsByClassName("key");
             for (let i = 0; i < collection.length; i++) {
                 const stenoKey = collection[i].getAttribute('id');
@@ -351,7 +354,6 @@
             }
             screen.orientation.lock('landscape');
         }
-
         /* Close fullscreen */
         function closeFullscreen() {
             if (document.exitFullscreen) {
@@ -361,6 +363,10 @@
             } else if (document.msExitFullscreen) { /* IE11 */
               document.msExitFullscreen();
             }
+        }
+        function handleStenoTouch(event) {
+            event.preventDefault();
+            toggleEvent(event);
         }
         fetch("exercises.json")
             .then(response => response.json())
@@ -373,6 +379,10 @@
                 const chapter = urlParams.get('chapter') || 'One Syllable Words';
                 document.getElementById('select-exercise').value = chapter;
                 loadExercise(exercise, chapter);
+                Object.keys(steno2key).forEach(id => {
+                    const key = document.getElementById(id);
+                    key.ontouchstart = handleStenoTouch;
+                });
             });
         document.addEventListener("DOMContentLoaded", function(event) {
             setStenoKeyboardWidth(mobileStenoKeyboard);

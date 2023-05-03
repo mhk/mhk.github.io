@@ -1,10 +1,12 @@
 """
+source: https://github.com/julien-sobczak/anki-srs-under-the-hood (a044b66)
 Same as schedv2.py but with annotations.
 """
 
 import time
 import random
 import datetime
+from enum import IntEnum
 
 # Whether new cards should be mixed with reviews, or shown first or last
 NEW_CARDS_DISTRIBUTE = 0
@@ -14,6 +16,24 @@ NEW_CARDS_FIRST = 2
 # The initial factor when card get promoted
 STARTING_FACTOR = 2500
 
+class EaseEnum(IntEnum):
+    Again = 1
+    Hard  = 2
+    Good  = 3
+    Easy  = 4
+
+class TypeEnum(IntEnum):
+    New        = 0
+    Learning   = 1
+    Review     = 2
+    Relearning = 3
+
+class QueueEnum(IntEnum):
+    Suspend = -1 # -1=suspend     => leeches as manual suspension is not supported
+    New     = 0  #  0=new         => new (never shown)
+    Lrn     = 1  #  1=(re)lrn     => learning/relearning
+    Rev     = 2  #  2=rev         => review (as for type)
+    Lrn2    = 3  #  3=day (re)lrn => in learning, next review in at least a day after the previous review
 
 ## Utils
 
@@ -211,29 +231,29 @@ class Card:
         if id:
             self.id = id
         else:
-            self.id = intId()   # The epoch milliseconds of when the card was created.
+            self.id = intId()        # The epoch milliseconds of when the card was created.
         self.note = note
-        self.due = note.id      # The note ID is used as the due date for new cards.
-        self.crt = intTime()    # Timestamp of the creation date in second.
-        self.type = 0           # 0=new, 1=learning, 2=review, 3=relearning
-        self.queue = 0          # Queue types:
-                                #   -1=suspend     => leeches as manual suspension is not supported
-                                #    0=new         => new (never shown)
-                                #    1=(re)lrn     => learning/relearning
-                                #    2=rev         => review (as for type)
-                                #    3=day (re)lrn => in learning, next review in at least a day after the previous review
-        self.ivl = 0            # The interval. Negative = seconds, positive = days
-        self.factor = 0         # The ease factor in permille (ex: 2500 = the interval will be multiplied by 2.5 the next time you press "Good").
-        self.reps = 0           # The number of reviews.
-        self.lapses = 0         # The number of times the card went from a "was answered correctly" to "was answered incorrectly" state.
-        self.left = 0           # Of the form a*1000+b, with:
-                                #   a the number of reps left today
-                                #   b the number of reps left till graduation
-                                # for example: '2004' means 2 reps left today and 4 reps till graduation
-        self.due = self.id      # Due is used differently for different card types:
-                                # - new: note id or random int
-                                # - due: integer day, relative to the collection's creation time
-                                # - learning: integer timestamp in second
+        self.due = note.id           # The note ID is used as the due date for new cards.
+        self.crt = intTime()         # Timestamp of the creation date in second.
+        self.type = TypeEnum.New     # 0=new, 1=learning, 2=review, 3=relearning
+        self.queue = QueueEnum.New   # Queue types:
+                                     #   -1=suspend     => leeches as manual suspension is not supported
+                                     #    0=new         => new (never shown)
+                                     #    1=(re)lrn     => learning/relearning
+                                     #    2=rev         => review (as for type)
+                                     #    3=day (re)lrn => in learning, next review in at least a day after the previous review
+        self.ivl = 0                 # The interval. Negative = seconds, positive = days
+        self.factor = 0              # The ease factor in permille (ex: 2500 = the interval will be multiplied by 2.5 the next time you press "Good").
+        self.reps = 0                # The number of reviews.
+        self.lapses = 0              # The number of times the card went from a "was answered correctly" to "was answered incorrectly" state.
+        self.left = 0                # Of the form a*1000+b, with:
+                                     #   a the number of reps left today
+                                     #   b the number of reps left till graduation
+                                     # for example: '2004' means 2 reps left today and 4 reps till graduation
+        self.due = self.id           # Due is used differently for different card types:
+                                     # - new: note id or random int
+                                     # - due: integer day, relative to the collection's creation time
+                                     # - learning: integer timestamp in second
 
 class Scheduler:
 
@@ -264,21 +284,21 @@ class Scheduler:
 
     def answerCard(self, card, ease):
         # We update a card based on the answer (Again, Hard, Good, Easy).
-        assert 1 <= ease <= 4
+        assert EaseEnum.Again <= ease <= EaseEnum.Easy
         assert 0 <= card.queue <= 4
 
         card.reps += 1
 
-        if card.queue == 0:
+        if card.queue == QueueEnum.New:
             # came from the new queue, move to learning
-            card.queue = 1
-            card.type = 1
+            card.queue = QueueEnum.Lrn
+            card.type = TypeEnum.Learning;
             # init reps to graduation
             card.left = self._startingLeft(card)
 
-        if card.queue in [1, 3]:
+        if card.queue in [QueueEnum.Lrn, QueueEnum.Lrn2]:
             self._answerLrnCard(card, ease)
-        elif card.queue == 2:
+        elif card.queue == QueueEnum.Rev:
             self._answerRevCard(card, ease)
         else:
             assert 0
@@ -336,7 +356,7 @@ class Scheduler:
         if self._newQueue:
             return True
         lim = min(self.queueLimit, self.col.deckConf["new"]["perDay"])
-        self._newQueue = list(filter(lambda card: card.queue == 0, self.col.cards))
+        self._newQueue = list(filter(lambda card: card.queue == QueueEnum.New, self.col.cards))
         self._newQueue.sort(key=lambda card: card.due)
         self._newQueue = self._newQueue[:lim]
         if self._newQueue:
@@ -402,7 +422,7 @@ class Scheduler:
         if self._lrnQueue:
             return True
         cutoff = intTime() + self.col.colConf['collapseTime']
-        self._lrnQueue = list(filter(lambda card: card.queue == 1 and card.due < cutoff, self.col.cards))
+        self._lrnQueue = list(filter(lambda card: card.queue == QueueEnum.Lrn and card.due < cutoff, self.col.cards))
         self._lrnQueue.sort(key=lambda card: card.id)
         self._lrnQueue = self._lrnQueue[:self.reportLimit]
         return self._lrnQueue
@@ -420,7 +440,7 @@ class Scheduler:
         if self._lrnDayQueue:
             return True
 
-        self._lrnDayQueue = list(filter(lambda card: card.queue == 3 and card.due <= self.today, self.col.cards))
+        self._lrnDayQueue = list(filter(lambda card: card.queue == QueueEnum.Lrn2 and card.due <= self.today, self.col.cards))
         self._lrnDayQueue = self._lrnDayQueue[:self.queueLimit]
         if self._lrnDayQueue:
             # order
@@ -444,16 +464,16 @@ class Scheduler:
         conf = self._lrnConf(card)
 
         # immediate graduate?
-        if ease == 4:
+        if ease == EaseEnum.Easy:
             self._rescheduleAsRev(card, conf, True)
         # next step?
-        elif ease == 3:
+        elif ease == EaseEnum.Good:
             # graduation time?
             if (card.left%1000)-1 <= 0:
                 self._rescheduleAsRev(card, conf, False)
             else:
                 self._moveToNextStep(card, conf)
-        elif ease == 2:
+        elif ease == EaseEnum.Hard:
             self._repeatStep(card, conf)
         else:
             # back to first step
@@ -469,7 +489,7 @@ class Scheduler:
         card.left = self._startingLeft(card)
 
         # relearning card?
-        if card.type == 3:
+        if card.type == TypeEnum.Relearning:
             self._updateRevIvlOnFail(card, conf)
 
         return self._rescheduleLrnCard(card, conf)
@@ -504,13 +524,13 @@ class Scheduler:
             maxExtra = min(300, int(delay*0.25))
             fuzz = random.randrange(0, maxExtra)
             card.due = min(self.dayCutoff-1, card.due + fuzz)
-            card.queue = 1
+            card.queue = QueueEnum.Lrn
         else:
             # the card is due in one or more days, so we need to use the
             # day learn queue
             ahead = ((card.due - self.dayCutoff) // 86400) + 1
             card.due = self.today + ahead
-            card.queue = 3
+            card.queue = QueueEnum.Lrn
         return delay
 
     def _delayForGrade(self, conf, left):
@@ -554,8 +574,8 @@ class Scheduler:
         # We restore a lapse in the review queue after graduating.
         # = The lapse was correctly relearned.
         card.due = self.today+card.ivl
-        card.queue = 2
-        card.type = 2
+        card.queue = QueueEnum.Rev
+        card.type = TypeEnum.Review
 
     def _startingLeft(self, card):
         # We initialize the left field.
@@ -601,7 +621,8 @@ class Scheduler:
         card.ivl = self._graduatingIvl(card, conf, early)
         card.due = self.today+card.ivl
         card.factor = conf['initialFactor']
-        card.type = card.queue = 2
+        card.type = TypeEnum.Review
+        card.queue = QueueEnum.Rev
 
 
 
@@ -617,7 +638,7 @@ class Scheduler:
         if self._revQueue:
             return True
         lim = min(self.queueLimit, self.col.deckConf["rev"]["perDay"])
-        self._revQueue = list(filter(lambda card: card.queue == 2 and card.due <= self.today, self.col.cards))
+        self._revQueue = list(filter(lambda card: card.queue == QueueEnum.Rev and card.due <= self.today, self.col.cards))
         self._revQueue.sort(key=lambda card: card.due)
         self._revQueue = self._revQueue[:lim]
 
@@ -639,7 +660,7 @@ class Scheduler:
         # We update a card in review after an answer:
         # - "Again": lapse => reschedule in learning (or suspend if leech)
         # - "Hard", "Good", "Easy" => update card attributes (ivl, factor, due)
-        if ease == 1:
+        if ease == EaseEnum.Again:
             self._rescheduleLapse(card)
         else:
             self._rescheduleRev(card, ease)
@@ -656,7 +677,7 @@ class Scheduler:
         suspended = self._checkLeech(card, conf)
 
         if not suspended:
-            card.type = 3
+            card.type = TypeEnum.Relearning
             delay = self._moveToFirstStep(card, conf)
         else:
             # no relearning steps
@@ -704,11 +725,11 @@ class Scheduler:
         else:
             hardMin = 0
         ivl2 = self._constrainedIvl(card.ivl * hardFactor, conf, hardMin, fuzz)
-        if ease == 2:
+        if ease == EaseEnum.Hard:
             return ivl2
 
         ivl3 = self._constrainedIvl((card.ivl + delay // 2) * fct, conf, ivl2, fuzz)
-        if ease == 3:
+        if ease == EaseEnum.Good:
             return ivl3
 
         ivl4 = self._constrainedIvl(
@@ -775,7 +796,7 @@ class Scheduler:
             f = card.note
             f.addTag("leech")
             # Suspend
-            card.queue = -1
+            card.queue = QueueEnum.Suspend
             return True
 
     # Daily cutoff

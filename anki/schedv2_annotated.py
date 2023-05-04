@@ -46,7 +46,7 @@ def intId():
     t = intTime(1000)
     # Make sure the next call to the function returns a different value
     while intTime(1000) == t:
-        time.sleep(1)
+        time.sleep(.1)
     return t
 
 # Default collection configuration
@@ -139,18 +139,20 @@ class Collection:
         self.deckConf = deckDefaultConf             # Configuration of the deck (we consider only a single deck)
         self.sched = Scheduler(self)
 
-    def addNote(self, note):
+    def addNote(self, note, card_id_offset=None):
         "Add a note to the collection. Return number of new cards."
         # add cards
         ncards = 0
         for template in note.templates:
-            self.cards.append(self._newCard(note, template))
+            self.cards.append(self._newCard(note, template, card_id_offset))
             ncards += 1
         return ncards
 
-    def _newCard(self, note, template):
+    def _newCard(self, note, template, card_id_offset=None):
         "Create a new card."
-        card = Card(note)
+        if(card_id_offset != None):
+            card_id_offset += note.id
+        card = Card(note, id=card_id_offset)
         # Template is used to determine the card index among other cards
         # of the same note.
         # We don't use it as we only work with "Basic" note in this tutorial.

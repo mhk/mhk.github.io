@@ -52,7 +52,7 @@ def intId():
 # Default collection configuration
 # See anki/collections.py
 colDefaultConf = {
-    'newSpread': NEW_CARDS_DISTRIBUTE,
+    'newSpread': NEW_CARDS_FIRST,
     # In which order to view to review the cards:
     # - NEW_CARDS_DISTRIBUTE (Mix new cards and reviews)
     # - NEW_CARDS_LAST (see new cards after review)
@@ -311,6 +311,12 @@ class Scheduler:
     def _getCard(self):
         # We return the next card present in one of the queues based on
         # hard-coded rules.
+
+        # new first, or time for one?
+        if self._timeForNewCard():
+            c = self._getNewCard()
+            if c:
+                return c
 
         # Note: Anki divides learning card in two queues:
         # - sub-day learning = cards with next step planned today

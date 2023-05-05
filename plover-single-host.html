@@ -105,6 +105,9 @@
                 'plover/engine.py',    'plover/key_combo.py',   'plover/registry.py',     'plover/suggestions.py',
 
                 'plover/machine/keyboard_capture/__init__.py',
+                'fsrs/__init__.py',
+                'fsrs/models.py',
+                'fsrs/fsrs.py',
                 ]
         from = './'
         to_folder = './'
@@ -112,7 +115,9 @@
     <py-script>
         import js
         from plover.gui_none.main import main2
+        from fsrs.fsrs import FSRS
         main2()
+        f = FSRS()
     </py-script>
     <div id="Test">abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ</div>
     <select name='exercises' id='select-exercise' onchange='changeExercise();'></select>

@@ -297,6 +297,21 @@ function handleStenoTouch(event) {
     event.preventDefault();
     toggleEvent(event);
 }
+function fsrs() {
+    const toObject = (map = new Map) =>
+        Object.fromEntries
+    ( Array.from
+        ( map.entries()
+            , ([ k, v ]) =>
+            v instanceof Map
+            ? [ k, toObject (v) ]
+            : [ k, v ]
+        )
+    );
+    const [card, now, f] = [{"due": 1683279711.0, "due_str": "2023-05-05 11:41:51.284324", "stability": 0, "difficulty": 0, "elapsed_days": 0, "scheduled_days": 0, "reps": 0, "lapses": 0, "state": 0, "last_review": 0, "last_review_str": 0}, new Date().toISOString(), pyscript.interpreter.globals.get('f')];
+    newCards = f.repeatJS(card, now).toJs();
+    return toObject(newCards);
+}
 fetch("exercises.json")
     .then(response => response.json())
     .then(json => {

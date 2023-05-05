@@ -51,5 +51,6 @@ nosetests.xml
 .#*
 
 /windows/.wine/
-*.swp
+*.sw?
 vim.session
+*-test.py

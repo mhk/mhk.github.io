@@ -61,6 +61,40 @@
         color: #FFFFFF;
         touch-action: manipulation;
     }
+    #overlay {
+        position: fixed;
+        display: none;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        color: #FFFFFF;
+        background-color: rgba(0,0,0,1.0);
+        z-index: 2;
+        cursor: pointer;
+        overflow-y: auto;
+    }
+    #closeOverlay {
+        font-size: 22pt;
+        margin-top: 1px;
+        margin-right: 2px;
+        position:absolute;
+        top:0;
+        right:0;
+    }
+    #checkboxes label {
+      float: left;
+    }
+    #checkboxes ul {
+      margin: 0;
+      list-style: none;
+      float: left;
+    }
+    .tagCheckbox {
+      list-style: none;
+    }
     .disable-dbl-tap-zoom {
       touch-action: manipulation;
     }
@@ -121,30 +155,45 @@
     </py-script>
     <div id="Test">abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ</div>
     <select name='exercises' id='select-exercise' onchange='changeExercise();'></select>
-    <input class='ignoreKeyEvent' style="text-align:right;" type='number' name='failcount' id='failcount' value=1 onchange='changeMax(event, this.value)'/>
     <input type="checkbox" id="randomizeExercises" name="randomizeExercise" value="randomizeExercise" checked=true /> <label style="color: white;" for="randomizeExercises">randomize</label>
+    <input type="button" id="cardOverlayButton" value="Settings" onclick="cardOverlayOn()" />
     <table id='outputTable'>
         <tr id='toggleFullscreenRow'>
-            <td colspan=2>
+            <td colspan=4>
                 <button id='toggleFullscreen' type="button" style='background-color: #966606;' class="block" onclick="openFullscreen();">fullscreen</button>
             </td>
         </tr>
         <tr>
-            <td colspan=2>
+            <td colspan=4>
                 <div class='textNormal' id='exercise' readonly></div>
             </td>
         </tr>
         <tr>
-            <td style="width: 35%">
+            <td>
                 <div class="textSmall" id='steno' readonly></div>
             </td>
-            <td style="width: 65%">
+            <td colspan=3>
                 <div class="textSmall" id='hints' readonly></div>
             </td>
         </tr>
-        <tr>
-            <td colspan=2>
+        <tr id='releaseKeys'>
+            <td colspan=4>
                 <button type="button" class="block" onclick="release(event);">release keys</button>
+            </td>
+        </tr>
+        <tr id='difficulty' style='display: none;'>
+            <td style="width: 25%">
+                <button type="button" class="block" style='background-color: #822d26;'>Again</button>
+            </td>
+            <td style="width: 25%">
+                <button type="button" class="block" style='background-color: #824926; font-size: 22px; font-weight: bold;'>Hard</button>
+            </td>
+            <td style="width: 25%">
+                <button type="button" class="block" style='background-color: #827326;'>Good</button>
+                <!--<button type="button" class="block" style='background-color: #5d8226;'>Good</button>-->
+            </td>
+            <td style="width: 25%">
+                <button type="button" class="block" style='background-color: #268258;'>Easy</button>
             </td>
         </tr>
     </table>
@@ -223,5 +272,23 @@
       <path class='char' id='char_-E' fill="#efefef" d="m547.1376 330.91998l0 -13.359375l9.90625 0l0 2.265625l-7.21875 0l0 2.953125l6.71875 0l0 2.25l-6.71875 0l0 3.640625l7.46875 0l0 2.25l-10.15625 0z" fill-rule="nonzero"></path>
       -->
     </g></svg>
+    <div id="overlay">
+        <div><input id="closeOverlay" type="button" value="Close" onclick="cardOverlayOff()"></div>
+        <div>General Settings</div>
+        <input class='ignoreKeyEvent' style="text-align:right;" type='number' name='failcount' id='failcount' value=1 onchange='changeMax(event, this.value)'/> <label style="color: white;" for="newCards">Show hint</label>
+
+        <div id="text">Card Settings</div>
+        <input style="text-align:right;" type='number' name='newCards' id='newCards' value=10 />
+        <label style="color: white;" for="newCards">New cards per day</label>
+        <br/>
+        <input style="text-align:right;" type='number' name='maxCards' id='maxCards' value=100 />
+        <label style="color: white;" for="newCards">Max cards per day</label>
+        <br/>
+        <input type="checkbox" id="toggleFSRS" name="toggleFSRS" value="toggleFSRS" /> <label style="color: white;" for="toggleFSRS">Use FSRS</label>
+        <br/>
+        <label>Select tags to train</label>
+        <ul id='cardLabels'>
+        </ul>
+    </div>
   </body>
 </html>

@@ -1,4 +1,5 @@
 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+let cards = {};
 let exercises = {};
 let currentExercise = {};
 let currentExerciseIndex = 0;
@@ -236,7 +237,9 @@ function textToLength3(maxWidth, rowCount) {
     let i = 1;
     for(let r = 0; r < rowCount && i < currentExercise.length; ++r) {
         let k = 0;
-        let s = '<span style="color:#005a00">';
+        let color = '#005a00';
+        color = '#929292';
+        let s = '<span style="color:' + color + '">';
         if(i-1 >= currentExerciseIndex) s += '</span>';
         s += currentExercise[i - 1];
         let p = '';
@@ -297,6 +300,25 @@ function handleStenoTouch(event) {
     event.preventDefault();
     toggleEvent(event);
 }
+function dayCutOff() {
+    const now = new Date;
+    const tomorrow = now.getDate()+1
+    return Date.UTC(tomorrow.getUTCFullYear(),tomorrow.getUTCMonth(), tomorrow.getUTCDate(), 5, 0, 0, 0);
+}
+function intersect(a, b) {
+  var setB = new Set(b);
+  return [...new Set(a)].filter(x => setB.has(x));
+}
+function getCards(collections, tags) {
+    const result = [];
+    for(const name of collections) {
+        const collection = cards[name];
+        if(collection === undefined) continue;
+        const filteredCards = Object.values(collection.cards).filter(c => intersect(c.tags, tags).length > 0);
+        result.push(...filteredCards);
+    }
+    return result;
+}
 function fsrs() {
     const toObject = (map = new Map) =>
         Object.fromEntries
@@ -308,9 +330,60 @@ function fsrs() {
             : [ k, v ]
         )
     );
-    const [card, now, f] = [{"due": 1683279711.0, "due_str": "2023-05-05 11:41:51.284324", "stability": 0, "difficulty": 0, "elapsed_days": 0, "scheduled_days": 0, "reps": 0, "lapses": 0, "state": 0, "last_review": 0, "last_review_str": 0}, new Date().toISOString(), pyscript.interpreter.globals.get('f')];
-    newCards = f.repeatJS(card, now).toJs();
-    return toObject(newCards);
+    const [fsrsCard, now, f] = [{"due": 1683279711.0, "due_str": "2023-05-05 11:41:51.284324", "stability": 0, "difficulty": 0, "elapsed_days": 0, "scheduled_days": 0, "reps": 0, "lapses": 0, "state": 0, "last_review": 0, "last_review_str": 0}, new Date().toISOString(), pyscript.interpreter.globals.get('f')];
+    const newCard = f.newCardJS();
+
+    localStorage.getItem(id);
+    newCardsPy = f.repeatJS(newCard, now).toJs();
+    newCards = toObject(newCardsPy);
+    return newCards;
+
+    const collection = {'name': 'Plover'};
+    const card = {'word': 'the'};
+    const id = collection.name + '::' + card.word;
+    const ease = 'Again';
+    let cardData = localStorage.getItem(id);
+    if(null === cardData) {
+        const cardFsrsDataPy = f.newCardJS().toJs();
+        const cardFsrsData = toObject(cardFsrsDataPy);
+        cardData = {'fsrs': cardFsrsData, 'answers': []}
+    }
+    cardFsrsOptionsPy = f.repeatJS(cardData['fsrs'], now).toJs();
+    cardFsrsOptions = toObject(cardFsrsOptionsPy);
+    cardData['fsrs'] = cardNewFsrsData[ease];
+    cardData['answers'].push({'date': now, 'answer': answer, 'ease': ease});
+    localStorage.setItem(id, cardData);
+}
+function loadCards(deck) {
+    fetch(deck)
+        .then(response => response.json())
+        .then(json => {
+            const name = json['name'];
+            json['path'] = deck;
+            cards[name] = json;
+
+            addCardTags();
+        });
+}
+function cardOverlayOn() {
+  document.getElementById("overlay").style.display = "block";
+}
+function cardOverlayOff() {
+  document.getElementById("overlay").style.display = "none";
+}
+function addCardTags() {
+    const list = document.getElementById("cardLabels");
+    list.innerHTML = '';
+    for(const tag of cards.all.tags) {
+        const listItem = document.createElement("li");
+        const checkBox = document.createElement("input");
+        checkBox.type = 'checkbox';
+        checkBox.id = cards.all.name + '::' + tag;
+        listItem.appendChild(checkBox);
+        listItem.setAttribute('class', 'tagCheckbox');
+        listItem.innerHTML += ' ' + tag;
+        list.appendChild(listItem);
+    }
 }
 fetch("exercises.json")
     .then(response => response.json())
@@ -328,6 +401,9 @@ fetch("exercises.json")
             key.onclick = key.ontouchstart = handleStenoTouch;
         });
     });
+
+loadCards('./rope/cards-all.json');
+
 document.addEventListener("DOMContentLoaded", function(event) {
     setStenoKeyboardWidth(mobileStenoKeyboard);
     if(!isMobile) hideFullScreenButton();

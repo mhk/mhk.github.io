@@ -54,3 +54,5 @@ nosetests.xml
 *.sw?
 vim.session
 *-test.py
+pretty-*.json
+cards-*.json

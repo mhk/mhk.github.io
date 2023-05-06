@@ -10,13 +10,6 @@ class FSRS:
     def __init__(self) -> None:
         self.p = Parameters()
 
-        try:
-            import js
-            from pyodide.ffi import create_proxy
-            js.createObject(create_proxy(self.repeatJS), "pyFSRS_repeat")
-        except ImportError:
-            pass
-
     def repeatJS(self, jsCard, jsNow: str): # -> dict[int, SchedulingInfo]:
         try:
             now = datetime.strptime(jsNow, "%Y-%m-%dT%H:%M:%S.%f%z")
@@ -28,6 +21,10 @@ class FSRS:
             print(e)
             traceback.print_exc()
             return None
+
+    def newCardJS(self):
+        c = Card()
+        return c.toJson();
 
     def repeat(self, card: Card, now: datetime): # -> dict[int, SchedulingInfo]:
         card = copy.deepcopy(card)

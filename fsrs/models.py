@@ -40,7 +40,7 @@ class ReviewLog:
                 "elapsed_days":     self.elapsed_days,
                 "scheduled_days":   self.scheduled_days,
                 "review":           time.mktime(self.review.timetuple()),
-                "review_str":       self.review.strftime("%Y-%m-%dT%H:%M:%S.%f%z"),
+                # "review_str":       self.review.strftime("%Y-%m-%dT%H:%M:%S.%f%z"),
                 "state":            self.state,
                 }
 
@@ -74,7 +74,7 @@ class Card:
             lr_s = self.last_review.strftime("%Y-%m-%dT%H:%M:%S.%f%z"),
         return {
                 "due":             time.mktime(self.due.timetuple()),
-                "due_str":         self.due.strftime("%Y-%m-%dT%H:%M:%S.%f%z"),
+                # "due_str":         self.due.strftime("%Y-%m-%dT%H:%M:%S.%f%z"),
                 "stability":       self.stability,
                 "difficulty":      self.difficulty,
                 "elapsed_days":    self.elapsed_days,
@@ -83,7 +83,7 @@ class Card:
                 "lapses":          self.lapses,
                 "state":           self.state,
                 "last_review":     lr,
-                "last_review_str": lr_s
+                # "last_review_str": lr_s
                 }
 
     def get_retrievability(self, now: datetime) -> Optional[float]:

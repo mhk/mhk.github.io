@@ -155,7 +155,6 @@
     </py-script>
     <div id="Test">abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ</div>
     <select name='exercises' id='select-exercise' onchange='changeExercise();'></select>
-    <input type="checkbox" id="randomizeExercises" name="randomizeExercise" value="randomizeExercise" checked=true /> <label style="color: white;" for="randomizeExercises">randomize</label>
     <input type="button" id="cardOverlayButton" value="Settings" onclick="cardOverlayOn()" />
     <table id='outputTable'>
         <tr id='toggleFullscreenRow'>
@@ -276,6 +275,14 @@
         <div><input id="closeOverlay" type="button" value="Close" onclick="cardOverlayOff()"></div>
         <div>General Settings</div>
         <input class='ignoreKeyEvent' style="text-align:right;" type='number' name='failcount' id='failcount' value=1 onchange='changeMax(event, this.value)'/> <label style="color: white;" for="newCards">Show hint</label>
+        <br/>
+        <input type="checkbox" id="randomizeExercises" name="randomizeExercise" value="randomizeExercise" /> <label style="color: white;" for="randomizeExercises">randomize</label>
+        <br/>
+        <div>Select card scheduler</div>
+        <input type="radio" id="roundRobinTraining" name="trainingType" checked><label for="roundRobinTraining">Round Robin</label><br>
+        <input type="radio" id="spacedRepetitionTraining" name="trainingType"><label for="spacedRepetitionTraining">Spaced Repitition (FSRS)</label>
+        <br>
+        <br/>
 
         <div id="text">Card Settings</div>
         <input style="text-align:right;" type='number' name='newCards' id='newCards' value=10 />
@@ -284,9 +291,7 @@
         <input style="text-align:right;" type='number' name='maxCards' id='maxCards' value=100 />
         <label style="color: white;" for="newCards">Max cards per day</label>
         <br/>
-        <input type="checkbox" id="toggleFSRS" name="toggleFSRS" value="toggleFSRS" /> <label style="color: white;" for="toggleFSRS">Use FSRS</label>
-        <br/>
-        <label>Select tags to train</label>
+        <div>Select tags to train</div>
         <ul id='cardLabels'>
         </ul>
     </div>

@@ -153,8 +153,8 @@ function getExerciseData(ex, chap) {
     }
     return '';
 }
-function getExerciseCards(collections, tags) {
-    cards = getCards(['all'], [tags])
+function getExerciseCards(tags) {
+    const cards = getCards(tags)
     return cards;
 }
 function loadExercises() {
@@ -187,8 +187,8 @@ function resetHint() {
     hints.innerHTML = '';
     showHint(0);
 }
-function loadExercise(ex, chap) {
-    const data = getExerciseCards('all', chap);
+function loadExercise(ex, tags) {
+    const data = getExerciseCards(tags);
     if(0 === Object.keys(data).length) {
         exercise.innerHTML = '';
         return ;
@@ -214,16 +214,16 @@ function loadExercise(ex, chap) {
     };
 }
 function changeExercise() {
-    const exercise = document.querySelector('#select-exercise option:checked').parentElement.label
-    const chapter = document.getElementById('select-exercise').value;
     currentExerciseIndex = 0;
     const urlParams = new URLSearchParams(window.location.search);
-    urlParams.set('exercise', exercise);
-    urlParams.set('chapter', chapter);
+    const tags = getTagsFromSettings();
+    const urlTags = getTagsFromUrl(urlParams);
+    const intersection = intersect(tags, urlTags);
+    if(tags.length == urlTags.length && intersection.length == tags.length) return ;
+    urlParams.set('tags', tags.join(','));
     const refresh = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + urlParams.toString();
-    console.log("'" + exercise + "' '" + chapter + "'" + " --> " + refresh);
     window.history.pushState({ path: refresh }, '', refresh);
-    loadExercise(exercise, chapter);
+    loadExercise(exercise, tags);
 }
 function textToLength() {
     const exc = document.getElementById('exercise');
@@ -313,11 +313,24 @@ function intersect(a, b) {
   var setB = new Set(b);
   return [...new Set(a)].filter(x => setB.has(x));
 }
-function getCards(collections, tags) {
+function getCards(tags) {
     const result = [];
-    for(const name of collections) {
+    const tagsByCollection = tags.reduce(function(acc, cur, i) {
+        const s = cur.split('::').filter(s => '' !== s);
+        if(s.length == 2) {
+            const collection = s[0];
+            const tag = s[1];
+            if(undefined === acc[collection]) {
+                acc[collection] = [];
+            }
+            acc[collection].push(tag);
+        }
+        return acc;
+    }, {});
+    for(const name of Object.keys(tagsByCollection)) {
         const collection = cards[name];
         if(collection === undefined) continue;
+        const tags = tagsByCollection[name];
         const filteredCards = Object.values(collection.cards).filter(c => intersect(c.tags, tags).length > 0);
         result.push(...filteredCards);
     }
@@ -372,6 +385,20 @@ function onGood(event) {
 function onEasy(event) {
     putCardBack('Easy');
 }
+function getTagsFromUrl(urlParams) {
+    return (urlParams.get('tags') || '').split(',').filter(s => '' !== s);
+}
+function getTagsFromSettings() {
+    return Object.values(document.getElementsByClassName("tagCheckbox")).filter(c => c.checked).map(c => c.id);
+}
+function setTagsInSettings(tags) {
+    const tagSet = new Set(tags);
+    Object.values(document.getElementsByClassName("tagCheckbox")).map(c => {
+        if(tagSet.has(c.id)) {
+            c.setAttribute('checked', true);
+        }
+    });
+}
 function loadCards(deck) {
     fetch(deck)
         .then(response => response.json())
@@ -381,13 +408,25 @@ function loadCards(deck) {
             cards[name] = json;
 
             addCardTags();
+
+            const urlParams = new URLSearchParams(window.location.search);
+            const exercise = urlParams.get('exercise') || 'Plover';
+            const chapter = urlParams.get('chapter') || 'One Syllable Words';
+            const tags = getTagsFromUrl(urlParams);
+            setTagsInSettings(tags);
+            loadExercise(exercise, tags);
+            Object.keys(steno2key).forEach(id => {
+                const key = document.getElementById(id);
+                key.onclick = key.ontouchstart = handleStenoTouch;
+            });
         });
 }
 function cardOverlayOn() {
-  document.getElementById("overlay").style.display = "block";
+    document.getElementById("overlay").style.display = "block";
 }
 function cardOverlayOff() {
-  document.getElementById("overlay").style.display = "none";
+    document.getElementById("overlay").style.display = "none";
+    changeExercise();
 }
 function addCardTags() {
     const list = document.getElementById("cardLabels");
@@ -397,8 +436,8 @@ function addCardTags() {
         const checkBox = document.createElement("input");
         checkBox.type = 'checkbox';
         checkBox.id = cards.all.name + '::' + tag;
+        checkBox.setAttribute('class', 'tagCheckbox');
         listItem.appendChild(checkBox);
-        listItem.setAttribute('class', 'tagCheckbox');
         listItem.innerHTML += ' ' + tag;
         list.appendChild(listItem);
     }
@@ -413,13 +452,14 @@ fetch("exercises.json")
         const exercise = urlParams.get('exercise') || 'Plover';
         const chapter = urlParams.get('chapter') || 'One Syllable Words';
         document.getElementById('select-exercise').value = chapter;
+        /* 
         loadExercise(exercise, chapter);
         Object.keys(steno2key).forEach(id => {
             const key = document.getElementById(id);
             key.onclick = key.ontouchstart = handleStenoTouch;
         });
+        */
     });
-
 loadCards('./rope/cards-all.json');
 
 document.addEventListener("DOMContentLoaded", function(event) {

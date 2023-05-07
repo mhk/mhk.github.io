@@ -169,10 +169,10 @@
             </td>
         </tr>
         <tr>
-            <td>
+            <td style="width: 25%">
                 <div class="textSmall" id='steno' readonly></div>
             </td>
-            <td colspan=3>
+            <td colspan=3 style="width: 100%">
                 <div class="textSmall" id='hints' readonly></div>
             </td>
         </tr>
@@ -181,19 +181,19 @@
                 <button type="button" class="block" onclick="release(event);">release keys</button>
             </td>
         </tr>
-        <tr id='difficulty' style='display: none;'>
+        <tr id='difficulty'> <!-- style='display: none;'>-->
             <td style="width: 25%">
-                <button type="button" class="block" style='background-color: #822d26;'>Again</button>
+                <button type="button" class="block" style='background-color: #822d26;' onclick="onAgain(event);">Again</button>
             </td>
             <td style="width: 25%">
-                <button type="button" class="block" style='background-color: #824926; font-size: 22px; font-weight: bold;'>Hard</button>
+                <button type="button" class="block" style='background-color: #824926; font-size: 22px; font-weight: bold;' onclick="Hard(event);">Hard</button>
             </td>
             <td style="width: 25%">
-                <button type="button" class="block" style='background-color: #827326;'>Good</button>
+                <button type="button" class="block" style='background-color: #827326;' onclick="onGood(event);">Good</button>
                 <!--<button type="button" class="block" style='background-color: #5d8226;'>Good</button>-->
             </td>
             <td style="width: 25%">
-                <button type="button" class="block" style='background-color: #268258;'>Easy</button>
+                <button type="button" class="block" style='background-color: #268258;' onclick="onEasy(event);">Easy</button>
             </td>
         </tr>
     </table>

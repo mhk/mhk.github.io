@@ -348,11 +348,25 @@ function fsrs() {
         const cardFsrsData = toObject(cardFsrsDataPy);
         cardData = {'fsrs': cardFsrsData, 'answers': []}
     }
+}
+function putCardBack(ease) {
     cardFsrsOptionsPy = f.repeatJS(cardData['fsrs'], now).toJs();
     cardFsrsOptions = toObject(cardFsrsOptionsPy);
     cardData['fsrs'] = cardNewFsrsData[ease];
     cardData['answers'].push({'date': now, 'answer': answer, 'ease': ease});
     localStorage.setItem(id, cardData);
+}
+function onAgain(event) {
+    putCardBack('Again');
+}
+function onHard(event) {
+    putCardBack('Hard');
+}
+function onGood(event) {
+    putCardBack('Good');
+}
+function onEasy(event) {
+    putCardBack('Easy');
 }
 function loadCards(deck) {
     fetch(deck)

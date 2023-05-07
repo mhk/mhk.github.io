@@ -187,7 +187,7 @@ function resetHint() {
     hints.innerHTML = '';
     showHint(0);
 }
-function loadExercise(ex, tags) {
+function loadExercise(tags) {
     const data = getExerciseCards(tags);
     if(0 === Object.keys(data).length) {
         exercise.innerHTML = '';
@@ -219,11 +219,16 @@ function changeExercise() {
     const tags = getTagsFromSettings();
     const urlTags = getTagsFromUrl(urlParams);
     const intersection = intersect(tags, urlTags);
-    if(tags.length == urlTags.length && intersection.length == tags.length) return ;
+    const randomize = document.getElementById('randomizeExercises').checked? '1' : '0';
+    const urlRandomize = urlParams.get('randomize') || '0';
+    // no change
+    if(randomize === urlRandomize &&
+        tags.length == urlTags.length && intersection.length == tags.length) return ;
     urlParams.set('tags', tags.join(','));
+    urlParams.set('randomize', randomize);
     const refresh = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + urlParams.toString();
     window.history.pushState({ path: refresh }, '', refresh);
-    loadExercise(exercise, tags);
+    loadExercise(tags);
 }
 function textToLength() {
     const exc = document.getElementById('exercise');
@@ -409,12 +414,12 @@ function loadCards(deck) {
 
             addCardTags();
 
+            const randExcCheckbox = document.getElementById('randomizeExercises');
             const urlParams = new URLSearchParams(window.location.search);
-            const exercise = urlParams.get('exercise') || 'Plover';
-            const chapter = urlParams.get('chapter') || 'One Syllable Words';
             const tags = getTagsFromUrl(urlParams);
+            randExcCheckbox.checked = ('1' === urlParams.get('randomize'));
             setTagsInSettings(tags);
-            loadExercise(exercise, tags);
+            loadExercise(tags);
             Object.keys(steno2key).forEach(id => {
                 const key = document.getElementById(id);
                 key.onclick = key.ontouchstart = handleStenoTouch;

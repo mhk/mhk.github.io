@@ -153,6 +153,10 @@ function getExerciseData(ex, chap) {
     }
     return '';
 }
+function getExerciseCards(collections, tags) {
+    cards = getCards(['all'], [tags])
+    return cards;
+}
 function loadExercises() {
     const dropdown = document.getElementById('select-exercise');
     for(let i = 0; i < exercises.length; ++i) {
@@ -176,7 +180,7 @@ function showHint(i=1) {
     if(-1 === MAX_FAILURE) return ;
     if(failCount + i < MAX_FAILURE) return ;
     failCount += i;
-    hints.innerHTML = steno_hints(currentExercise[currentExerciseIndex]);
+    hints.innerHTML = steno_hints(currentExercise[currentExerciseIndex].word);
 }
 function resetHint() {
     failCount = 0;
@@ -184,8 +188,8 @@ function resetHint() {
     showHint(0);
 }
 function loadExercise(ex, chap) {
-    const data = getExerciseData(ex, chap);
-    if('' === data) {
+    const data = getExerciseCards('all', chap);
+    if(0 === Object.keys(data).length) {
         exercise.innerHTML = '';
         return ;
     }
@@ -200,7 +204,7 @@ function loadExercise(ex, chap) {
         if(currentExercise.length === 0 && repeatExercise) changeExercise();
         if(currentExercise.length === 0) return s;
         showHint();
-        if(s.trim() === currentExercise[currentExerciseIndex]) {
+        if(s.trim() === currentExercise[currentExerciseIndex].word) {
             ++currentExerciseIndex;
             exercise.innerHTML = textToLength().join('\n');
             resetHint();
@@ -241,7 +245,7 @@ function textToLength3(maxWidth, rowCount) {
         color = '#929292';
         let s = '<span style="color:' + color + '">';
         if(i-1 >= currentExerciseIndex) s += '</span>';
-        s += currentExercise[i - 1];
+        s += currentExercise[i - 1].word;
         let p = '';
         for(; i <= currentExercise.length; ++i) {
             test.innerHTML = s;
@@ -252,7 +256,7 @@ function textToLength3(maxWidth, rowCount) {
             p = s;
             ++k;
             if(i === currentExercise.length) break;
-            s += ' ' + currentExercise[i];
+            s += ' ' + currentExercise[i].word;
         }
         if(r === 0 && p.endsWith('</span>')) {
             // remove first row

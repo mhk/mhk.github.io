@@ -154,7 +154,6 @@
         f = FSRS()
     </py-script>
     <div id="Test">abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ</div>
-    <select name='exercises' id='select-exercise' onchange='changeExercise();'></select>
     <input type="button" id="cardOverlayButton" value="Settings" onclick="cardOverlayOn()" />
     <table id='outputTable'>
         <tr id='toggleFullscreenRow'>
@@ -180,7 +179,7 @@
                 <button type="button" class="block" onclick="release(event);">release keys</button>
             </td>
         </tr>
-        <tr id='difficulty'> <!-- style='display: none;'>-->
+        <tr id='difficulty' style='display: none;'>
             <td style="width: 25%">
                 <button type="button" class="block" style='background-color: #822d26;' onclick="onAgain(event);">Again</button>
             </td>

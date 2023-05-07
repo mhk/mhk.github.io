@@ -157,20 +157,6 @@ function getExerciseCards(tags) {
     const cards = getCards(tags)
     return cards;
 }
-function loadExercises() {
-    const dropdown = document.getElementById('select-exercise');
-    for(let i = 0; i < exercises.length; ++i) {
-        const optgroup = document.createElement("optgroup");
-        optgroup.label = exercises[i].name;
-        for(let j = 0; j < exercises[i].chapters.length; ++j) {
-            const opt = document.createElement("option");
-            const chapter = exercises[i].chapters[j];
-            opt.value = opt.innerHTML = chapter.name;
-            optgroup.appendChild(opt);
-        }
-        dropdown.appendChild(optgroup);
-    }
-}
 function changeMax(event, val) {
     MAX_FAILURE = parseInt(val);
     showHint(0);
@@ -447,24 +433,6 @@ function addCardTags() {
         list.appendChild(listItem);
     }
 }
-fetch("exercises.json")
-    .then(response => response.json())
-    .then(json => {
-        console.log('exercises loaded')
-        exercises = json;
-        loadExercises();
-        const urlParams = new URLSearchParams(window.location.search);
-        const exercise = urlParams.get('exercise') || 'Plover';
-        const chapter = urlParams.get('chapter') || 'One Syllable Words';
-        document.getElementById('select-exercise').value = chapter;
-        /* 
-        loadExercise(exercise, chapter);
-        Object.keys(steno2key).forEach(id => {
-            const key = document.getElementById(id);
-            key.onclick = key.ontouchstart = handleStenoTouch;
-        });
-        */
-    });
 loadCards('./rope/cards-all.json');
 
 document.addEventListener("DOMContentLoaded", function(event) {

@@ -127,11 +127,14 @@ function release(event) {
         }
     }
 }
-function flipStenoKeyboard() { // mirror, left handed, right handed
+function rightHandedStenoKeyboard() { // mirror, left handed, right handed
     if(document.getElementById('svgg').getAttribute('transform') === null) { // right handed
         document.getElementById('svgg').setAttribute('transform', 'scale (-1, 1)');
         document.getElementById('svgg').setAttribute('transform-origin', 'center');
-    } else { // left handed
+    }
+}
+function leftHandedStenoKeyboard() { // mirror, left handed, right handed
+    if(document.getElementById('svgg').getAttribute('transform') !== null) { // left handed
         document.getElementById('svgg').removeAttribute('transform');
         document.getElementById('svgg').removeAttribute('transform-origin');
     }
@@ -202,35 +205,47 @@ function loadExercise(tags) {
 function getSettings() {
     const tags = getTagsFromSettings();
     const randomize = document.getElementById('randomizeExercises').checked? '1' : '0';
-    return {'tags': tags, 'randomize': randomize};
+    const handedness = document.querySelector('input[name="handedness"]:checked').value;
+    return {'tags': tags, 'randomize': randomize, "hand": handedness };
 }
 function getUrlSettings() {
     const urlParams = new URLSearchParams(window.location.search);
     const tags = getTagsFromUrl(urlParams);
     const randomize = urlParams.get('randomize') || '0';
-    return {'tags': tags, 'randomize': randomize};
+    const handedness = urlParams.get('hand') || 'right';
+    return {'tags': tags, 'randomize': randomize, "hand": handedness};
 }
 function settingsChanged() {
     const urlSettings = getUrlSettings();
     const settings = getSettings();
     const intersection = intersect(settings.tags, urlSettings.tags);
-    return !(settings.Randomize === urlSettings.randomize &&
-        settings.tags.length == urlSettings.tags.length &&
-        intersection.length == settings.tags.length);
+    return !(intersection.length === settings.tags.length &&
+        settings.tags.length === urlSettings.tags.length &&
+        settings.randomize === urlSettings.randomize &&
+        settings.hand === urlSettings.hand
+    );
 }
 function setUrlSettings() {
     const urlParams = new URLSearchParams(window.location.search);
     const settings = getSettings();
-    urlParams.set('tags', settings.tags.join(','));
-    urlParams.set('randomize', settings.randomize);
+    for(const key of Object.keys(settings)) {
+        switch(key) {
+            case 'tags':
+                urlParams.set(key, settings[key].join(','));
+                break;
+            default:
+                urlParams.set(key, settings[key]);
+        }
+    }
     const refresh = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + urlParams.toString();
     window.history.pushState({ path: refresh }, '', refresh);
+    return settings;
 }
 function changeExercise() {
     if(!settingsChanged()) return ;
     currentExerciseIndex = 0;
-    setUrlSettings();
-    loadExercise(tags);
+    settings = setUrlSettings();
+    loadExercise(settings.tags);
 }
 function textToLength() {
     const exc = document.getElementById('exercise');

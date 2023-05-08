@@ -199,7 +199,7 @@
     <clippath id="p.0">
       <path d="m0 0l1120.6011 0l0 341.19946l-1120.6011 0l0 -341.19946z" clip-rule="nonzero"></path>
     </clippath>
-    <g id='svgg' clip-path="url(#p.0)">
+    <g id='svgg' clip-path="url(#p.0)" transform="scale (-1, 1)" transform-origin='center'>
       <path class='key' id='-B' fill="#666666" d="m392.0 216.0l0 0l0 0c-12.730377 0 -24.939392 -5.057129 -33.94113 -14.058868c-9.0017395 -9.001755 -14.058868 -21.21074 -14.058868 -33.94113l0 -48.0c0 -4.4250488E-4 3.6621094E-4 -8.010864E-4 7.9345703E-4 -8.010864E-4l95.99921 8.010864E-4l0 0c4.5776367E-4 0 7.9345703E-4 3.5858154E-4 7.9345703E-4 8.010864E-4l-7.9345703E-4 47.9992l0 0c0 26.509674 -21.490326 48.0 -48.0 48.0z" fill-rule="evenodd"></path>
       <path stroke="#000000" stroke-width="1.0" stroke-linejoin="round" stroke-linecap="butt" d="m392.0 216.0l0 0l0 0c-12.730377 0 -24.939392 -5.057129 -33.94113 -14.058868c-9.0017395 -9.001755 -14.058868 -21.21074 -14.058868 -33.94113l0 -48.0c0 -4.4250488E-4 3.6621094E-4 -8.010864E-4 7.9345703E-4 -8.010864E-4l95.99921 8.010864E-4l0 0c4.5776367E-4 0 7.9345703E-4 3.5858154E-4 7.9345703E-4 8.010864E-4l-7.9345703E-4 47.9992l0 0c0 26.509674 -21.490326 48.0 -48.0 48.0z" fill-rule="evenodd"></path>
       <path class='key' id='T-' fill="#666666" d="m1000.0 8.0l-96.0 0l0 96.0l96.0 0z" fill-rule="evenodd"></path>
@@ -277,6 +277,10 @@
         <br/>
         <input type="checkbox" id="randomizeExercises" name="randomizeExercise" value="randomizeExercise" /> <label style="color: white;" for="randomizeExercises">randomize</label>
         <br/>
+        <div>Select steno keyboard layout</div>
+        <input type="radio" id="rightHanded" value='right' name="handedness" onchange="rightHandedStenoKeyboard();" checked><label for="rightHanded">right handed</label><br/>
+        <input type="radio" id="leftHanded" value='left' name="handedness" onchange="leftHandedStenoKeyboard();"><label for="leftHanded">left handed</label>
+        <br>
         <div>Select card scheduler</div>
         <input type="radio" id="roundRobinTraining" name="trainingType" checked><label for="roundRobinTraining">Round Robin</label><br>
         <input type="radio" id="spacedRepetitionTraining" name="trainingType"><label for="spacedRepetitionTraining">Spaced Repitition (FSRS)</label>

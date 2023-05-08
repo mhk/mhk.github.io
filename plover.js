@@ -169,8 +169,8 @@ function changeMax(event, val) {
 function showHint(i=1) {
     if(currentExercise.length === 0) return ;
     if(-1 === MAX_FAILURE) return ;
-    if(failCount + i < MAX_FAILURE) return ;
     failCount += i;
+    if(failCount < MAX_FAILURE) return ;
     hints.innerHTML = steno_hints(currentExercise[currentExerciseIndex].word);
 }
 function resetHint() {
@@ -194,12 +194,13 @@ function loadExercise(tags) {
         console.log(currentExercise.length, t);
         if(currentExercise.length === 0 && repeatExercise) changeExercise();
         if(currentExercise.length === 0) return s;
-        showHint();
         if(s.trim() === currentExercise[currentExerciseIndex].word) {
             ++currentExerciseIndex;
             exercise.innerHTML = textToLength().join('\n');
             resetHint();
             return '';
+        } else {
+            showHint();
         }
         return s;
     };
@@ -209,7 +210,11 @@ function getSettings() {
     const randomize = document.getElementById('randomizeExercises').checked? '1' : '0';
     const handedness = document.querySelector('input[name="handedness"]:checked').value;
     const scheduler = document.querySelector('input[name="trainingType"]:checked').value;
-    return {'tags': tags, 'randomize': randomize, "hand": handedness, 'scheduler': scheduler};
+    const failcount = document.getElementById('failcount').value;
+    return {'tags': tags, 'randomize': randomize,
+        "hand": handedness, 'scheduler': scheduler,
+        "failcount": failcount
+    };
 }
 function getUrlSettings() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -217,7 +222,11 @@ function getUrlSettings() {
     const randomize = urlParams.get('randomize') || '0';
     const handedness = urlParams.get('hand') || 'right';
     const scheduler = urlParams.get('scheduler') || 'roundRobin';
-    return {'tags': tags, 'randomize': randomize, "hand": handedness, 'scheduler': scheduler};
+    const failcount = urlParams.get('failcount') || '2';
+    return {'tags': tags, 'randomize': randomize,
+        "hand": handedness, 'scheduler': scheduler,
+        "failcount": failcount
+    };
 }
 function settingsChanged() {
     const urlSettings = getUrlSettings();
@@ -227,7 +236,9 @@ function settingsChanged() {
         settings.tags.length === urlSettings.tags.length &&
         settings.randomize === urlSettings.randomize &&
         settings.hand === urlSettings.hand &&
-        settings.scheduler === urlSettings.scheduler
+        settings.scheduler === urlSettings.scheduler &&
+        settings.failcount === urlSettings.failcount &&
+        true
     );
 }
 function setSettings() {
@@ -240,6 +251,8 @@ function setSettings() {
     }
     [...document.getElementsByName('trainingType')].filter(c => c.value === urlSettings.scheduler).map(
         c => c.checked = true);
+    document.getElementById('failcount').value = urlSettings.failcount;
+    changeMax(undefined, urlSettings.failcount);
     setTagsInSettings(urlSettings.tags);
     loadExercise(urlSettings.tags);
 }

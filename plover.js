@@ -505,11 +505,14 @@ function addCardTags() {
     for(const tag of cards.all.tags) {
         const listItem = document.createElement("li");
         const checkBox = document.createElement("input");
+        const label = document.createElement("label");
         checkBox.type = 'checkbox';
         checkBox.id = cards.all.name + '::' + tag;
         checkBox.setAttribute('class', 'tagCheckbox');
+        label.setAttribute('for', checkBox.id);
+        label.innerHTML = tag;
         listItem.appendChild(checkBox);
-        listItem.innerHTML += ' ' + tag;
+        listItem.appendChild(label);
         list.appendChild(listItem);
     }
 }

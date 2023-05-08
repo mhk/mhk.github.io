@@ -132,12 +132,14 @@ function rightHandedStenoKeyboard() { // mirror, left handed, right handed
         document.getElementById('svgg').setAttribute('transform', 'scale (-1, 1)');
         document.getElementById('svgg').setAttribute('transform-origin', 'center');
     }
+    document.getElementById('rightHanded').checked = true;
 }
 function leftHandedStenoKeyboard() { // mirror, left handed, right handed
     if(document.getElementById('svgg').getAttribute('transform') !== null) { // left handed
         document.getElementById('svgg').removeAttribute('transform');
         document.getElementById('svgg').removeAttribute('transform-origin');
     }
+    document.getElementById('leftHanded').checked = true;
 }
 function shuffleArray(array) {
     for (let i = array.length - 1; i > 0; i--) {
@@ -224,6 +226,17 @@ function settingsChanged() {
         settings.randomize === urlSettings.randomize &&
         settings.hand === urlSettings.hand
     );
+}
+function setSettings() {
+    const randExcCheckbox = document.getElementById('randomizeExercises');
+    const urlSettings = getUrlSettings();
+    randExcCheckbox.checked = ('1' === urlSettings.randomize);
+    rightHandedStenoKeyboard();
+    if('left' === urlSettings.hand) {
+        leftHandedStenoKeyboard();
+    }
+    setTagsInSettings(urlSettings.tags);
+    loadExercise(urlSettings.tags);
 }
 function setUrlSettings() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -431,12 +444,7 @@ function loadCards(deck) {
 
             addCardTags();
 
-            const randExcCheckbox = document.getElementById('randomizeExercises');
-            const urlParams = new URLSearchParams(window.location.search);
-            const tags = getTagsFromUrl(urlParams);
-            randExcCheckbox.checked = ('1' === urlParams.get('randomize'));
-            setTagsInSettings(tags);
-            loadExercise(tags);
+            setSettings();
             Object.keys(steno2key).forEach(id => {
                 const key = document.getElementById(id);
                 key.onclick = key.ontouchstart = handleStenoTouch;

@@ -195,10 +195,15 @@ function loadExercise(tags) {
         console.log(currentExercise.length, t);
         if(currentExercise.length === 0 && repeatExercise) changeExercise();
         if(currentExercise.length === 0) return s;
-        if(s.trim() === currentExercise[currentExerciseIndex].word) {
+        let result = t.trim();
+        if(undefined !== currentExercise[currentExerciseIndex].word) {
+            result = result.split(' ').at(-1);
+        }
+        if(result === currentExercise[currentExerciseIndex].word) {
             ++currentExerciseIndex;
             exercise.innerHTML = textToLength().join('\n');
             resetHint();
+            reset_text();
             return '';
         } else {
             showHint();

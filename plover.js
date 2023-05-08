@@ -208,14 +208,16 @@ function getSettings() {
     const tags = getTagsFromSettings();
     const randomize = document.getElementById('randomizeExercises').checked? '1' : '0';
     const handedness = document.querySelector('input[name="handedness"]:checked').value;
-    return {'tags': tags, 'randomize': randomize, "hand": handedness };
+    const scheduler = document.querySelector('input[name="trainingType"]:checked').value;
+    return {'tags': tags, 'randomize': randomize, "hand": handedness, 'scheduler': scheduler};
 }
 function getUrlSettings() {
     const urlParams = new URLSearchParams(window.location.search);
     const tags = getTagsFromUrl(urlParams);
     const randomize = urlParams.get('randomize') || '0';
     const handedness = urlParams.get('hand') || 'right';
-    return {'tags': tags, 'randomize': randomize, "hand": handedness};
+    const scheduler = urlParams.get('scheduler') || 'roundRobin';
+    return {'tags': tags, 'randomize': randomize, "hand": handedness, 'scheduler': scheduler};
 }
 function settingsChanged() {
     const urlSettings = getUrlSettings();
@@ -224,7 +226,8 @@ function settingsChanged() {
     return !(intersection.length === settings.tags.length &&
         settings.tags.length === urlSettings.tags.length &&
         settings.randomize === urlSettings.randomize &&
-        settings.hand === urlSettings.hand
+        settings.hand === urlSettings.hand &&
+        settings.scheduler === urlSettings.scheduler
     );
 }
 function setSettings() {
@@ -235,6 +238,8 @@ function setSettings() {
     if('left' === urlSettings.hand) {
         leftHandedStenoKeyboard();
     }
+    [...document.getElementsByName('trainingType')].filter(c => c.value === urlSettings.scheduler).map(
+        c => c.checked = true);
     setTagsInSettings(urlSettings.tags);
     loadExercise(urlSettings.tags);
 }

@@ -22,19 +22,12 @@ function ignoreKeyEvent(event) {
 document.addEventListener('keydown', (event) => { logKeyDown(event) }, false);
 function logKeyDown(event) {
     if(ignoreKeyEvent(event)) return ;
-    // log.textContent += ` Down ${event.code} (${event.key})`;
     pyKeyDown(event.key);
 }
 
 document.addEventListener('keyup', (event) => { logKeyUp(event) }, false);
 function logKeyUp(event) {
     if(ignoreKeyEvent(event)) return ;
-    /*
-    if('Backspace' === event.code) {
-        log.textContent = ''; 
-    }
-    log.textContent += ` UP ${event.code} (${event.key})`;
-     */
     pyKeyUp(event.key);
 }
 function hideFullScreenButton() {
@@ -214,12 +207,13 @@ function loadExercise(tags) {
 function getSettings() {
     const tags = getTagsFromSettings();
     const randomize = document.getElementById('randomizeExercises').checked? '1' : '0';
+    const keyboard = document.getElementById('hideStenoKeyboard').checked? '0' : '1';
     const handedness = document.querySelector('input[name="handedness"]:checked').value;
     const scheduler = document.querySelector('input[name="trainingType"]:checked').value;
     const failcount = document.getElementById('failcount').value;
     return {'tags': tags, 'randomize': randomize,
         "hand": handedness, 'scheduler': scheduler,
-        "failcount": failcount
+        "failcount": failcount, "keyboard": keyboard,
     };
 }
 function getUrlSettings() {
@@ -229,9 +223,10 @@ function getUrlSettings() {
     const handedness = urlParams.get('hand') || 'right';
     const scheduler = urlParams.get('scheduler') || 'roundRobin';
     const failcount = urlParams.get('failcount') || '2';
+    const keyboard = urlParams.get('keyboard') || '1';
     return {'tags': tags, 'randomize': randomize,
         "hand": handedness, 'scheduler': scheduler,
-        "failcount": failcount
+        "failcount": failcount, "keyboard": keyboard,
     };
 }
 function settingsChanged() {
@@ -244,16 +239,23 @@ function settingsChanged() {
         settings.hand === urlSettings.hand &&
         settings.scheduler === urlSettings.scheduler &&
         settings.failcount === urlSettings.failcount &&
+        settings.keyboard === urlSettings.keyboard &&
         true
     );
 }
 function setSettings() {
     const randExcCheckbox = document.getElementById('randomizeExercises');
+    const hideStenoCheckbox = document.getElementById('hideStenoKeyboard');
     const urlSettings = getUrlSettings();
     randExcCheckbox.checked = ('1' === urlSettings.randomize);
+    hideStenoCheckbox.checked = ('0' === urlSettings.keyboard);
     rightHandedStenoKeyboard();
     if('left' === urlSettings.hand) {
         leftHandedStenoKeyboard();
+    }
+    showStenoKeyboard();
+    if(hideStenoCheckbox.checked) {
+        hideStenoKeyboard();
     }
     [...document.getElementsByName('trainingType')].filter(c => c.value === urlSettings.scheduler).map(
         c => c.checked = true);
@@ -481,6 +483,21 @@ function cardOverlayOn() {
 function cardOverlayOff() {
     document.getElementById("overlay").style.display = "none";
     changeExercise();
+}
+function showStenoKeyboard() {
+    document.getElementById("release").style.display = "block";
+    document.getElementById("stenoKeyboard").style.display = "block";
+}
+function hideStenoKeyboard() {
+    document.getElementById("release").style.display = "none";
+    document.getElementById("stenoKeyboard").style.display = "none";
+}
+function setHideStenoKeyboard(hide) {
+    if(hide) {
+        hideStenoKeyboard();
+    } else {
+        showStenoKeyboard();
+    }
 }
 function addCardTags() {
     const list = document.getElementById("cardLabels");

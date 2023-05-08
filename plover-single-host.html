@@ -87,6 +87,9 @@
     #checkboxes label {
       float: left;
     }
+    label {
+        color: white;
+    }
     #checkboxes ul {
       margin: 0;
       list-style: none;
@@ -176,7 +179,7 @@
         </tr>
         <tr id='releaseKeys'>
             <td colspan=4>
-                <button type="button" class="block" onclick="release(event);">release keys</button>
+                <button id='release' type="button" class="block" onclick="release(event);">release keys</button>
             </td>
         </tr>
         <tr id='difficulty' style='display: none;'>
@@ -195,6 +198,7 @@
             </td>
         </tr>
     </table>
+    <div id="stenoKeyboard">
     <svg id='svg' class="disable-dbl-tap-zoom" version="1.1" viewBox="0.0 0.0 1235.1653543307086 335.7296587926509" fill="none" stroke="none" stroke-linecap="square" stroke-miterlimit="10" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">
     <clippath id="p.0">
       <path d="m0 0l1120.6011 0l0 341.19946l-1120.6011 0l0 -341.19946z" clip-rule="nonzero"></path>
@@ -270,12 +274,15 @@
       <path class='char' id='char_-E' fill="#efefef" d="m547.1376 330.91998l0 -13.359375l9.90625 0l0 2.265625l-7.21875 0l0 2.953125l6.71875 0l0 2.25l-6.71875 0l0 3.640625l7.46875 0l0 2.25l-10.15625 0z" fill-rule="nonzero"></path>
       -->
     </g></svg>
+    </div>
     <div id="overlay">
         <div><input id="closeOverlay" type="button" value="Close" onclick="cardOverlayOff()"></div>
         <div>General Settings</div>
-        <input class='ignoreKeyEvent' style="text-align:right;" type='number' name='failcount' id='failcount' value=1 onchange='changeMax(event, this.value)'/> <label style="color: white;" for="newCards">Show hint</label>
+        <input class='ignoreKeyEvent' style="text-align:right;" type='number' name='failcount' id='failcount' value=1 onchange='changeMax(event, this.value)'/> <label for="newCards">Show hint</label>
         <br/>
-        <input type="checkbox" id="randomizeExercises" name="randomizeExercise" value="randomizeExercise" /> <label style="color: white;" for="randomizeExercises">randomize</label>
+        <input type="checkbox" id="randomizeExercises" name="randomizeExercise" value="randomizeExercise" /> <label for="randomizeExercises">randomize</label>
+        <br/>
+        <input type="checkbox" id="hideStenoKeyboard" name="hideStenoKeyboard" value="hideStenoKeyboard" onchange="setHideStenoKeyboard(this.checked);" /> <label for="hideStenoKeyboard">hide steno keyboard</label>
         <br/>
         <div>Select steno keyboard layout</div>
         <input type="radio" id="rightHanded" value='right' name="handedness" onchange="rightHandedStenoKeyboard();" checked><label for="rightHanded">right handed</label><br/>
@@ -289,10 +296,10 @@
 
         <div id="text">Card Settings</div>
         <input style="text-align:right;" type='number' name='newCards' id='newCards' value=10 />
-        <label style="color: white;" for="newCards">New cards per day</label>
+        <label for="newCards">New cards per day</label>
         <br/>
         <input style="text-align:right;" type='number' name='maxCards' id='maxCards' value=100 />
-        <label style="color: white;" for="newCards">Max cards per day</label>
+        <label for="newCards">Max cards per day</label>
         <br/>
         <div>Select tags to train</div>
         <ul id='cardLabels'>

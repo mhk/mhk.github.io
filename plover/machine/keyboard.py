@@ -12,6 +12,7 @@ from plover.machine.keyboard_capture import Capture
 
 class ExternalKeyboardCapture(Capture):
     def __init__(self):
+        self.keys_pressed = set()
         try:
         # if True:
             import js
@@ -33,12 +34,21 @@ class ExternalKeyboardCapture(Capture):
             self.start = self.thread_start
             self.run = self.thread_run
 
+    def _console(self, text):
+        try:
+            import js
+            js.console.log(text)
+        except ImportError:
+            pass
+
     def pyKeyDown(self, key):
-        # print(f"pyKeyDown: {key}")
+        self.keys_pressed.add(key)
+        self._console(f"pyKeyDown '{key}' [{' '.join(self.keys_pressed)}]")
         self.key_down(key);
 
     def pyKeyUp(self, key):
-        # print(f"pyKeyUp: {key}")
+        self.keys_pressed.remove(key)
+        self._console(f"pyKeyUp '{key}' [{' '.join(self.keys_pressed)}]")
         self.key_up(key);
 
     def web_start(self):

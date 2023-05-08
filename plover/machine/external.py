@@ -21,6 +21,7 @@ class ExternalKeyboardCapture(Capture):
     def __init__(self):
         self.web = False
         if self.web:
+            # not used
             import js
             from pyodide.ffi import create_proxy
             js.createObject(create_proxy(self.pyKeyDown), "pyKeyDown")

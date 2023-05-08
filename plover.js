@@ -171,7 +171,8 @@ function showHint(i=1) {
     if(-1 === MAX_FAILURE) return ;
     failCount += i;
     if(failCount < MAX_FAILURE) return ;
-    hints.innerHTML = steno_hints(currentExercise[currentExerciseIndex].word);
+    const hintList = steno_hints(currentExercise[currentExerciseIndex].word).toJs();
+    hints.innerHTML = hintList.join(', ');
 }
 function resetHint() {
     failCount = 0;

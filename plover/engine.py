@@ -144,7 +144,8 @@ class StenoEngine:
             s = self.casereverse_lookup(s.lower())
             print(s)
             hs = self.reverse_lookup(s)
-        return ', '.join(map(lambda h : '/'.join(h), hs))
+        result = list(map(lambda h : '/'.join(h), hs))
+        return sorted(result, key=lambda stroke : len(stroke) + stroke.count('/') * 10);
 
     def run(self):
         self._machine.run()

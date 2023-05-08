@@ -127,11 +127,11 @@ function release(event) {
         }
     }
 }
-function flipStenoKeyboard() {
-    if(document.getElementById('svgg').getAttribute('transform') === null) {
+function flipStenoKeyboard() { // mirror, left handed, right handed
+    if(document.getElementById('svgg').getAttribute('transform') === null) { // right handed
         document.getElementById('svgg').setAttribute('transform', 'scale (-1, 1)');
         document.getElementById('svgg').setAttribute('transform-origin', 'center');
-    } else {
+    } else { // left handed
         document.getElementById('svgg').removeAttribute('transform');
         document.getElementById('svgg').removeAttribute('transform-origin');
     }
@@ -199,21 +199,37 @@ function loadExercise(tags) {
         return s;
     };
 }
-function changeExercise() {
-    currentExerciseIndex = 0;
-    const urlParams = new URLSearchParams(window.location.search);
+function getSettings() {
     const tags = getTagsFromSettings();
-    const urlTags = getTagsFromUrl(urlParams);
-    const intersection = intersect(tags, urlTags);
     const randomize = document.getElementById('randomizeExercises').checked? '1' : '0';
-    const urlRandomize = urlParams.get('randomize') || '0';
-    // no change
-    if(randomize === urlRandomize &&
-        tags.length == urlTags.length && intersection.length == tags.length) return ;
-    urlParams.set('tags', tags.join(','));
-    urlParams.set('randomize', randomize);
+    return {'tags': tags, 'randomize': randomize};
+}
+function getUrlSettings() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tags = getTagsFromUrl(urlParams);
+    const randomize = urlParams.get('randomize') || '0';
+    return {'tags': tags, 'randomize': randomize};
+}
+function settingsChanged() {
+    const urlSettings = getUrlSettings();
+    const settings = getSettings();
+    const intersection = intersect(settings.tags, urlSettings.tags);
+    return !(settings.Randomize === urlSettings.randomize &&
+        settings.tags.length == urlSettings.tags.length &&
+        intersection.length == settings.tags.length);
+}
+function setUrlSettings() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const settings = getSettings();
+    urlParams.set('tags', settings.tags.join(','));
+    urlParams.set('randomize', settings.randomize);
     const refresh = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + urlParams.toString();
     window.history.pushState({ path: refresh }, '', refresh);
+}
+function changeExercise() {
+    if(!settingsChanged()) return ;
+    currentExerciseIndex = 0;
+    setUrlSettings();
     loadExercise(tags);
 }
 function textToLength() {

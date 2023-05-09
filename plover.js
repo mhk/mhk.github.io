@@ -151,10 +151,6 @@ function getExerciseData(ex, chap) {
     }
     return '';
 }
-function getExerciseCards(tags) {
-    const cards = getCards(tags)
-    return cards;
-}
 function changeMax(event, val) {
     MAX_FAILURE = parseInt(val);
     showHint(0);
@@ -173,7 +169,7 @@ function resetHint() {
     showHint(0);
 }
 function loadExercise(tags) {
-    const data = getExerciseCards(tags);
+    const data = getCards(tags);
     if(0 === Object.keys(data).length) {
         exercise.innerHTML = '';
         return ;
@@ -368,14 +364,21 @@ function handleStenoTouch(event) {
 function dayCutOff() {
     const now = new Date;
     const tomorrow = now.getDate()+1
-    return Date.UTC(tomorrow.getUTCFullYear(),tomorrow.getUTCMonth(), tomorrow.getUTCDate(), 5, 0, 0, 0);
+    return Date.UTC(tomorrow.getUTCFullYear(),tomorrow.getUTCMonth(), tomorrow.getUTCDate(), 5, 0, 0, 0).toISOString();
 }
 function intersect(a, b) {
   var setB = new Set(b);
   return [...new Set(a)].filter(x => setB.has(x));
 }
-function getCards(tags) {
-    const result = [];
+function annotateCardsWithLocalData(cards) { // modifies input
+    for(const card of cards) {
+        const data = JSON.parse(localStorage.getItem(card.collection + '::' + card.word));
+        if(null === data) continue;
+        card.scheduling = data;
+    }
+    return cards;
+}
+function tags2CollectionAndId(tags) {
     const tagsByCollection = tags.reduce(function(acc, cur, i) {
         const s = cur.split('::').filter(s => '' !== s);
         if(s.length == 2) {
@@ -388,14 +391,25 @@ function getCards(tags) {
         }
         return acc;
     }, {});
+    return tagsByCollection;
+}
+function getFilterCards(tagsByCollection) {
+    const result = [];
     for(const name of Object.keys(tagsByCollection)) {
         const collection = cards[name];
         if(collection === undefined) continue;
         const tags = tagsByCollection[name];
         const filteredCards = Object.values(collection.cards).filter(c => intersect(c.tags, tags).length > 0);
         result.push(...filteredCards);
+        result.map(c => c.collection = name);
     }
     return result;
+}
+function getCards(tags) {
+    const tagsByCollection = tags2CollectionAndId(tags);
+    const filteredCards = getFilterCards(tagsByCollection);
+    annotateCardsWithLocalData(filteredCards);
+    return filteredCards;
 }
 function fsrs() {
     const toObject = (map = new Map) =>
@@ -411,7 +425,7 @@ function fsrs() {
     const [fsrsCard, now, f] = [{"due": 1683279711.0, "due_str": "2023-05-05 11:41:51.284324", "stability": 0, "difficulty": 0, "elapsed_days": 0, "scheduled_days": 0, "reps": 0, "lapses": 0, "state": 0, "last_review": 0, "last_review_str": 0}, new Date().toISOString(), pyscript.interpreter.globals.get('f')];
     const newCard = f.newCardJS();
 
-    localStorage.getItem(id);
+    JSON.parse(localStorage.getItem(id));
     newCardsPy = f.repeatJS(newCard, now).toJs();
     newCards = toObject(newCardsPy);
     return newCards;
@@ -420,7 +434,7 @@ function fsrs() {
     const card = {'word': 'the'};
     const id = collection.name + '::' + card.word;
     const ease = 'Again';
-    let cardData = localStorage.getItem(id);
+    let cardData = JSON.parse(localStorage.getItem(id));
     if(null === cardData) {
         const cardFsrsDataPy = f.newCardJS().toJs();
         const cardFsrsData = toObject(cardFsrsDataPy);
@@ -428,11 +442,12 @@ function fsrs() {
     }
 }
 function putCardBack(ease) {
+    const now = new Date().toISOString();
     cardFsrsOptionsPy = f.repeatJS(cardData['fsrs'], now).toJs();
     cardFsrsOptions = toObject(cardFsrsOptionsPy);
     cardData['fsrs'] = cardNewFsrsData[ease];
     cardData['answers'].push({'date': now, 'answer': answer, 'ease': ease});
-    localStorage.setItem(id, cardData);
+    localStorage.setItem(id, JSON.stringify(cardData));
 }
 function onAgain(event) {
     putCardBack('Again');

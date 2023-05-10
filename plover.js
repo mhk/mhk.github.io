@@ -24,12 +24,14 @@ function ignoreKeyEvent(event) {
 document.addEventListener('keydown', (event) => { logKeyDown(event) }, false);
 function logKeyDown(event) {
     if(ignoreKeyEvent(event)) return ;
+    if(!Object.values(steno2key).includes(event.key)) return ;
     pyKeyDown(event.key);
 }
 
 document.addEventListener('keyup', (event) => { logKeyUp(event) }, false);
 function logKeyUp(event) {
     if(ignoreKeyEvent(event)) return ;
+    if(!Object.values(steno2key).includes(event.key)) return ;
     pyKeyUp(event.key);
 }
 function hideFullScreenButton() {

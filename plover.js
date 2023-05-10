@@ -411,7 +411,7 @@ function getCards(tags) {
     annotateCardsWithLocalData(filteredCards);
     return filteredCards;
 }
-function fsrs() {
+function py2js(pyObj) {
     const toObject = (map = new Map) =>
         Object.fromEntries
     ( Array.from
@@ -422,11 +422,14 @@ function fsrs() {
             : [ k, v ]
         )
     );
-    const [fsrsCard, now, f] = [{"due": 1683279711.0, "due_str": "2023-05-05 11:41:51.284324", "stability": 0, "difficulty": 0, "elapsed_days": 0, "scheduled_days": 0, "reps": 0, "lapses": 0, "state": 0, "last_review": 0, "last_review_str": 0}, new Date().toISOString(), pyscript.interpreter.globals.get('f')];
-    const newCard = f.newCardJS();
+    return toObject(pyObj.toJs());
+}
+function fsrs() {
+    const [fsrsCard, now, fsrsPy] = [{"due": "2023-05-05 11:41:51.284324", "stability": 0, "difficulty": 0, "elapsed_days": 0, "scheduled_days": 0, "reps": 0, "lapses": 0, "state": "New"}, new Date().toISOString(), pyscript.interpreter.globals.get('fsrs')];
+    const newCard = fsrsPy.newCardJs();
 
     JSON.parse(localStorage.getItem(id));
-    newCardsPy = f.repeatJS(newCard, now).toJs();
+    newCardsPy = fsrsPy.repeatJs(newCard, now).toJs();
     newCards = toObject(newCardsPy);
     return newCards;
 
@@ -436,14 +439,14 @@ function fsrs() {
     const ease = 'Again';
     let cardData = JSON.parse(localStorage.getItem(id));
     if(null === cardData) {
-        const cardFsrsDataPy = f.newCardJS().toJs();
+        const cardFsrsDataPy = fsrsPy.newCardJs().toJs();
         const cardFsrsData = toObject(cardFsrsDataPy);
         cardData = {'fsrs': cardFsrsData, 'answers': []}
     }
 }
 function putCardBack(ease) {
     const now = new Date().toISOString();
-    cardFsrsOptionsPy = f.repeatJS(cardData['fsrs'], now).toJs();
+    cardFsrsOptionsPy = f.repeatJs(cardData['fsrs'], now).toJs();
     cardFsrsOptions = toObject(cardFsrsOptionsPy);
     cardData['fsrs'] = cardNewFsrsData[ease];
     cardData['answers'].push({'date': now, 'answer': answer, 'ease': ease});

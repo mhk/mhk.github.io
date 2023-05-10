@@ -10,19 +10,18 @@ class FSRS:
     def __init__(self) -> None:
         self.p = Parameters()
 
-    def repeatJS(self, jsCard, jsNow: str): # -> dict[int, SchedulingInfo]:
+    def repeatJs(self, jsCard, jsNow: str): # -> dict[int, SchedulingInfo]:
         try:
             now = datetime.strptime(jsNow, "%Y-%m-%dT%H:%M:%S.%f%z")
             card = dict2card(jsCard.as_object_map())
             scheduling_cards = self.repeat(card, now)
-            easeId2Name = ['Again', 'Hard', 'Good', 'Easy']
-            return {easeId2Name[k]: v.toJson() for k, v in scheduling_cards.items()}
+            return {k.name: v.toJson() for k, v in scheduling_cards.items()}
         except Exception as e:
             print(e)
             traceback.print_exc()
             return None
 
-    def newCardJS(self):
+    def newCardJs(self):
         c = Card()
         return c.toJson();
 

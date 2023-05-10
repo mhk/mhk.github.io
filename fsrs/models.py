@@ -25,9 +25,9 @@ class ReviewLog:
     elapsed_days: int
     scheduled_days: int
     review: datetime
-    state: int
+    state: State
 
-    def __init__(self, rating: int, elapsed_days: int, scheduled_days: int, review: datetime, state: int):
+    def __init__(self, rating: int, elapsed_days: int, scheduled_days: int, review: datetime, state: State):
         self.rating = rating
         self.elapsed_days = elapsed_days
         self.scheduled_days = scheduled_days
@@ -39,9 +39,8 @@ class ReviewLog:
                 "rating":           self.rating,
                 "elapsed_days":     self.elapsed_days,
                 "scheduled_days":   self.scheduled_days,
-                "review":           time.mktime(self.review.timetuple()),
-                # "review_str":       self.review.strftime("%Y-%m-%dT%H:%M:%S.%f%z"),
-                "state":            self.state,
+                "review":           self.review.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+                "state":            self.state.name,
                 }
 
 class Card:
@@ -67,24 +66,19 @@ class Card:
         self.last_review = 0
 
     def toJson(self) -> dict:
-        lr = 0
-        lr_s = 0
-        if 0 != self.last_review:
-            lr = time.mktime(self.last_review.timetuple())
-            lr_s = self.last_review.strftime("%Y-%m-%dT%H:%M:%S.%f%z"),
-        return {
-                "due":             time.mktime(self.due.timetuple()),
-                # "due_str":         self.due.strftime("%Y-%m-%dT%H:%M:%S.%f%z"),
+        obj = {
+                "due":             self.due.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
                 "stability":       self.stability,
                 "difficulty":      self.difficulty,
                 "elapsed_days":    self.elapsed_days,
                 "scheduled_days":  self.scheduled_days,
                 "reps":            self.reps,
                 "lapses":          self.lapses,
-                "state":           self.state,
-                "last_review":     lr,
-                # "last_review_str": lr_s
+                "state":           self.state.name,
                 }
+        if 0 != self.last_review:
+            obj["last_review"] = self.last_review.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+        return obj
 
     def get_retrievability(self, now: datetime) -> Optional[float]:
         if self.state == State.Review:
@@ -93,17 +87,20 @@ class Card:
         else:
             return None
 
-def dict2card(card_json: dict) -> Card:
+def dict2card(card_js) -> Card:
     card = Card()
-    card.due            = card_json["due"]
-    card.stability      = card_json["stability"]
-    card.difficulty     = card_json["difficulty"]
-    card.elapsed_days   = card_json["elapsed_days"]
-    card.scheduled_days = card_json["scheduled_days"]
-    card.reps           = card_json["reps"]
-    card.lapses         = card_json["lapses"]
-    card.state          = card_json["state"]
-    card.last_review    = card_json["last_review"]
+    # print('due:', card_js.due)
+    card.due            = datetime.strptime(card_js["due"], "%Y-%m-%dT%H:%M:%S.%f%z")
+    card.stability      = card_js["stability"]
+    card.difficulty     = card_js["difficulty"]
+    card.elapsed_days   = card_js["elapsed_days"]
+    card.scheduled_days = card_js["scheduled_days"]
+    card.reps           = card_js["reps"]
+    card.lapses         = card_js["lapses"]
+    card.state          = State[card_js["state"]]
+    # print('due:', card.due)
+    if "last_review" in card_js:
+        card.last_review = datetime.strptime(card_js["last_review"], "%Y-%m-%dT%H:%M:%S.%f%z")
     return card
 
 

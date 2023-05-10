@@ -170,6 +170,12 @@ function showHint(i=1) {
     const hintList = steno_hints(currentExercise[currentExerciseIndex].word).toJs();
     hints.innerHTML = hintList.join(', ');
 }
+function initNextExercise() {
+    reset_text();
+    resetHint();
+    strokes.length = 0;
+    text_strokes.length = 0;
+}
 function resetHint() {
     failCount = 0;
     hints.innerHTML = '';
@@ -194,24 +200,25 @@ function loadExercise(tags) {
         let result = t.trim();
         // document strokes
         const wc = result.split(' ').filter(ss => ss !== '').length;
+        // TODO: Handle '*'
         if(wc > text_strokes.length) {
             text_strokes.push(strokes.join('/'));
             strokes.length = 0;
         } else if(text_strokes.length > 0) {
             const last = text_strokes.length - 1;
-            text_strokes[last] += '/' + strokes.join('/');
+            text_strokes[last] = [text_strokes[last]].concat(strokes).join('/');
             strokes.length = 0;
         }
         if(undefined !== currentExercise[currentExerciseIndex].word) {
             result = result.split(' ').at(-1);
         }
-        if(result === currentExercise[currentExerciseIndex].word) {
+        const curExc = currentExercise[currentExerciseIndex];
+        if(result === curExc.word) {
+            const answer_strokes = text_strokes.join(', ');
+            console.log(answer_strokes);
             ++currentExerciseIndex;
             exercise.innerHTML = textToLength().join('\n');
-            resetHint();
-            reset_text();
-            console.log(text_strokes.join(', '));
-            text_strokes.length = 0;
+            initNextExercise();
             return '';
         } else {
             showHint();
@@ -296,8 +303,8 @@ function setUrlSettings() {
     return settings;
 }
 function changeExercise() {
-    if(!settingsChanged()) return ;
     currentExerciseIndex = 0;
+    initNextExercise();
     settings = setUrlSettings();
     loadExercise(settings.tags);
 }
@@ -391,7 +398,8 @@ function intersect(a, b) {
 }
 function annotateCardsWithLocalData(cards) { // modifies input
     for(const card of cards) {
-        const data = JSON.parse(localStorage.getItem(card.collection + '::' + card.word));
+        const id = card.collection + '::' + card.word;
+        const data = JSON.parse(localStorage.getItem(id));
         if(null === data) continue;
         card.scheduling = data;
     }
@@ -524,6 +532,7 @@ function cardOverlayOn() {
 }
 function cardOverlayOff() {
     document.getElementById("overlay").style.display = "none";
+    if(!settingsChanged()) return ;
     changeExercise();
 }
 function showStenoKeyboard() {

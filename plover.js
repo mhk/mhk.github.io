@@ -8,6 +8,8 @@ let MAX_FAILURE = 1;
 let failCount = 0;
 let exerciseHandler = (t, s) => t;
 let mobileStenoKeyboard = true;
+let text_strokes = [];
+let strokes = [];
 function createObject(object, variableName) {
     // Bind a variable whose name is the string variableName
     // to the object called 'object'
@@ -66,6 +68,9 @@ function on(key) {
 function off(key) {
     document.getElementById(key).setAttribute('fill', '#666666');
     // document.getElementById('char_'+key).setAttribute('fill', '#efefef');
+}
+function stroke(s) {
+    strokes.push(s);
 }
 function isOff(key) {
     return (document.getElementById(key).getAttribute('fill') == '#666666');
@@ -185,6 +190,16 @@ function loadExercise(tags) {
         if(currentExercise.length === 0 && repeatExercise) changeExercise();
         if(currentExercise.length === 0) return s;
         let result = t.trim();
+        // document strokes
+        const wc = result.split(' ').filter(ss => ss !== '').length;
+        if(wc > text_strokes.length) {
+            text_strokes.push(strokes.join('/'));
+            strokes.length = 0;
+        } else if(text_strokes.length > 0) {
+            const last = text_strokes.length - 1;
+            text_strokes[last] += '/' + strokes.join('/');
+            strokes.length = 0;
+        }
         if(undefined !== currentExercise[currentExerciseIndex].word) {
             result = result.split(' ').at(-1);
         }
@@ -193,11 +208,13 @@ function loadExercise(tags) {
             exercise.innerHTML = textToLength().join('\n');
             resetHint();
             reset_text();
+            console.log(text_strokes.join(', '));
+            text_strokes.length = 0;
             return '';
         } else {
             showHint();
         }
-        return s;
+        return result;
     };
 }
 function getSettings() {
@@ -426,13 +443,17 @@ function py2js(pyObj) {
 }
 function fsrs() {
     const [fsrsCard, now, fsrsPy] = [{"due": "2023-05-05 11:41:51.284324", "stability": 0, "difficulty": 0, "elapsed_days": 0, "scheduled_days": 0, "reps": 0, "lapses": 0, "state": "New"}, new Date().toISOString(), pyscript.interpreter.globals.get('fsrs')];
-    const newCard = fsrsPy.newCardJs();
+    const cardPy = fsrsPy.newCardJs();
+    const card = py2js(cardPy);
+    const newCardsPy = fsrsPy.repeatJs(card, now);
+    const newCards = py2js(newCardsPy);
 
     JSON.parse(localStorage.getItem(id));
     newCardsPy = fsrsPy.repeatJs(newCard, now).toJs();
     newCards = toObject(newCardsPy);
     return newCards;
 
+    /*
     const collection = {'name': 'Plover'};
     const card = {'word': 'the'};
     const id = collection.name + '::' + card.word;
@@ -443,6 +464,7 @@ function fsrs() {
         const cardFsrsData = toObject(cardFsrsDataPy);
         cardData = {'fsrs': cardFsrsData, 'answers': []}
     }
+ */
 }
 function putCardBack(ease) {
     const now = new Date().toISOString();

@@ -14,7 +14,6 @@ class ExternalKeyboardCapture(Capture):
     def __init__(self):
         self.keys_pressed = set()
         try:
-        # if True:
             import js
             from pyodide.ffi import create_proxy
             js.createObject(create_proxy(self.pyKeyDown), "pyKeyDown")
@@ -24,7 +23,6 @@ class ExternalKeyboardCapture(Capture):
             self.suppress_keyboard = self.web_suppress
             self.run = self.web_run
         except ImportError:
-        # else:
             import threading
             self._cancelled = False
             self.start = self.web_start
@@ -219,6 +217,9 @@ class Keyboard(StenotypeBase):
         steno_keys -= {None}
         try:
             import js
+            from plover.steno import Stroke
+            stroke = Stroke(steno_keys)
+            js.stroke(f"{stroke.rtfcre}")
             for key in steno_keys:
                 js.off(key)
         except ImportError:

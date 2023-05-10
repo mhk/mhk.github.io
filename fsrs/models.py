@@ -21,13 +21,13 @@ class Rating(IntEnum):
 
 
 class ReviewLog:
-    rating: int
+    rating: Rating
     elapsed_days: int
     scheduled_days: int
     review: datetime
     state: State
 
-    def __init__(self, rating: int, elapsed_days: int, scheduled_days: int, review: datetime, state: State):
+    def __init__(self, rating: Rating, elapsed_days: int, scheduled_days: int, review: datetime, state: State):
         self.rating = rating
         self.elapsed_days = elapsed_days
         self.scheduled_days = scheduled_days
@@ -36,7 +36,7 @@ class ReviewLog:
 
     def toJson(self) -> dict:
         return {
-                "rating":           self.rating,
+                "rating":           self.rating.name,
                 "elapsed_days":     self.elapsed_days,
                 "scheduled_days":   self.scheduled_days,
                 "review":           self.review.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
@@ -77,7 +77,7 @@ class Card:
                 "state":           self.state.name,
                 }
         if 0 != self.last_review:
-            obj["last_review"] = self.last_review.strftime("%Y-%m-%dT%H:%M:%S.%fZ"),
+            obj["last_review"] = self.last_review.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
         return obj
 
     def get_retrievability(self, now: datetime) -> Optional[float]:

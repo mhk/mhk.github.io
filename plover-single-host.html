@@ -182,19 +182,19 @@
                 <button id='release' type="button" class="block" onclick="release(event);">release keys</button>
             </td>
         </tr>
-        <tr id='difficulty' style='display: none;'>
+        <tr id='difficulty'>
             <td style="width: 25%">
-                <button type="button" class="block" style='background-color: #822d26;' onclick="onAgain(event);">Again</button>
+                <button type="button" id="again" class="block" style='background-color: #822d26; display: none;' onclick="onAgain(event);">Again</button>
             </td>
             <td style="width: 25%">
-                <button type="button" class="block" style='background-color: #824926; font-size: 22px; font-weight: bold;' onclick="Hard(event);">Hard</button>
+                <button type="button" id="hard" class="block" style='background-color: #824926; display: none;' onclick="Hard(event);">Hard</button>
             </td>
             <td style="width: 25%">
-                <button type="button" class="block" style='background-color: #827326;' onclick="onGood(event);">Good</button>
-                <!--<button type="button" class="block" style='background-color: #5d8226;'>Good</button>-->
+                <!-- Alternative color: #5d8226 -->
+                <button type="button" id="good" class="block" style='background-color: #827326; display: none;' onclick="onGood(event);">Good</button>
             </td>
             <td style="width: 25%">
-                <button type="button" class="block" style='background-color: #268258;' onclick="onEasy(event);">Easy</button>
+                <button type="button" id="easy" class="block" style='background-color: #268258; display: none;' onclick="onEasy(event);">Easy</button>
             </td>
         </tr>
     </table>

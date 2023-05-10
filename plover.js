@@ -181,6 +181,30 @@ function resetHint() {
     hints.innerHTML = '';
     showHint(0);
 }
+function showDifficulty() {
+    // automate pre-selection
+    // style: font-size: 22px; font-weight: bold;
+    // style.fontSize: 22px; style.fontWeight: bold;
+    document.getElementById('again').style.display = "block";
+    document.getElementById('hard').style.display  = "block";
+    document.getElementById('good').style.display  = "block";
+    document.getElementById('easy').style.display  = "block";
+    document.getElementById("release").style.display = "none";
+}
+function hideDifficulty() {
+    // TODO: the TR's are using space it would be nice to just replace the buttons (perhaps a table within a table?)
+    document.getElementById('again').style.display = "none";
+    document.getElementById('hard').style.display  = "none";
+    document.getElementById('good').style.display  = "none";
+    document.getElementById('easy').style.display  = "none";
+    document.getElementById("release").style.display = "block";
+}
+function isDifficultSelection() {
+    return document.getElementById("release").style.display == "none";
+}
+function isFsrs() {
+    return document.getElementById('spacedRepetitionTraining').checked;
+}
 function loadExercise(tags) {
     const data = getCards(tags);
     if(0 === Object.keys(data).length) {
@@ -476,14 +500,26 @@ function fsrs() {
     }
  */
 }
-function putCardBack(ease) {
+function putCardBack2(card, answer, ease) {
     const now = new Date().toISOString();
-    cardFsrsOptionsPy = f.repeatJs(cardData['fsrs'], now).toJs();
-    cardFsrsOptions = toObject(cardFsrsOptionsPy);
-    cardData['fsrs'] = cardNewFsrsData[ease];
-    cardData['answers'].push({'date': now, 'answer': answer, 'ease': ease});
-    localStorage.setItem(id, JSON.stringify(cardData));
+    const fsrsPy = pyscript.interpreter.globals.get('fsrs');
+    if(undefined === card.scheduling) {
+        const cardPy = fsrsPy.newCardJs();
+        const card = py2js(cardPy);
+        card.scheduling = {
+            'fsrsCard': card,
+            'answers': []
+        };
+    }
+    const newCardsPy = fsrsPy.repeatJs(card.scheduling.fsrsCard, now);
+    const newCards = py2js(newCardsPy);
+    card.scheduling.fsrsCard = newCards[ease];
+    card.scheduling.answers.push({'date': now, 'answer': answer, 'ease': ease});
+    const id = card.collection + '::' + card.word;
+    // localStorage.setItem(id, JSON.stringify(card.scheduling));
+    hideDifficulty();
 }
+let putCardBack = ease => putCardBack2(null, null, ease);
 function onAgain(event) {
     putCardBack('Again');
 }

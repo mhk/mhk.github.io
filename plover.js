@@ -483,31 +483,6 @@ function orderCardsDueAndNew(cards) {
     }
     return newCards.concat(dueCards);
 }
-function getNewAndDueCards(cards) { // deprecated
-    const maxDue = cutOffDate();
-    cards = cards.filter(c =>
-        undefined === card.scheduling ||
-            card.scheduling.fsrsCard.due <= maxDue
-    );
-    return cards;
-}
-function filterNewCards(cards) { // deprecated
-    const maxDue = cutOffDate();
-    const minDue = cutOffDate(-1);
-    const newCount = cards.reduce((count, card) =>
-        count + (undefined !== card.scheduling &&
-            card.scheduling.reviewLog[0].review > minDue &&
-            card.scheduling.reviewLog[0].review <= maxDue &&
-            true),
-        0);
-    const newMax = parseInt(document.getElementById('newCards').value);
-    let i = 0;
-    cards = cards.filter(c =>
-        undefined !== card.scheduling.fsrsCard ||
-            newCount + (++i) <= newMax
-    );
-    return cards;
-}
 // Fully Qualified Tags to tags per collection
 function fqtags2tagsByCollection(tags) {
     const tagsByCollection = tags.reduce(function(acc, cur, i) {

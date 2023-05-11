@@ -220,9 +220,6 @@ function loadExercise(tags) {
         return ;
     }
     currentExercise = [...data];
-    if(document.getElementById('randomizeExercises').checked) {
-        shuffleArray(currentExercise);
-    }
     exercise.innerHTML = textToLength().join('\n');
     showHint(0);
     exerciseHandler = (t, s) => {
@@ -423,10 +420,9 @@ function handleStenoTouch(event) {
     event.preventDefault();
     toggleEvent(event);
 }
-function dayCutOff() {
+function cutOffDate(day=1) {
     const now = new Date;
-    const tomorrow = now.getDate()+1
-    return Date.UTC(tomorrow.getUTCFullYear(),tomorrow.getUTCMonth(), tomorrow.getUTCDate(), 5, 0, 0, 0).toISOString();
+    return (new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + day, 5, 0, 0, 0))).toISOString();
 }
 function intersect(a, b) {
   var setB = new Set(b);
@@ -441,7 +437,79 @@ function annotateCardsWithLocalData(cards) { // modifies input
     }
     return cards;
 }
-function tags2CollectionAndId(tags) {
+function orderCardsDueAndNew(cards) {
+    const maxDue = cutOffDate();
+    const minDue = cutOffDate(-1);
+    const nonCards = [];
+    const newCards = [];
+    const dueCards = [];
+    const newCardsMax = parseInt(document.getElementById('newCards').value);
+    const dueCardsMax = parseInt(document.getElementById('maxCards').value);
+    for(let i = 0; i < cards.length; ++i) {
+        if(undefined === cards[i].scheduling) {
+            nonCards.push(cards[i]);
+        } else if(card.scheduling.reviewLog[0].review > minDue &&
+            card.scheduling.reviewLog[0].review <= maxDue) {
+            newCards.push(cards[i]);
+        // TODO: possible distiction of (re-)learn/review needed
+        } else if(card.scheduling.fsrsCard.due <= maxDue) {
+            dueCards.push(cards[i]);
+        }
+    }
+    // ensure a stable result by sorting
+    newCards.sort(a, b => a.scheduling.reviewLog[0].review.localCompare(b.scheduling.reviewLog[0].review));
+    // non cards are sorted by rank or if that is not possible by alphabetical order
+    nonCards.sort(a, b => {
+        if(undefined === a.rank && undefined !== b.rank) return 1
+        if(undefined !== a.rank && undefined === b.rank) return -1
+        if(undefined === a.rank && undefined === b.rank) return a.word.localCompare(b.word);
+        return a.rank - b.rank;
+    });
+    dueCards.sort(a, b => a.scheduling.fsrsCard.due.localCompare(b.scheduling.fsrsCard.due));
+    newCards.concat(nonCards);
+    newCards.length = Math.min(newCards.length, newCardsMax);
+    dueCards.length = Math.min(dueCards.length, dueCardsMax);
+    // only include new cards that are actually due this day
+    newCards = newCards.filter(c =>
+        undefined === card.scheduling ||
+            card.scheduling.fsrsCard.due <= maxDue
+    );
+    if(document.getElementById('randomizeExercises').checked) {
+        shuffleArray(newCards);
+        shuffleArray(dueCards);
+    }
+    if(!document.getElementById('newOverForget').checked) {
+        return dueCards.concat(newCards);
+    }
+    return newCards.concat(dueCards);
+}
+function getNewAndDueCards(cards) { // deprecated
+    const maxDue = cutOffDate();
+    cards = cards.filter(c =>
+        undefined === card.scheduling ||
+            card.scheduling.fsrsCard.due <= maxDue
+    );
+    return cards;
+}
+function filterNewCards(cards) { // deprecated
+    const maxDue = cutOffDate();
+    const minDue = cutOffDate(-1);
+    const newCount = cards.reduce((count, card) =>
+        count + (undefined !== card.scheduling &&
+            card.scheduling.reviewLog[0].review > minDue &&
+            card.scheduling.reviewLog[0].review <= maxDue &&
+            true),
+        0);
+    const newMax = parseInt(document.getElementById('newCards').value);
+    let i = 0;
+    cards = cards.filter(c =>
+        undefined !== card.scheduling.fsrsCard ||
+            newCount + (++i) <= newMax
+    );
+    return cards;
+}
+// Fully Qualified Tags to tags per collection
+function fqtags2tagsByCollection(tags) {
     const tagsByCollection = tags.reduce(function(acc, cur, i) {
         const s = cur.split('::').filter(s => '' !== s);
         if(s.length == 2) {
@@ -456,7 +524,8 @@ function tags2CollectionAndId(tags) {
     }, {});
     return tagsByCollection;
 }
-function getFilterCards(tagsByCollection) {
+function filterCardsByTags(fqtags) {
+    const tagsByCollection = fqtags2tagsByCollection(fqtags);
     const result = [];
     for(const name of Object.keys(tagsByCollection)) {
         const collection = cards[name];
@@ -469,9 +538,13 @@ function getFilterCards(tagsByCollection) {
     return result;
 }
 function getCards(tags) {
-    const tagsByCollection = tags2CollectionAndId(tags);
-    const filteredCards = getFilterCards(tagsByCollection);
-    annotateCardsWithLocalData(filteredCards);
+    const filteredCards = filterCardsByTags(tags);
+    if(isFsrs()) {
+        annotateCardsWithLocalData(filteredCards);
+        filteredCards = orderCardsDueAndNew(filteredCards);
+    } else if(document.getElementById('randomizeExercises').checked) {
+        shuffleArray(filteredCards);
+    }
     return filteredCards;
 }
 function py2js(pyObj) {
@@ -487,7 +560,7 @@ function py2js(pyObj) {
     );
     return toObject(pyObj.toJs());
 }
-function fsrs() {
+function fsrs() { // deprecated
     const [fsrsCard, now, fsrsPy] = [{"due": "2023-05-05 11:41:51.284324", "stability": 0, "difficulty": 0, "elapsed_days": 0, "scheduled_days": 0, "reps": 0, "lapses": 0, "state": "New"}, new Date().toISOString(), pyscript.interpreter.globals.get('fsrs')];
     const cardPy = fsrsPy.newCardJs();
     const card = py2js(cardPy);

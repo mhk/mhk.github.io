@@ -577,7 +577,7 @@ function putCardBack2(card, answer, ease) {
     card.scheduling.fsrsCard = newCards[ease].card;
     card.scheduling.reviewLog.push(newCards[ease].review_log);
     const id = card.collection + '::' + card.word;
-    // localStorage.setItem(id, JSON.stringify(card.scheduling));
+    localStorage.setItem(id, JSON.stringify(card.scheduling));
     console.log(card.scheduling);
     hideDifficulty();
 }

@@ -449,7 +449,9 @@ function orderCardsDueAndNew(cards) {
         if(undefined === cards[i].scheduling) {
             nonCards.push(cards[i]);
         } else if(card.scheduling.reviewLog[0].review > minDue &&
-            card.scheduling.reviewLog[0].review <= maxDue) {
+            card.scheduling.reviewLog[0].review <= maxDue &&
+            // only include new cards that are actually due this day
+            card.scheduling.fsrsCard.due <= maxDue) {
             newCards.push(cards[i]);
         // TODO: possible distiction of (re-)learn/review needed
         } else if(card.scheduling.fsrsCard.due <= maxDue) {
@@ -457,28 +459,23 @@ function orderCardsDueAndNew(cards) {
         }
     }
     // ensure a stable result by sorting
-    newCards.sort(a, b => a.scheduling.reviewLog[0].review.localCompare(b.scheduling.reviewLog[0].review));
+    newCards.sort((a, b) => a.scheduling.fsrsCard.due.localCompare(b.scheduling.fsrsCard.due));
     // non cards are sorted by rank or if that is not possible by alphabetical order
-    nonCards.sort(a, b => {
+    nonCards.sort((a, b) => {
         if(undefined === a.rank && undefined !== b.rank) return 1
         if(undefined !== a.rank && undefined === b.rank) return -1
-        if(undefined === a.rank && undefined === b.rank) return a.word.localCompare(b.word);
+        if(undefined === a.rank && undefined === b.rank) return a.word.localeCompare(b.word);
         return a.rank - b.rank;
     });
-    dueCards.sort(a, b => a.scheduling.fsrsCard.due.localCompare(b.scheduling.fsrsCard.due));
-    newCards.concat(nonCards);
+    dueCards.sort((a, b) => a.scheduling.fsrsCard.due.localCompare(b.scheduling.fsrsCard.due));
+    newCards.push(...nonCards);
     newCards.length = Math.min(newCards.length, newCardsMax);
     dueCards.length = Math.min(dueCards.length, dueCardsMax);
-    // only include new cards that are actually due this day
-    newCards = newCards.filter(c =>
-        undefined === card.scheduling ||
-            card.scheduling.fsrsCard.due <= maxDue
-    );
     if(document.getElementById('randomizeExercises').checked) {
         shuffleArray(newCards);
         shuffleArray(dueCards);
     }
-    if(!document.getElementById('newOverForget').checked) {
+    if(!document.getElementById('newOverDue').checked) {
         return dueCards.concat(newCards);
     }
     return newCards.concat(dueCards);
@@ -516,8 +513,9 @@ function getCards(tags) {
     const filteredCards = filterCardsByTags(tags);
     if(isFsrs()) {
         annotateCardsWithLocalData(filteredCards);
-        filteredCards = orderCardsDueAndNew(filteredCards);
-    } else if(document.getElementById('randomizeExercises').checked) {
+        return orderCardsDueAndNew(filteredCards);
+    }
+    if(document.getElementById('randomizeExercises').checked) {
         shuffleArray(filteredCards);
     }
     return filteredCards;

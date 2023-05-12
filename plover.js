@@ -248,10 +248,11 @@ function loadExercise(tags) {
             if(isFsrs()) {
                 putCardBack = ease => putCardBack2(curExc, answer_strokes, ease);
                 showDifficulty();
+            } else {
+                ++currentExerciseIndex;
+                exercise.innerHTML = textToLength().join('\n');
+                initNextExercise();
             }
-            ++currentExerciseIndex;
-            exercise.innerHTML = textToLength().join('\n');
-            initNextExercise();
             return '';
         } else {
             showHint();
@@ -598,6 +599,10 @@ function putCardBack2(card, answer, ease) {
     localStorage.setItem(id, JSON.stringify(card.scheduling));
     console.log(card.scheduling);
     hideDifficulty();
+
+    ++currentExerciseIndex;
+    exercise.innerHTML = textToLength().join('\n');
+    initNextExercise();
 }
 let putCardBack = ease => putCardBack2(null, null, ease);
 function onAgain(event) {

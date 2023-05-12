@@ -354,31 +354,30 @@ function textToLength3(maxWidth, rowCount) {
     const test = document.getElementById("Test");
     let rows = [];
     let counts = [];
-    let i = 1;
+    let i = 0;
     for(let r = 0; r < rowCount && i < currentExercise.length; ++r) {
         let k = 0;
-        let color = '#005a00';
-        color = '#929292';
-        let s = '<span style="color:' + color + '">';
-        if(i-1 >= currentExerciseIndex) s += '</span>';
-        s += currentExercise[i - 1].word;
+        let color = '#929292'; // green '#005a00'
+        let s = '';
+        if(currentExerciseIndex > i) s += '<span style="color:' + color + '">';
         let p = '';
-        for(; i <= currentExercise.length; ++i) {
-            test.innerHTML = s;
-            const height = (test.clientHeight + 1);
-            const width = (test.clientWidth + 1);
-            if(width > maxWidth) break;
+        for(; i < currentExercise.length; ++i) {
             if(i === currentExerciseIndex) s += '</span>';
+            s += currentExercise[i].word;
+            test.innerHTML = s;
+            const height = test.clientHeight + 1;
+            const width = test.clientWidth + 1;
+            if(width > maxWidth) break;
             p = s;
             ++k;
-            if(i === currentExercise.length) break;
-            s += ' ' + currentExercise[i].word;
+            s += ' ';
         }
+        if(currentExerciseIndex >= i) p += '</span>';
         if(r === 0 && p.endsWith('</span>')) {
             // remove first row
             for(; k > 0; --k) currentExercise.shift();
             r = -1;
-            i = 1;
+            i = 0;
             currentExerciseIndex = 0;
        } else {
            rows.push(p);

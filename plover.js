@@ -442,24 +442,41 @@ function orderCardsDueAndNew(cards) {
     const minDue = cutOffDate(-1);
     const nonCards = [];
     const newCards = [];
+    const lrnCards = [];
+    const revCards = [];
+    const rlnCards = [];
     const dueCards = [];
     const newCardsMax = parseInt(document.getElementById('newCards').value);
     const dueCardsMax = parseInt(document.getElementById('maxCards').value);
     for(let i = 0; i < cards.length; ++i) {
+        // only include cards that are new or due this day
+        if(undefined !== cards[i].scheduling &&
+            cards[i].scheduling.fsrsCard.due > maxDue) {
+            continue;
+        }
         if(undefined === cards[i].scheduling) {
             nonCards.push(cards[i]);
-        } else if(card.scheduling.reviewLog[0].review > minDue &&
-            card.scheduling.reviewLog[0].review <= maxDue &&
-            // only include new cards that are actually due this day
-            card.scheduling.fsrsCard.due <= maxDue) {
+            continue;
+        }
+        const state = cards[i].scheduling.fsrsCard.state;
+        if("New" == state) {
             newCards.push(cards[i]);
-        // TODO: possible distiction of (re-)learn/review needed
-        } else if(card.scheduling.fsrsCard.due <= maxDue) {
-            dueCards.push(cards[i]);
+        } else if("Learning" == state) {
+            lrnCards.push(cards[i]);
+        } else if("Relearning" == state) {
+            rlnCards.push(cards[i]);
+        } else if("Review" == state) {
+            revCards.push(cards[i]);
+        } else {
+            console.log('Invalid state found: ' + cards[i]);
         }
     }
-    // ensure a stable result by sorting
-    newCards.sort((a, b) => a.scheduling.fsrsCard.due.localCompare(b.scheduling.fsrsCard.due));
+    // sort by due date (before rank was used for stability)
+    const cmp = (a, b) => a.scheduling.fsrsCard.due.localeCompare(b.scheduling.fsrsCard.due);
+    newCards.sort(cmp);
+    lrnCards.sort(cmp);
+    rlnCards.sort(cmp);
+    revCards.sort(cmp);
     // non cards are sorted by rank or if that is not possible by alphabetical order
     nonCards.sort((a, b) => {
         if(undefined === a.rank && undefined !== b.rank) return 1
@@ -467,9 +484,13 @@ function orderCardsDueAndNew(cards) {
         if(undefined === a.rank && undefined === b.rank) return a.word.localeCompare(b.word);
         return a.rank - b.rank;
     });
-    dueCards.sort((a, b) => a.scheduling.fsrsCard.due.localCompare(b.scheduling.fsrsCard.due));
+    // new and unseen cards
     newCards.push(...nonCards);
     newCards.length = Math.min(newCards.length, newCardsMax);
+    // learn, relearn and review cards
+    dueCards.push(...lrnCards); // first learn to increase knowledge
+    dueCards.push(...rlnCards); // next relearn to get back lost knowledge
+    dueCards.push(...revCards); // finally review to steady knowledge
     dueCards.length = Math.min(dueCards.length, dueCardsMax);
     if(document.getElementById('randomizeExercises').checked) {
         shuffleArray(newCards);

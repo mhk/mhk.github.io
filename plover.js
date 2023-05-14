@@ -1,4 +1,5 @@
 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+let db = new PouchDB('cardData');
 let cards = {};
 let exercises = {};
 let currentExercise = {};
@@ -618,12 +619,17 @@ function getCardDifficulties(card) {
     return py2js(newCardsPy);
 }
 function putCardBack2(card, answer, ease) {
-    const newCards = getCardDifficulties();
+    const newCards = getCardDifficulties(card);
     newCards[ease].review_log.answer = answer;
     card.scheduling.fsrsCard = newCards[ease].card;
     card.scheduling.reviewLog.push(newCards[ease].review_log);
-    const id = card.collection + '::' + card.word;
-    localStorage.setItem(id, JSON.stringify(card.scheduling));
+    card.scheduling._id = card.collection + '::' + card.word;
+    localStorage.setItem(card.scheduling._id, JSON.stringify(card.scheduling));
+    db.put(card.scheduling, function(err, response) {
+        if (err) { return console.log(err); }
+        // handle response
+        console.log(response);
+    });
     console.log(card.scheduling);
     hideDifficulty();
 
@@ -715,8 +721,17 @@ function addCardTags() {
         list.appendChild(listItem);
     }
 }
-loadCards('./rope/cards-all.json');
 
+/*
+ ********************
+ *       MAIN       *
+ ********************
+ */
+
+db.info(function(err, info) {
+    db.changes({since: info.update_seq, continuous: true});
+});
+loadCards('./rope/cards-all.json');
 document.addEventListener("DOMContentLoaded", function(event) {
     setStenoKeyboardWidth(mobileStenoKeyboard);
     if(!isMobile) hideFullScreenButton();

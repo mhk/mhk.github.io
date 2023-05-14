@@ -181,25 +181,32 @@ function resetHint() {
     hints.innerHTML = '';
     showHint(0);
 }
-function showDifficulty() {
+function showDifficulty(card=null) {
     // automate pre-selection
     // style: font-size: 22px; font-weight: bold;
     // style.fontSize: 22px; style.fontWeight: bold;
-    document.getElementById('again').style.display = "block";
-    document.getElementById('hard').style.display  = "block";
-    document.getElementById('good').style.display  = "block";
-    document.getElementById('easy').style.display  = "block";
+    for(const ease of ["again", "hard", "good", "easy"]) {
+        document.getElementById(ease).style.display = "block";
+    }
     document.getElementById("release").style.display = "none";
     if(isKeyboard()) {
         hideStenoKeyboard();
     }
+    if(null !== card) {
+        const newCards = getCardDifficulties(card);
+        for(const ease of Object.keys(newCards)) {
+            document.getElementById(ease.toLowerCase()).style.padding = '9px 28px';
+            document.getElementById(ease.toLowerCase()).innerHTML =
+                ease + '<br/><small>' + getEstimate(newCards[ease].card.due) + '</small>';
+        }
+    }
 }
 function hideDifficulty() {
     // TODO: the TR's are using space it would be nice to just replace the buttons (perhaps a table within a table?)
-    document.getElementById('again').style.display = "none";
-    document.getElementById('hard').style.display  = "none";
-    document.getElementById('good').style.display  = "none";
-    document.getElementById('easy').style.display  = "none";
+    for(const ease of ["again", "hard", "good", "easy"]) {
+        document.getElementById(ease).style.display = "none";
+        document.getElementById(ease).style.padding = "";
+    }
     if(isKeyboard()) {
         showStenoKeyboard();
     }
@@ -247,7 +254,7 @@ function loadExercise(tags) {
             console.log(answer_strokes);
             if(isFsrs()) {
                 putCardBack = ease => putCardBack2(curExc, answer_strokes, ease);
-                showDifficulty();
+                showDifficulty(curExc);
             } else {
                 ++currentExerciseIndex;
                 exercise.innerHTML = textToLength().join('\n');
@@ -579,7 +586,24 @@ function fsrs() { // deprecated
     }
  */
 }
-function putCardBack2(card, answer, ease) {
+function getEstimate(due) {
+    const now = new Date;
+    const next = new Date(due);
+    const diffM = Math.ceil((next - now) / 60000);
+    if(diffM <= 5) return `&lt; ${diffM} minute${diffM === 1? '' : 's'}`;
+    if(diffM <= 55) return `&lt; ${Math.ceil(diffM / 5) * 5} Minutes`;
+    const diffH = Math.ceil(diffM / 60);
+    if(diffM < 24) return `&lt; ${diffH} hour${diffH === 1? '' : 's'}`;
+    const diffD = Math.ceil(diffH / 24);
+    if(diffD < 7) return `&lt; ${diffD} day${diffD === 1? '' : 's'}`;
+    const diffW = Math.ceil(diffD / 7);
+    if(diffW < 5) return `&lt; ${diffW} week${diffW === 1? '' : 's'}`;
+    const diffMon = Math.ceil(diffD / 30.416);
+    if(diffW < 13) return `&lt; ${diffMon} month${diffMon === 1? '' : 's'}`;
+    const diffY = Math.ceil(diffD / 365);
+    return `&lt; ${diffY} year${diffY === 1? '' : 's'}`;
+}
+function getCardDifficulties(card) {
     const now = new Date().toISOString();
     const fsrsPy = pyscript.interpreter.globals.get('fsrs');
     if(undefined === card.scheduling) {
@@ -591,7 +615,10 @@ function putCardBack2(card, answer, ease) {
         };
     }
     const newCardsPy = fsrsPy.repeatJs(card.scheduling.fsrsCard, now);
-    const newCards = py2js(newCardsPy);
+    return py2js(newCardsPy);
+}
+function putCardBack2(card, answer, ease) {
+    const newCards = getCardDifficulties();
     newCards[ease].review_log.answer = answer;
     card.scheduling.fsrsCard = newCards[ease].card;
     card.scheduling.reviewLog.push(newCards[ease].review_log);

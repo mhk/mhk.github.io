@@ -702,6 +702,21 @@ function addCardTags() {
         list.appendChild(listItem);
     }
 }
+function helpOverlayOff(event) {
+    document.getElementById("helpOverlay").style.display = "none";
+}
+function helpOverlayOn(event) {
+    const story = document.getElementById("story");
+    const rstory = document.getElementById("rope-story");
+    const card = currentExercise[currentExerciseIndex];
+    if(undefined !== card.story) {
+        story.innerHTML = card.story;
+    }
+    if(undefined !== card.rope_story) {
+        rstory.innerHTML = card.rope_story;
+    }
+    document.getElementById("helpOverlay").style.display = "block";
+}
 
 /*
  ********************

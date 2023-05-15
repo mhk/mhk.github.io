@@ -569,31 +569,6 @@ function py2js(pyObj) {
     );
     return toObject(pyObj.toJs());
 }
-function fsrs() { // deprecated
-    const [fsrsCard, now, fsrsPy] = [{"due": "2023-05-05 11:41:51.284324", "stability": 0, "difficulty": 0, "elapsed_days": 0, "scheduled_days": 0, "reps": 0, "lapses": 0, "state": "New"}, new Date().toISOString(), pyscript.interpreter.globals.get('fsrs')];
-    const cardPy = fsrsPy.newCardJs();
-    const card = py2js(cardPy);
-    const newCardsPy = fsrsPy.repeatJs(card, now);
-    const newCards = py2js(newCardsPy);
-
-    JSON.parse(localStorage.getItem(id));
-    newCardsPy = fsrsPy.repeatJs(newCard, now).toJs();
-    newCards = toObject(newCardsPy);
-    return newCards;
-
-    /*
-    const collection = {'name': 'Plover'};
-    const card = {'word': 'the'};
-    const id = collection.name + '::' + card.word;
-    const ease = 'Again';
-    let cardData = JSON.parse(localStorage.getItem(id));
-    if(null === cardData) {
-        const cardFsrsDataPy = fsrsPy.newCardJs().toJs();
-        const cardFsrsData = toObject(cardFsrsDataPy);
-        cardData = {'fsrs': cardFsrsData, 'answers': []}
-    }
- */
-}
 function getEstimate(due) {
     const now = new Date;
     const next = new Date(due);
@@ -631,7 +606,6 @@ function putCardBack2(card, answer, ease) {
     card.scheduling.fsrsCard = newCards[ease].card;
     card.scheduling.reviewLog.push(newCards[ease].review_log);
     card.scheduling._id = card.collection + '::' + card.word;
-    // localStorage.setItem(card.scheduling._id, JSON.stringify(card.scheduling));
     db.put(card.scheduling, function(err, response) {
         if (err) { return console.log(err); }
         // handle response

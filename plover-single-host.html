@@ -148,7 +148,7 @@
                 'plover/meta/attach.py',    'plover/meta/conditional.py',  'plover/meta/key_combo.py',  'plover/meta/word_end.py',
                 'plover/meta/case.py',      'plover/meta/currency.py',     'plover/meta/mode.py',
                 'plover/system/__init__.py',  'plover/system/english_stenotype.py',
-                'commands.json', 'main.json', 'user.json',
+                'main.json', 'rope_30_main.json', 'regenpfeifer_main.json',
                 'plover/oslayer/config.py',
                 'plover.egg-info/PKG-INFO', 'plover.egg-info/dependency_links.txt', 'plover.egg-info/requires.txt',
                 'plover.egg-info/zip-safe', 'plover.egg-info/SOURCES.txt', 'plover.egg-info/entry_points.txt', 
@@ -307,6 +307,11 @@
         <div>Select steno keyboard layout</div>
         <input type="radio" id="rightHanded" value='right' name="handedness" onchange="rightHandedStenoKeyboard();" checked><label for="rightHanded">right handed</label><br/>
         <input type="radio" id="leftHanded" value='left' name="handedness" onchange="leftHandedStenoKeyboard();"><label for="leftHanded">left handed</label>
+        <br/>
+        <div>Select steno dictionary</div>
+        <input type="radio" id="plover" value='plover' name="dictionary" onchange="setDictionary('main.json');" checked><label for="plover">Plover</label><br/>
+        <input type="radio" id="rope" value='rope' name="dictionary" onchange="setDictionary('rope_30_main.json');"><label for="rope">Rope 3.0</label><br/>
+        <input type="radio" id="regenpfeifer" value='regenpfeifer' name="dictionary" onchange="setDictionary('regenpfeifer_main.json');"><label for="regenpfeifer">Regenpfeifer</label><br/>
         <br>
         <div>Select card scheduler</div>
         <input type="radio" id="roundRobinTraining" value="roundRobin" name="trainingType" checked><label for="roundRobinTraining">Round Robin</label><br>

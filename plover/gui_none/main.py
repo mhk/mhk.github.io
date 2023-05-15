@@ -1,7 +1,7 @@
 # from plover.gui_none.engine import Engine
 
 from plover.engine import StenoEngine
-from plover.config import Config
+from plover.config import Config, DictionaryConfig
 from plover.gui_none.add_translation import AddTranslation
 
 def show_error(title, message):
@@ -54,6 +54,10 @@ def main2():
     registry.update()
     main(None, None)
 
+def setDictionary(engine, path='main.json'):
+    dictionaries = [DictionaryConfig.from_dict({'path': path, 'enabled': True})]
+    engine.config = { 'dictionaries': dictionaries }
+
 def main(config, controller):
     config = Config('./plover.cfg')
     engine = StenoEngine(config, FakeController(), FakeKeyboardEmulation())
@@ -62,6 +66,13 @@ def main(config, controller):
     if not engine.load_config():
         return 3
     engine.start()
+    try:
+        import js
+        from pyodide.ffi import create_proxy
+        setDict = lambda path: setDictionary(engine, path)
+        js.createObject(create_proxy(setDict), "setDictionary")
+    except ImportError:
+        pass
     try:
         return engine.run()
     except KeyboardInterrupt:

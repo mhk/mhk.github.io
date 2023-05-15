@@ -29,7 +29,7 @@ class FakeKeyboardEmulation:
 
     def send_backspaces(self, count):
         self.text = self.text[:-count]
-        self._update_text(self.text, f" {count}xBackSpace")
+        self._update_text(self.text, f"")
 
     def send_string(self, s):
         self.text += s

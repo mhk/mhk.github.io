@@ -221,8 +221,8 @@ function isFsrs() {
 function isKeyboard() {
     return !document.getElementById('hideStenoKeyboard').checked;
 }
-function loadExercise(tags) {
-    const data = getCards(tags);
+async function loadExercise(tags) {
+    const data = await getCards(tags);
     if(0 === Object.keys(data).length) {
         exercise.innerHTML = '';
         return ;
@@ -412,7 +412,7 @@ function openFullscreen() {
     } else if (elem.msRequestFullscreen) { /* IE11 */
       elem.msRequestFullscreen();
     }
-    screen.orientation.lock('landscape');
+    screen.orientation.lock('landscape-secondary');
 }
 /* Close fullscreen */
 function closeFullscreen() {
@@ -437,13 +437,19 @@ function intersect(a, b) {
   return [...new Set(a)].filter(x => setB.has(x));
 }
 function annotateCardsWithLocalData(cards) { // modifies input
+    const promises = [];
     for(const card of cards) {
         const id = card.collection + '::' + card.word;
-        const data = JSON.parse(localStorage.getItem(id));
-        if(null === data) continue;
-        card.scheduling = data;
+        promises.push(
+            db.get(id).then(data => {
+                if(null !== data) card.scheduling = data;
+                return card;
+            }).catch(err => {
+                if('missing' === err.reason) return card;
+                throw err;
+            }));
     }
-    return cards;
+    return Promise.all(promises);
 }
 function orderCardsDueAndNew(cards) {
     const maxDue = cutOffDate();
@@ -454,7 +460,7 @@ function orderCardsDueAndNew(cards) {
     const revCards = [];
     const rlnCards = [];
     const dueCards = [];
-    const newCardsMax = parseInt(document.getElementById('newCards').value);
+    let   newCardsMax = parseInt(document.getElementById('newCards').value);
     const dueCardsMax = parseInt(document.getElementById('maxCards').value);
     for(let i = 0; i < cards.length; ++i) {
         // only include cards that are new or due this day
@@ -467,6 +473,9 @@ function orderCardsDueAndNew(cards) {
             continue;
         }
         const state = cards[i].scheduling.fsrsCard.state;
+        if("New" != state && cards[i].scheduling.reviewLog[0].review <= maxDue ) {
+            newCardsMax--; // this card was due this cycle
+        }
         if("New" == state) {
             newCards.push(cards[i]);
         } else if("Learning" == state) {
@@ -541,13 +550,11 @@ function filterCardsByTags(fqtags) {
 function getCards(tags) {
     const filteredCards = filterCardsByTags(tags);
     if(isFsrs()) {
-        annotateCardsWithLocalData(filteredCards);
-        return orderCardsDueAndNew(filteredCards);
-    }
-    if(document.getElementById('randomizeExercises').checked) {
+        return annotateCardsWithLocalData(filteredCards).then(cards => orderCardsDueAndNew(cards));
+    } else if(document.getElementById('randomizeExercises').checked) {
         shuffleArray(filteredCards);
     }
-    return filteredCards;
+    return Promise.resolve(filteredCards);
 }
 function py2js(pyObj) {
     const toObject = (map = new Map) =>
@@ -624,7 +631,7 @@ function putCardBack2(card, answer, ease) {
     card.scheduling.fsrsCard = newCards[ease].card;
     card.scheduling.reviewLog.push(newCards[ease].review_log);
     card.scheduling._id = card.collection + '::' + card.word;
-    localStorage.setItem(card.scheduling._id, JSON.stringify(card.scheduling));
+    // localStorage.setItem(card.scheduling._id, JSON.stringify(card.scheduling));
     db.put(card.scheduling, function(err, response) {
         if (err) { return console.log(err); }
         // handle response

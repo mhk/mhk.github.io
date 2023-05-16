@@ -1,4 +1,5 @@
 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+const remoteCouch = 'http://admin:test@' + window.location.hostname + ':5984/plover';
 let db = new PouchDB('cardData');
 let cards = {};
 let exercises = {};
@@ -717,6 +718,29 @@ function helpOverlayOn(event) {
     }
     document.getElementById("helpOverlay").style.display = "block";
 }
+function sync() {
+    /*
+    db.changes({
+      since: 'now',
+      live: true
+    }).on('change', showTodos);
+     */
+    const syncDom = document.getElementById('sync-wrapper');
+    syncDom.setAttribute('data-sync-state', 'syncing');
+    var remote = new PouchDB(remoteCouch);
+    var pushRep = db.replicate.to(remote, {
+        continuous: true,
+        complete: syncError
+    });
+    var pullRep = db.replicate.from(remote, {
+        continuous: true,
+        complete: syncError
+    });
+}
+function syncError() {
+    const syncDom = document.getElementById('sync-wrapper');
+    syncDom.setAttribute('data-sync-state', 'error');
+}
 
 /*
  ********************
@@ -729,6 +753,7 @@ db.info(function(err, info) {
 });
 loadCards('./rope/cards-all.json');
 document.addEventListener("DOMContentLoaded", function(event) {
+    sync();
     setStenoKeyboardWidth(mobileStenoKeyboard);
     if(!isMobile) hideFullScreenButton();
 });

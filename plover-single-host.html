@@ -119,6 +119,17 @@
     small {
         font-size: 6pt;
     }
+    #sync-error, #sync-success {
+        display: none;
+    }
+
+    [data-sync-state=syncing] #sync-success {
+        display: block;
+    }
+
+    [data-sync-state=error] #sync-error {
+        display: block;
+    }
     </style>
     <link rel="stylesheet" href="./pyscript.css" />
     <script defer src="./pyscript.js"></script>
@@ -148,7 +159,7 @@
                 'plover/meta/attach.py',    'plover/meta/conditional.py',  'plover/meta/key_combo.py',  'plover/meta/word_end.py',
                 'plover/meta/case.py',      'plover/meta/currency.py',     'plover/meta/mode.py',
                 'plover/system/__init__.py',  'plover/system/english_stenotype.py',
-                'main.json', 'rope_30_main.json', 'regenpfeifer_main.json',
+                'main.json', 'user.json', 'commands.json', 'rope_30_main.json', 'regenpfeifer_main.json',
                 'plover/oslayer/config.py',
                 'plover.egg-info/PKG-INFO', 'plover.egg-info/dependency_links.txt', 'plover.egg-info/requires.txt',
                 'plover.egg-info/zip-safe', 'plover.egg-info/SOURCES.txt', 'plover.egg-info/entry_points.txt', 
@@ -176,7 +187,11 @@
         fsrs = FSRS()
     </py-script>
     <div id="Test">abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ</div>
-    <input type="button" id="cardOverlayButton" value="Settings" onclick="cardOverlayOn()" />
+    <div style="display: inline-block;"><input type="button" id="cardOverlayButton" value="Settings" onclick="cardOverlayOn()" /></div>
+    <div id="sync-wrapper" style="color: white; display: inline-block;">
+        <div id="sync-success">Sync active</div>
+        <div id="sync-error">There was a problem syncing</div>
+    </div>
     <table id='outputTable'>
         <tr id='toggleFullscreenRow'>
             <td colspan=4>

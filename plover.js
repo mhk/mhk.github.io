@@ -12,6 +12,9 @@ let exerciseHandler = (t, s) => t;
 let mobileStenoKeyboard = true;
 let text_strokes = [];
 let strokes = [];
+let pouchDbSyncActiveEvent = false
+let pouchDbSyncChangeEvent = false
+
 function createObject(object, variableName) {
     // Bind a variable whose name is the string variableName
     // to the object called 'object'
@@ -725,17 +728,19 @@ function sync() {
       live: true
     }).on('change', showTodos);
      */
+    var remote = new PouchDB(remoteCouch);
+    db.sync(remote, {
+        live: true,
+        retry: true
+    }).on('paused', msg => {
+        remote.info()
+          .then(info => syncWorking())
+          .catch(err => syncError());
+    });
+}
+function syncWorking() {
     const syncDom = document.getElementById('sync-wrapper');
     syncDom.setAttribute('data-sync-state', 'syncing');
-    var remote = new PouchDB(remoteCouch);
-    var pushRep = db.replicate.to(remote, {
-        continuous: true,
-        complete: syncError
-    });
-    var pullRep = db.replicate.from(remote, {
-        continuous: true,
-        complete: syncError
-    });
 }
 function syncError() {
     const syncDom = document.getElementById('sync-wrapper');

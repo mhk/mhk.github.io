@@ -458,14 +458,16 @@ function annotateCardsWithLocalData(cards) { // modifies input
 }
 function orderCardsDueAndNew(cards) {
     const maxDue = cutOffDate();
-    const minDue = cutOffDate(-1);
+    const minDue = cutOffDate(0);
     const nonCards = [];
     const newCards = [];
     const lrnCards = [];
     const revCards = [];
     const rlnCards = [];
     const dueCards = [];
-    let   newCardsMax = parseInt(document.getElementById('newCards').value);
+    const cardsLearnedToday = cards.filter(c => (c.scheduling !== undefined &&
+        "New" != c.state && c.scheduling.reviewLog[0].review >= minDue)).length;
+    const newCardsMax = Math.max(0, parseInt(document.getElementById('newCards').value) - cardsLearnedToday);
     const dueCardsMax = parseInt(document.getElementById('maxCards').value);
     for(let i = 0; i < cards.length; ++i) {
         // only include cards that are new or due this day
@@ -478,9 +480,6 @@ function orderCardsDueAndNew(cards) {
             continue;
         }
         const state = cards[i].scheduling.fsrsCard.state;
-        if("New" != state && cards[i].scheduling.reviewLog[0].review <= maxDue ) {
-            newCardsMax--; // this card was due this cycle
-        }
         if("New" == state) {
             newCards.push(cards[i]);
         } else if("Learning" == state) {

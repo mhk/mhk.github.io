@@ -2,6 +2,7 @@ const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 const remoteCouch = 'http://admin:test@' + window.location.hostname + ':5984/plover';
 let db = new PouchDB('cardData');
 let cards = {};
+let lessonsData = {};
 let exercises = {};
 let currentExercise = {};
 let currentExerciseIndex = 0;
@@ -666,6 +667,13 @@ function loadCards(deck) {
             });
         });
 }
+function loadLessons(lessons) {
+    fetch(lessons)
+        .then(response => response.json())
+        .then(json => {
+            lessonsData = json;
+        });
+}
 function cardOverlayOn() {
     document.getElementById("overlay").style.display = "block";
 }
@@ -712,12 +720,22 @@ function helpOverlayOff(event) {
 function helpOverlayOn(event) {
     const story = document.getElementById("story");
     const rstory = document.getElementById("rope-story");
+    const lesson = document.getElementById("plover-lesson");
     const card = currentExercise[currentExerciseIndex];
     if(undefined !== card.story) {
         story.innerHTML = card.story;
     }
     if(undefined !== card.rope_story) {
         rstory.innerHTML = card.rope_story;
+    }
+
+    const lessons = intersect(card.tags, Object.keys(lessonsData));
+    if(lessons.length > 0) {
+        for(l of Object.keys(lessonsData)) {
+            if(lessons.includes(l)) {
+                lesson.innerHTML += lessonsData[l].content + '<br/>';
+            }
+        }
     }
     document.getElementById("helpOverlay").style.display = "block";
 }
@@ -756,7 +774,8 @@ function syncError() {
 db.info(function(err, info) {
     db.changes({since: info.update_seq, continuous: true});
 });
-loadCards('./rope/cards-all.json');
+loadCards('rope/cards-all.json');
+loadLessons('learn-plover/lessons.json');
 document.addEventListener("DOMContentLoaded", function(event) {
     sync();
     setStenoKeyboardWidth(mobileStenoKeyboard);

@@ -730,6 +730,7 @@ function helpOverlayOn(event) {
 
     const lessons = intersect(card.tags, Object.keys(lessonsData));
     if(lessons.length > 0) {
+        lesson.innerHTML = '';
         for(l of Object.keys(lessonsData)) {
             if(lessons.includes(l)) {
                 lesson.innerHTML += lessonsData[l].content + '<br/>';

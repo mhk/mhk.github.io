@@ -191,10 +191,7 @@ function showDifficulty(card=null) {
     // automate pre-selection
     // style: font-size: 22px; font-weight: bold;
     // style.fontSize: 22px; style.fontWeight: bold;
-    for(const ease of ["again", "hard", "good", "easy"]) {
-        document.getElementById(ease).style.display = "block";
-    }
-    document.getElementById("release").style.display = "none";
+    document.getElementById("difficulty").style.display = '';
     if(isKeyboard()) {
         hideStenoKeyboard();
     }
@@ -209,16 +206,14 @@ function showDifficulty(card=null) {
 }
 function hideDifficulty() {
     // TODO: the TR's are using space it would be nice to just replace the buttons (perhaps a table within a table?)
-    for(const ease of ["again", "hard", "good", "easy"]) {
-        document.getElementById(ease).style.display = "none";
-        document.getElementById(ease).style.padding = "";
-    }
+    document.getElementById("difficulty").style.display = "none";
+    // don't automatically show release button since it belongs to the keyboard
     if(isKeyboard()) {
         showStenoKeyboard();
     }
 }
 function isDifficultSelection() {
-    return document.getElementById("release").style.display == "none";
+    return document.getElementById("releaseKeys").style.display == "none";
 }
 function isFsrs() {
     return document.getElementById('spacedRepetitionTraining').checked;
@@ -682,11 +677,11 @@ function cardOverlayOff() {
     changeExercise();
 }
 function showStenoKeyboard() {
-    document.getElementById("release").style.display = "block";
-    document.getElementById("stenoKeyboard").style.display = "block";
+    document.getElementById("releaseKeys").style.display = '';
+    document.getElementById("stenoKeyboard").style.display = '';
 }
 function hideStenoKeyboard() {
-    document.getElementById("release").style.display = "none";
+    document.getElementById("releaseKeys").style.display = "none";
     document.getElementById("stenoKeyboard").style.display = "none";
 }
 function setHideStenoKeyboard(hide) {

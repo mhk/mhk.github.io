@@ -315,9 +315,17 @@ function getSettings() {
     const handedness = document.querySelector('input[name="handedness"]:checked').value;
     const scheduler = document.querySelector('input[name="trainingType"]:checked').value;
     const failcount = document.getElementById('failcount').value;
+    const newCards = document.getElementById('newCards').value;
+    const maxCards = document.getElementById('maxCards').value;
+    const quickSelect = document.getElementById('quickSelect').checked? '1' : '0';
+    const dictionary = document.querySelector('input[name="dictionary"]:checked').value;
+    const cardPrios = document.querySelector('input[name="cardPrios"]:checked').value;
     return {'tags': tags, 'randomize': randomize,
         "hand": handedness, 'scheduler': scheduler,
         "failcount": failcount, "keyboard": keyboard,
+        "newCards": newCards, "maxCards": maxCards,
+        "quickSelect": quickSelect, "dict": dictionary,
+        "cardPrios": cardPrios,
     };
 }
 function getUrlSettings() {
@@ -328,9 +336,17 @@ function getUrlSettings() {
     const scheduler = urlParams.get('scheduler') || 'roundRobin';
     const failcount = urlParams.get('failcount') || '2';
     const keyboard = urlParams.get('keyboard') || '1';
+    const newCards = urlParams.get('newCards') || '10';
+    const maxCards = urlParams.get('maxCards') || '100';
+    const quickSelect = urlParams.get('quickSelect') || '0';
+    const dictionary = urlParams.get('dict') || 'plover';
+    const cardPrios = urlParams.get('cardPrios') || 'newOverDue';
     return {'tags': tags, 'randomize': randomize,
         "hand": handedness, 'scheduler': scheduler,
         "failcount": failcount, "keyboard": keyboard,
+        "newCards": newCards, "maxCards": maxCards,
+        "quickSelect": quickSelect, "dict": dictionary,
+        "cardPrios": cardPrios,
     };
 }
 function settingsChanged() {
@@ -344,14 +360,19 @@ function settingsChanged() {
         settings.scheduler === urlSettings.scheduler &&
         settings.failcount === urlSettings.failcount &&
         settings.keyboard === urlSettings.keyboard &&
+        settings.newCards === urlSettings.newCards &&
+        settings.maxCards === urlSettings.maxCards &&
+        settings.quickSelect === urlSettings.quickSelect &&
+        settings.dict === urlSettings.dict &&
+        settings.cardPrios === urlSettings.cardPrios &&
         true
     );
 }
 function setSettings() {
-    const randExcCheckbox = document.getElementById('randomizeExercises');
     const hideStenoCheckbox = document.getElementById('hideStenoKeyboard');
+    const quickSelect = document.getElementById('quickSelect');
     const urlSettings = getUrlSettings();
-    randExcCheckbox.checked = ('1' === urlSettings.randomize);
+    document.getElementById('randomizeExercises').checked = ('1' === urlSettings.randomize);
     hideStenoCheckbox.checked = ('0' === urlSettings.keyboard);
     rightHandedStenoKeyboard();
     if('left' === urlSettings.hand) {
@@ -365,6 +386,15 @@ function setSettings() {
         c => c.checked = true);
     document.getElementById('failcount').value = urlSettings.failcount;
     changeMax(undefined, urlSettings.failcount);
+
+    document.getElementById('newCards').value = urlSettings.newCards;
+    document.getElementById('maxCards').value = urlSettings.maxCards;
+    document.getElementById('quickSelect').checked = ('1' == urlSettings.quickSelect);
+    [...document.getElementsByName('dictionary')].filter(c => c.value === urlSettings.dict).map(
+        c => c.checked = true);
+    [...document.getElementsByName('cardPrios')].filter(c => c.value === urlSettings.dict).map(
+        c => c.checked = true);
+
     setTagsInSettings(urlSettings.tags);
     loadExercise(urlSettings.tags);
 }

@@ -73,6 +73,10 @@ function update_text(t, s) {
 function on(key) {
     document.getElementById(key).setAttribute('fill', '#f3f70f');
     // document.getElementById('char_'+key).setAttribute('fill', '#000000');
+    let ease = null;
+    if(isDifficultSelection() && isAutoaccept() && (ease = getPreslection()) !== null) {
+        putCardBack(ease);
+    }
 }
 function off(key) {
     document.getElementById(key).setAttribute('fill', '#666666');
@@ -189,30 +193,37 @@ function resetHint() {
     hints.innerHTML = '';
     showHint(0);
 }
-function preselectDifficulty(recommendedEase) {
+function preselectDifficulty(recommendedEase, height) {
     for(const ease of ["again", "hard", "good", "easy"]) {
         if(recommendedEase === ease) continue
         document.getElementById(ease.toLowerCase()).style.fontWeight = '';
         document.getElementById(ease.toLowerCase()).style.fontSize = '12px';
+        document.getElementById(ease.toLowerCase()).style.height = '';
     }
     document.getElementById(recommendedEase).style.fontWeight = 'bold';
     document.getElementById(recommendedEase).style.fontSize = '';
+    document.getElementById(recommendedEase).style.height = (height > 0)? height : '';
 }
 function showDifficulty(card=null) {
     // automate pre-selection
     // style: font-size: 22px; font-weight: bold;
     // style.fontSize: 22px; style.fontWeight: bold;
     document.getElementById("difficulty").style.display = '';
-    if(isKeyboard()) {
+    const height = document.getElementById("release").clientHeight;
+    if(isKeyboard() && isAutoaccept()) {
+        document.getElementById("releaseKeys").style.display = "none";
+    } else if(isKeyboard()) {
         hideStenoKeyboard();
     }
 
-    const now = new Date;
-    const diffS = Math.ceil((now - cardStartTime) / 1000);
-    if(failCount > 1) preselectDifficulty('again');
-    else if(failCount > 0) preselectDifficulty('hard');
-    else if(diffS <= 10) preselectDifficulty('easy');
-    else preselectDifficulty('good');
+    if(isAutoaccept()) {
+        const now = new Date;
+        const diffS = Math.ceil((now - cardStartTime) / 1000);
+        if(failCount > 1) preselectDifficulty('again', height);
+        else if(failCount > 0) preselectDifficulty('hard', height);
+        else if(diffS <= 10) preselectDifficulty('easy', height);
+        else preselectDifficulty('good', height);
+    }
 
     if(null !== card) {
         const newCards = getCardDifficulties(card);
@@ -224,7 +235,6 @@ function showDifficulty(card=null) {
     }
 }
 function hideDifficulty() {
-    // TODO: the TR's are using space it would be nice to just replace the buttons (perhaps a table within a table?)
     document.getElementById("difficulty").style.display = "none";
     // don't automatically show release button since it belongs to the keyboard
     if(isKeyboard()) {
@@ -234,9 +244,13 @@ function hideDifficulty() {
 function isDifficultSelection() {
     return document.getElementById("difficulty").style.display === '';
 }
+function isAutoaccept() {
+    return document.getElementById("quickSelect").checked;
+}
 function getPreslection() {
     for(const ease of ["again", "hard", "good", "easy"]) {
-        if(document.getElementById(ease).style.fontWeight === 'bold') return ease;
+        const element = document.getElementById(ease);
+        if(element.style.fontWeight === 'bold') return element.value;
     }
     return null;
 }

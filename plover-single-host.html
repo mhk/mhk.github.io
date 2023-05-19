@@ -224,17 +224,17 @@
         </tr>
         <tr id='difficulty' style='display: none'>
             <td style="width: 25%">
-                <button type="button" id="again" class="block" style='background-color: #822d26;' onclick="onAgain(event);">Again</button>
+                <button type="button" id="again" value="Again" class="block" style='background-color: #822d26;' onclick="onAgain(event);">Again</button>
             </td>
             <td style="width: 25%">
-                <button type="button" id="hard" class="block"  style='background-color: #824926;' onclick="onHard(event);">Hard</button>
+                <button type="button" id="hard" value="Hard" class="block"  style='background-color: #824926;' onclick="onHard(event);">Hard</button>
             </td>
             <td style="width: 25%">
                 <!-- Alternative color: #5d8226 -->
-                <button type="button" id="good" class="block" style='background-color: #827326;' onclick="onGood(event);">Good</button>
+                <button type="button" id="good" value="Good" class="block" style='background-color: #827326;' onclick="onGood(event);">Good</button>
             </td>
             <td style="width: 25%">
-                <button type="button" id="easy" class="block" style='background-color: #268258;' onclick="onEasy(event);">Easy</button>
+                <button type="button" id="easy" value="Easy" class="block" style='background-color: #268258;' onclick="onEasy(event);">Easy</button>
             </td>
         </tr>
     </table>
@@ -324,6 +324,8 @@
         <input type="checkbox" id="randomizeExercises" name="randomizeExercise" value="randomizeExercise" /> <label for="randomizeExercises">randomize</label>
         <br/>
         <input type="checkbox" id="hideStenoKeyboard" name="hideStenoKeyboard" value="hideStenoKeyboard" onchange="setHideStenoKeyboard(this.checked);" /> <label for="hideStenoKeyboard">hide steno keyboard</label>
+        <br/>
+        <input type="checkbox" id="quickSelect" name="quickSelect" value="quickSelect"/> <label for="quickSelect">Autoaccept difficulty on keypress</label>
         <br/>
         <div>Select steno keyboard layout</div>
         <input type="radio" id="rightHanded" value='right' name="handedness" onchange="rightHandedStenoKeyboard();" checked><label for="rightHanded">right handed</label><br/>

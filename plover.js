@@ -2,6 +2,7 @@ const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 const remoteCouch = 'http://admin:test@' + window.location.hostname + ':5984/plover';
 let db = new PouchDB('cardData');
 let cards = {};
+let cardStartTime = new Date;
 let lessonsData = {};
 let exercises = {};
 let currentExercise = {};
@@ -181,11 +182,21 @@ function initNextExercise() {
     resetHint();
     strokes.length = 0;
     text_strokes.length = 0;
+    cardStartTime = new Date;
 }
 function resetHint() {
     failCount = 0;
     hints.innerHTML = '';
     showHint(0);
+}
+function preselectDifficulty(recommendedEase) {
+    for(const ease of ["again", "hard", "good", "easy"]) {
+        if(recommendedEase === ease) continue
+        document.getElementById(ease.toLowerCase()).style.fontWeight = '';
+        document.getElementById(ease.toLowerCase()).style.fontSize = '12px';
+    }
+    document.getElementById(recommendedEase).style.fontWeight = 'bold';
+    document.getElementById(recommendedEase).style.fontSize = '';
 }
 function showDifficulty(card=null) {
     // automate pre-selection
@@ -195,6 +206,14 @@ function showDifficulty(card=null) {
     if(isKeyboard()) {
         hideStenoKeyboard();
     }
+
+    const now = new Date;
+    const diffS = Math.ceil((now - cardStartTime) / 1000);
+    if(failCount > 1) preselectDifficulty('again');
+    else if(failCount > 0) preselectDifficulty('hard');
+    else if(diffS <= 10) preselectDifficulty('easy');
+    else preselectDifficulty('good');
+
     if(null !== card) {
         const newCards = getCardDifficulties(card);
         for(const ease of Object.keys(newCards)) {
@@ -213,7 +232,13 @@ function hideDifficulty() {
     }
 }
 function isDifficultSelection() {
-    return document.getElementById("releaseKeys").style.display == "none";
+    return document.getElementById("difficulty").style.display === '';
+}
+function getPreslection() {
+    for(const ease of ["again", "hard", "good", "easy"]) {
+        if(document.getElementById(ease).style.fontWeight === 'bold') return ease;
+    }
+    return null;
 }
 function isFsrs() {
     return document.getElementById('spacedRepetitionTraining').checked;
@@ -230,6 +255,7 @@ async function loadExercise(tags) {
     currentExercise = [...data];
     exercise.innerHTML = textToLength().join('\n');
     showHint(0);
+    cardStartTime = new Date;
     exerciseHandler = (t, s) => {
         console.log(currentExercise.length, t);
         if(currentExercise.length === 0 && repeatExercise) changeExercise();

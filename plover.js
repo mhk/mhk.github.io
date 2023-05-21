@@ -260,6 +260,30 @@ function isFsrs() {
 function isKeyboard() {
     return !document.getElementById('hideStenoKeyboard').checked;
 }
+function showFsrsStats(tags) {
+    const cardStats = document.getElementById('cardStats');
+    cardStats.innerHTML = '';
+    if(!isFsrs()) return ;
+    const filteredCards = filterCardsByTags(tags);
+    const minDue = cutOffDate(0);
+    const maxDue = cutOffDate();
+    let newCardsLearnedToday = 0;
+    let newCardsCount = 0;
+    let cardsLearnedToday = 0;
+    let cardsDue = 0;
+    for(const c of filteredCards) {
+        newCardsLearnedToday += (c.scheduling !== undefined && "New" !== c.state && c.scheduling.reviewLog[0].review >= minDue);
+        newCardsCount += (c.scheduling === undefined || "New" === c.state || c.scheduling.reviewLog[0].review >= minDue);
+        // cards reviewed
+        cardsLearnedToday += (c.scheduling !== undefined && c.scheduling.reviewLog.at(-1).review >= minDue);
+        // not scheduled or not reviewed
+        cardsDue += (c.scheduling === undefined || (c.scheduling.fsrsCard.due <= maxDue && c.scheduling.reviewLog.at(-1).review < minDue));
+    }
+    const newCardsMax = Math.min(newCardsCount, parseInt(document.getElementById('newCards').value));
+    const dueCardsMax = Math.min(cardsLearnedToday + cardsDue, parseInt(document.getElementById('maxCards').value));
+
+    cardStats.innerHTML = 'New: ' + newCardsLearnedToday + '/' + newCardsMax + ' Total: ' + cardsLearnedToday + '/' + dueCardsMax;
+}
 async function loadExercise(tags) {
     const data = await getCards(tags);
     if(0 === Object.keys(data).length) {
@@ -269,6 +293,7 @@ async function loadExercise(tags) {
     currentExercise = [...data];
     exercise.innerHTML = textToLength().join('\n');
     showHint(0);
+    showFsrsStats(tags);
     cardStartTime = new Date;
     exerciseHandler = (t, s) => {
         console.log(currentExercise.length, t);
@@ -294,7 +319,10 @@ async function loadExercise(tags) {
             const answer_strokes = text_strokes.join(', ');
             console.log(answer_strokes);
             if(isFsrs()) {
-                putCardBack = ease => putCardBack2(curExc, answer_strokes, ease);
+                putCardBack = ease => {
+                    putCardBack2(curExc, answer_strokes, ease);
+                    showFsrsStats(tags);
+                }
                 showDifficulty(curExc);
             } else {
                 ++currentExerciseIndex;

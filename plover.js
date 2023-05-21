@@ -786,16 +786,18 @@ function helpOverlayOn(event) {
     const rstory = document.getElementById("rope-story");
     const lesson = document.getElementById("plover-lesson");
     const card = currentExercise[currentExerciseIndex];
+    story.innerHTML = '';
+    rstory.innerHTML = '';
+    lesson.innerHTML = '';
     if(undefined !== card.story) {
-        story.innerHTML = card.story;
+        story.innerHTML = '<h2>Story</h2>\n' + card.story;
     }
     if(undefined !== card.rope_story) {
-        rstory.innerHTML = card.rope_story;
+        rstory.innerHTML = '<h2>Rope Story</h2>\n' + card.rope_story;
     }
 
     const lessons = intersect(card.tags, Object.keys(lessonsData));
     if(lessons.length > 0) {
-        lesson.innerHTML = '';
         for(l of Object.keys(lessonsData)) {
             if(lessons.includes(l)) {
                 lesson.innerHTML += lessonsData[l].content + '<br/>';

@@ -267,20 +267,33 @@ function showFsrsStats(tags) {
     const filteredCards = filterCardsByTags(tags);
     const minDue = cutOffDate(0);
     const maxDue = cutOffDate();
+    const newMax = parseInt(document.getElementById('newCards').value);
+    const cardsMax = parseInt(document.getElementById('maxCards').value);
+    let cardsUndefined = 0;
     let newCardsLearnedToday = 0;
     let newCardsCount = 0;
     let cardsLearnedToday = 0;
     let cardsDue = 0;
     for(const c of filteredCards) {
-        newCardsLearnedToday += (c.scheduling !== undefined && "New" !== c.state && c.scheduling.reviewLog[0].review >= minDue);
-        newCardsCount += (c.scheduling === undefined || "New" === c.state || c.scheduling.reviewLog[0].review >= minDue);
+        if(c.scheduling === undefined) {
+            cardsUndefined += 1;
+            continue;
+        }
+        // all cards have scheduling information
+
+        // cards that have been reviewed today and that are new (should be 0)
+        newCardsLearnedToday += ("New" !== c.state && c.scheduling.reviewLog[0].review >= minDue);
+        // cards that have been reviewed the first time today
+        newCardsCount += ("New" === c.state || c.scheduling.reviewLog[0].review >= minDue);
         // cards reviewed
-        cardsLearnedToday += (c.scheduling !== undefined && c.scheduling.reviewLog.at(-1).review >= minDue);
-        // not scheduled or not reviewed
-        cardsDue += (c.scheduling === undefined || (c.scheduling.fsrsCard.due <= maxDue && c.scheduling.reviewLog.at(-1).review < minDue));
+        cardsLearnedToday += (c.scheduling.reviewLog.at(-1).review >= minDue);
+        // cards not reviewed, but due
+        cardsDue += (c.scheduling.fsrsCard.due <= maxDue && !(c.scheduling.reviewLog.at(-1).review >= minDue));
     }
-    const newCardsMax = Math.min(newCardsCount, parseInt(document.getElementById('newCards').value));
-    const dueCardsMax = Math.min(cardsLearnedToday + cardsDue, parseInt(document.getElementById('maxCards').value));
+    const newCardsMax = Math.min(cardsUndefined + newCardsCount, newMax);
+    const dueCardsMax = Math.min(cardsUndefined + cardsLearnedToday + cardsDue, cardsMax);
+    console.log(`cardsUndefined: ${cardsUndefined}, newCardsCount: ${newCardsCount}, newMax: ${newMax}, newCardsMax: ${newCardsMax}`);
+    console.log(`cardsUndefined: ${cardsUndefined}, cardsLearnedToday: ${cardsLearnedToday}, cardsDue: ${cardsDue}, cardsMax: ${cardsMax}, dueCardsMax: ${dueCardsMax}`);
 
     cardStats.innerHTML = 'New: ' + newCardsLearnedToday + '/' + newCardsMax + ' Total: ' + cardsLearnedToday + '/' + dueCardsMax;
 }
@@ -528,7 +541,7 @@ function handleStenoTouch(event) {
 }
 function cutOffDate(day=1) {
     const now = new Date;
-    return (new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + day, 5, 0, 0, 0))).toISOString();
+    return (new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + day, 2, 0, 0, 0))).toISOString();
 }
 function intersect(a, b) {
   var setB = new Set(b);

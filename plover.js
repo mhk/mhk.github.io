@@ -270,8 +270,10 @@ function showFsrsStats(tags) {
     const newMax = parseInt(document.getElementById('newCards').value);
     const cardsMax = parseInt(document.getElementById('maxCards').value);
     let cardsUndefined = 0;
+    let newCardsShownToday = 0;
     let newCardsLearnedToday = 0;
     let newCardsCount = 0;
+    let cardsShownToday = 0;
     let cardsLearnedToday = 0;
     let cardsDue = 0;
     for(const c of filteredCards) {
@@ -281,24 +283,30 @@ function showFsrsStats(tags) {
         }
         // all cards have scheduling information
 
-        // cards that have been reviewed today and that are new (should be 0)
-        newCardsLearnedToday += ("New" !== c.state && c.scheduling.reviewLog[0].review >= minDue);
+        // cards that have been reviewed today and that are new 
+        newCardsShownToday += ("New" !== c.state && c.scheduling.reviewLog[0].review >= minDue);
         // cards that have been reviewed the first time today
         newCardsCount += ("New" === c.state || c.scheduling.reviewLog[0].review >= minDue);
+        // new cards successfully learned today
+        newCardsLearnedToday += (c.scheduling.fsrsCard.due > maxDue && c.scheduling.reviewLog[0].review >= minDue)
+
         // cards reviewed
-        cardsLearnedToday += (c.scheduling.reviewLog.at(-1).review >= minDue);
+        cardsShownToday += (c.scheduling.reviewLog.at(-1).review >= minDue);
         // cards not reviewed, but due
         cardsDue += (c.scheduling.fsrsCard.due <= maxDue && !(c.scheduling.reviewLog.at(-1).review >= minDue));
+        // cards successfully learned today
+        cardsLearnedToday += (c.scheduling.fsrsCard.due > maxDue && c.scheduling.reviewLog.at(-1).review >= minDue);
     }
     const newCardsMax = Math.min(cardsUndefined + newCardsCount, newMax);
-    const dueCardsMax = Math.min(cardsUndefined + cardsLearnedToday + cardsDue, cardsMax);
-    console.log(`cardsUndefined: ${cardsUndefined}, newCardsCount: ${newCardsCount}, newMax: ${newMax}, newCardsMax: ${newCardsMax}`);
-    console.log(`cardsUndefined: ${cardsUndefined}, cardsLearnedToday: ${cardsLearnedToday}, cardsDue: ${cardsDue}, cardsMax: ${cardsMax}, dueCardsMax: ${dueCardsMax}`);
+    const dueCardsMax = Math.min(cardsUndefined + cardsShownToday + cardsDue, cardsMax);
+    console.log(`cardsUndefined: ${cardsUndefined}, newCardsShownToday ${newCardsShownToday}, newCardsCount: ${newCardsCount}, newCardsLearnedToday ${newCardsLearnedToday}, newMax: ${newMax}, newCardsMax: ${newCardsMax}`);
+    console.log(`cardsUndefined: ${cardsUndefined}, cardsLearnedToday: ${cardsLearnedToday}, cardsShownToday: ${cardsShownToday}, cardsDue: ${cardsDue}, cardsMax: ${cardsMax}, dueCardsMax: ${dueCardsMax}`);
 
-    cardStats.innerHTML = 'New: ' + newCardsLearnedToday + '/' + newCardsMax + ' Total: ' + cardsLearnedToday + '/' + dueCardsMax;
+    cardStats.innerHTML = 'New: ' + newCardsLearnedToday + '/' + newCardsShownToday + '/' + newCardsMax + ' Total: ' + cardsLearnedToday + '/' + cardsShownToday + '/' + dueCardsMax;
 }
 async function loadExercise(tags) {
     const data = await getCards(tags);
+    showFsrsStats(tags);
     if(0 === Object.keys(data).length) {
         exercise.innerHTML = '';
         return ;
@@ -306,7 +314,6 @@ async function loadExercise(tags) {
     currentExercise = [...data];
     exercise.innerHTML = textToLength().join('\n');
     showHint(0);
-    showFsrsStats(tags);
     cardStartTime = new Date;
     exerciseHandler = (t, s) => {
         console.log(currentExercise.length, t);

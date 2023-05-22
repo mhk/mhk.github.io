@@ -883,7 +883,7 @@ function getDefinitionOfWord(word) {
                     const listItem = document.createElement("li");
                     listItem.innerHTML = def.definition;
                     if(undefined !== def.example) {
-                        listItem.innerHTML += '(Example: <i>' + def.example + '</i>)';
+                        listItem.innerHTML += '<br/>Example: <i>' + def.example + '</i>';
                     }
                     definitionList.appendChild(listItem);
                 }

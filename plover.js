@@ -837,13 +837,15 @@ function helpOverlayOn(event) {
     story.innerHTML = '';
     rstory.innerHTML = '';
     lesson.innerHTML = '';
+    if(undefined !== card.word) {
+        getDefinitionOfWord(card.word);
+    }
     if(undefined !== card.story) {
         story.innerHTML = '<h2>Story</h2>\n' + card.story;
     }
     if(undefined !== card.rope_story) {
         rstory.innerHTML = '<h2>Rope Story</h2>\n' + card.rope_story;
     }
-
     const lessons = intersect(card.tags, Object.keys(lessonsData));
     if(lessons.length > 0) {
         for(l of Object.keys(lessonsData)) {
@@ -853,6 +855,41 @@ function helpOverlayOn(event) {
         }
     }
     document.getElementById("helpOverlay").style.display = "block";
+}
+function getDefinitionOfWord(word) {
+    const definition = document.getElementById("definition");
+    definition.innerHTML = '';
+    const details = document.createElement("details");
+    const summary = document.createElement("summary");
+    const header = document.createElement("h1");
+    const content = document.createElement("div");
+    header.innerHTML = word;
+    summary.appendChild(header);
+    details.appendChild(summary);
+    details.appendChild(content);
+    definition.appendChild(details);
+    fetch('https://api.dictionaryapi.dev/api/v2/entries/en/' + word)
+        .then(response => response.json())
+        .then(json => {
+            if(json.length == 0) return ;
+            for(let i = 0; i < json[0].meanings.length; ++i) {
+                const meaning = json[0].meanings[i];
+                const partOfSpeech = document.createElement("h3");
+                partOfSpeech.innerHTML = meaning.partOfSpeech;
+                content.appendChild(partOfSpeech);
+                const definitionList = document.createElement("ul");
+                for(let j = 0; j < meaning.definitions.length; ++j) {
+                    const def = meaning.definitions[j];
+                    const listItem = document.createElement("li");
+                    listItem.innerHTML = def.definition;
+                    if(undefined !== def.example) {
+                        listItem.innerHTML += '(Example: <i>' + def.example + '</i>)';
+                    }
+                    definitionList.appendChild(listItem);
+                }
+                content.appendChild(definitionList);
+            }
+        });
 }
 function sync() {
     /*

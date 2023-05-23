@@ -50,10 +50,6 @@ function showFullScreenButton() {
     row.style.display = '';
 }
 window.addEventListener('resize', (event) => {
-    const txt = textToLength();
-    if(txt === undefined) return;
-    const row = document.getElementById("toggleFullscreenRow");
-    exercise.innerHTML = txt.join('\n');
     switch (screen.orientation.type) {
       case "landscape-primary":
       case "landscape-secondary":
@@ -66,6 +62,10 @@ window.addEventListener('resize', (event) => {
       default:
         // do nothing
     }
+    const txt = textToLength();
+    if(txt === undefined) return;
+    const row = document.getElementById("toggleFullscreenRow");
+    exercise.innerHTML = txt.join('\n');
 });
 function update_text(t, s) {
     steno.innerHTML = exerciseHandler(t, s);

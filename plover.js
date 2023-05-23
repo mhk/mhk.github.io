@@ -299,10 +299,103 @@ function showFsrsStats(tags) {
     }
     const newCardsMax = Math.min(cardsUndefined + newCardsCount, newMax);
     const dueCardsMax = Math.min(cardsUndefined + cardsShownToday + cardsDue, cardsMax);
-    console.log(`cardsUndefined: ${cardsUndefined}, newCardsShownToday ${newCardsShownToday}, newCardsCount: ${newCardsCount}, newCardsLearnedToday ${newCardsLearnedToday}, newMax: ${newMax}, newCardsMax: ${newCardsMax}`);
-    console.log(`cardsUndefined: ${cardsUndefined}, cardsLearnedToday: ${cardsLearnedToday}, cardsShownToday: ${cardsShownToday}, cardsDue: ${cardsDue}, cardsMax: ${cardsMax}, dueCardsMax: ${dueCardsMax}`);
+    // console.log(`cardsUndefined: ${cardsUndefined}, newCardsShownToday ${newCardsShownToday}, newCardsCount: ${newCardsCount}, newCardsLearnedToday ${newCardsLearnedToday}, newMax: ${newMax}, newCardsMax: ${newCardsMax}`);
+    // console.log(`cardsUndefined: ${cardsUndefined}, cardsLearnedToday: ${cardsLearnedToday}, cardsShownToday: ${cardsShownToday}, cardsDue: ${cardsDue}, cardsMax: ${cardsMax}, dueCardsMax: ${dueCardsMax}`);
 
     cardStats.innerHTML = 'New: ' + newCardsLearnedToday + '/' + newCardsShownToday + '/' + newCardsMax + ' Total: ' + cardsLearnedToday + '/' + cardsShownToday + '/' + dueCardsMax;
+}
+function orderCardsDueAndNew2(cards) {
+    const result = {
+        cards: [],
+        newCardsLearned: 0, newCardsShown: 0, newCardsMax: 0,
+        cardsLearned: 0, cardsShown: 0, cardsMax: 0,
+    };
+    const maxDue = cutOffDate();
+    const minDue = cutOffDate(0);
+    const nonCards = [];
+    const newCards = [];
+    const lrnCards = [];
+    const revCards = [];
+    const rlnCards = [];
+    const dueCards = [];
+    const settingNewCardsMax = parseInt(document.getElementById('newCards').value);
+    const settingCardsMax =  parseInt(document.getElementById('maxCards').value);
+    result.cardsMax = settingCardsMax;
+    result.newCardsMax = settingNewCardsMax;
+    for(let i = 0; i < cards.length; ++i) {
+        const c = cards[i];
+        // cards that are not due today anymore, aka learned
+        result.cardsLearned += (undefined !== c.scheduling &&
+            c.scheduling.fsrsCard.due >= maxDue &&
+            c.scheduling.reviewLog.at(-1).review >= minDue);
+
+        // new cards that are not due today anymore, aka learned
+        result.newCardsLearned += (undefined !== c.scheduling &&
+            c.scheduling.fsrsCard.due >= maxDue &&
+            c.scheduling.reviewLog.at(-1).review >= minDue &&
+            c.scheduling.reviewLog.at(0).review >= minDue);
+
+        // only include cards that are new or due this day
+        if(undefined !== c.scheduling && c.scheduling.fsrsCard.due >= maxDue) {
+            continue;
+        }
+        if(undefined === c.scheduling) {
+            nonCards.push(c);
+            continue;
+        }
+
+        // new cards reviewed
+        result.newCardsShown += (c.scheduling.reviewLog[0].review >= minDue);
+        // cards reviewed
+        result.cardsShown += (c.scheduling.reviewLog.at(-1).review >= minDue);
+
+        const state = c.scheduling.fsrsCard.state;
+        if("New" == state) {
+            newCards.push(c);
+        } else if("Learning" == state) {
+            lrnCards.push(c);
+        } else if("Relearning" == state) {
+            rlnCards.push(c);
+        } else if("Review" == state) {
+            revCards.push(c);
+        } else {
+            console.log('Invalid state found: ' + c);
+        }
+    }
+    const newCardsMax = Math.max(0, settingNewCardsMax - result.newCardsLearned);
+    const dueCardsMax = Math.max(0, settingCardsMax - result.cardsLearned);
+    if(dueCardsMax === 0) return result;
+    // sort by due date (before rank was used for stability)
+    const cmp = (a, b) => a.scheduling.fsrsCard.due.localeCompare(b.scheduling.fsrsCard.due);
+    newCards.sort(cmp);
+    lrnCards.sort(cmp);
+    rlnCards.sort(cmp);
+    revCards.sort(cmp);
+    // non cards are sorted by rank or if that is not possible by alphabetical order
+    nonCards.sort((a, b) => {
+        if(undefined === a.rank && undefined !== b.rank) return 1
+        if(undefined !== a.rank && undefined === b.rank) return -1
+        if(undefined === a.rank && undefined === b.rank) return a.word.localeCompare(b.word);
+        return a.rank - b.rank;
+    });
+    // new and unseen cards
+    newCards.push(...nonCards);
+    newCards.length = Math.min(newCards.length, newCardsMax);
+    // learn, relearn and review cards
+    dueCards.push(...lrnCards); // first learn to increase knowledge
+    dueCards.push(...rlnCards); // next relearn to get back lost knowledge
+    dueCards.push(...revCards); // finally review to steady knowledge
+    dueCards.length = Math.min(dueCards.length, dueCardsMax);
+    if(document.getElementById('randomizeExercises').checked) {
+        shuffleArray(newCards);
+        shuffleArray(dueCards);
+    }
+    if(!document.getElementById('newOverDue').checked) {
+        result.cards = dueCards.concat(newCards);
+    } else {
+        result.cards = newCards.concat(dueCards);
+    }
+    return result;
 }
 async function loadExercise(tags) {
     const data = await getCards(tags);
@@ -578,10 +671,12 @@ function orderCardsDueAndNew(cards) {
     const revCards = [];
     const rlnCards = [];
     const dueCards = [];
+    const newCardsLearnedToday = cards.filter(c => (c.scheduling !== undefined &&
+        "New" != c.state && c.scheduling.reviewLog.at(0).review >= minDue)).length;
     const cardsLearnedToday = cards.filter(c => (c.scheduling !== undefined &&
-        "New" != c.state && c.scheduling.reviewLog[0].review >= minDue)).length;
-    const newCardsMax = Math.max(0, parseInt(document.getElementById('newCards').value) - cardsLearnedToday);
-    const dueCardsMax = parseInt(document.getElementById('maxCards').value);
+        "New" != c.state && c.scheduling.reviewLog.at(-1).review >= minDue)).length;
+    const newCardsMax = Math.max(0, parseInt(document.getElementById('newCards').value) - newCardsLearnedToday);
+    const dueCardsMax = Math.max(0, parseInt(document.getElementById('maxCards').value) - cardsLearnedToday);
     for(let i = 0; i < cards.length; ++i) {
         // only include cards that are new or due this day
         if(undefined !== cards[i].scheduling &&

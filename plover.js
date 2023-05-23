@@ -288,14 +288,14 @@ function showFsrsStats(tags) {
         // cards that have been reviewed the first time today
         newCardsCount += ("New" === c.state || c.scheduling.reviewLog[0].review >= minDue);
         // new cards successfully learned today
-        newCardsLearnedToday += (c.scheduling.fsrsCard.due > maxDue && c.scheduling.reviewLog[0].review >= minDue)
+        newCardsLearnedToday += (c.scheduling.fsrsCard.due >= maxDue && c.scheduling.reviewLog[0].review >= minDue)
 
         // cards reviewed
         cardsShownToday += (c.scheduling.reviewLog.at(-1).review >= minDue);
         // cards not reviewed, but due
-        cardsDue += (c.scheduling.fsrsCard.due <= maxDue && !(c.scheduling.reviewLog.at(-1).review >= minDue));
+        cardsDue += (c.scheduling.fsrsCard.due < maxDue && !(c.scheduling.reviewLog.at(-1).review >= minDue));
         // cards successfully learned today
-        cardsLearnedToday += (c.scheduling.fsrsCard.due > maxDue && c.scheduling.reviewLog.at(-1).review >= minDue);
+        cardsLearnedToday += (c.scheduling.fsrsCard.due >= maxDue && c.scheduling.reviewLog.at(-1).review >= minDue);
     }
     const newCardsMax = Math.min(cardsUndefined + newCardsCount, newMax);
     const dueCardsMax = Math.min(cardsUndefined + cardsShownToday + cardsDue, cardsMax);
@@ -587,7 +587,7 @@ function orderCardsDueAndNew(cards) {
     for(let i = 0; i < cards.length; ++i) {
         // only include cards that are new or due this day
         if(undefined !== cards[i].scheduling &&
-            cards[i].scheduling.fsrsCard.due > maxDue) {
+            cards[i].scheduling.fsrsCard.due >= maxDue) {
             continue;
         }
         if(undefined === cards[i].scheduling) {

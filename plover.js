@@ -5,12 +5,11 @@ let cards = {};
 let cardStartTime = new Date;
 let lessonsData = {};
 let exercises = {};
-let currentExercise = {};
+let currentExercise = [];
 let currentExerciseIndex = 0;
 let repeatExercise = true;
 let MAX_FAILURE = 1;
 let failCount = 0;
-let exerciseHandler = (t, s) => t;
 let mobileStenoKeyboard = true;
 let text_strokes = [];
 let strokes = [];
@@ -304,18 +303,7 @@ function showFsrsStats(tags) {
 
     cardStats.innerHTML = 'New: ' + newCardsLearnedToday + '/' + newCardsShownToday + '/' + newCardsMax + ' Total: ' + cardsLearnedToday + '/' + cardsShownToday + '/' + dueCardsMax;
 }
-async function loadExercise(tags) {
-    const data = await getCards(tags);
-    showFsrsStats(tags);
-    if(0 === Object.keys(data).length) {
-        exercise.innerHTML = '';
-        return ;
-    }
-    currentExercise = [...data];
-    exercise.innerHTML = textToLength().join('\n');
-    showHint(0);
-    cardStartTime = new Date;
-    exerciseHandler = (t, s) => {
+function exerciseHandler(t, s) {
         console.log(currentExercise.length, t);
         if(currentExercise.length === 0 && repeatExercise) changeExercise();
         if(currentExercise.length === 0) return s;
@@ -355,6 +343,17 @@ async function loadExercise(tags) {
         }
         return result;
     };
+async function loadExercise(tags) {
+    const data = await getCards(tags);
+    showFsrsStats(tags);
+    if(0 === Object.keys(data).length) {
+        exercise.innerHTML = '';
+        return ;
+    }
+    currentExercise = [...data];
+    exercise.innerHTML = textToLength().join('\n');
+    showHint(0);
+    cardStartTime = new Date;
 }
 function getSettings() {
     const tags = getTagsFromSettings();
@@ -579,9 +578,11 @@ function orderCardsDueAndNew(cards) {
     const rlnCards = [];
     const dueCards = [];
     const newCardsLearnedToday = cards.filter(c => (c.scheduling !== undefined &&
-        "New" != c.state && c.scheduling.reviewLog.at(0).review >= minDue)).length;
+        "New" != c.state && c.scheduling.reviewLog.at(0).review >= minDue &&
+        c.scheduling.fsrsCard.due >= maxDue)).length;
     const cardsLearnedToday = cards.filter(c => (c.scheduling !== undefined &&
-        "New" != c.state && c.scheduling.reviewLog.at(-1).review >= minDue)).length;
+        "New" != c.state && c.scheduling.reviewLog.at(-1).review >= minDue &&
+        c.scheduling.fsrsCard.due >= maxDue)).length;
     const newCardsMax = Math.max(0, parseInt(document.getElementById('newCards').value) - newCardsLearnedToday);
     const dueCardsMax = Math.max(0, parseInt(document.getElementById('maxCards').value) - cardsLearnedToday);
     for(let i = 0; i < cards.length; ++i) {

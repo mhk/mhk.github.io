@@ -302,7 +302,7 @@ function showFsrsStats(tags) {
     // console.log(`cardsUndefined: ${cardsUndefined}, newCardsShownToday ${newCardsShownToday}, newCardsCount: ${newCardsCount}, newCardsLearnedToday ${newCardsLearnedToday}, newMax: ${newMax}, newCardsMax: ${newCardsMax}`);
     // console.log(`cardsUndefined: ${cardsUndefined}, cardsLearnedToday: ${cardsLearnedToday}, cardsShownToday: ${cardsShownToday}, cardsDue: ${cardsDue}, cardsMax: ${cardsMax}, dueCardsMax: ${dueCardsMax}`);
 
-    cardStats.innerHTML = 'New: ' + newCardsLearnedToday + '/' + newCardsShownToday + '/' + newCardsMax + ' Total: ' + cardsLearnedToday + '/' + cardsShownToday + '/' + dueCardsMax;
+    cardStats.innerHTML = 'New: ' + newCardsLearnedToday + '/' + newCardsShownToday + '/' + newCardsMax + ' Total: ' + cardsLearnedToday + '/' + cardsShownToday + '/' + dueCardsMax + '/' + filteredCards.length;
 }
 function exerciseHandler(t, s) {
         console.log(currentExercise.length, t);

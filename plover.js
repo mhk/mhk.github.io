@@ -6,6 +6,7 @@ let cardStartTime = new Date;
 let lessonsData = {};
 let exercises = {};
 let currentExercise = [];
+let currentTags = [];
 let currentExerciseIndex = 0;
 let repeatExercise = true;
 let MAX_FAILURE = 1;
@@ -329,7 +330,7 @@ function exerciseHandler(t, s) {
             if(isFsrs()) {
                 putCardBack = ease => {
                     putCardBack2(curExc, answer_strokes, ease);
-                    showFsrsStats(tags);
+                    showFsrsStats(currentTags);
                 }
                 showDifficulty(curExc);
             } else {
@@ -345,6 +346,7 @@ function exerciseHandler(t, s) {
     };
 async function loadExercise(tags) {
     const data = await getCards(tags);
+    currentTags = tags;
     showFsrsStats(tags);
     if(0 === Object.keys(data).length) {
         exercise.innerHTML = '';

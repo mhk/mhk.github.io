@@ -418,7 +418,7 @@ function getDefaultSettings() {
         keyboard: {
             get: () => document.getElementById('hideStenoKeyboard').checked? '0' : '1',
             getUrl: () => urlParams.get('keyboard') || '1',
-            getBool: () => document.getElementById('hideStenoKeyboard').checked,
+            getBool: () => !document.getElementById('hideStenoKeyboard').checked,
             set: (keyboard) => {
                 document.getElementById('hideStenoKeyboard').checked = ('0' === keyboard);
                 urlParams.set('keyboard', keyboard);

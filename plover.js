@@ -25,7 +25,8 @@ function createObject(object, variableName) {
     eval(execString)
 }
 function ignoreKeyEvent(event) {
-    return event.target.classList.contains('ignoreKeyEvent');
+    return event.target.classList.contains('ignoreKeyEvent') ||
+        document.getElementById("overlay").style.display === "block";
 }
 
 document.addEventListener('keydown', (event) => { logKeyDown(event) }, false);
@@ -536,9 +537,53 @@ function setUrlSettings() {
         const val = settings[key].get()
         settings[key].set(val);
     }
-    const refresh = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + urlParams.toString();
+    const refresh = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + settings.urlParams.toString();
     window.history.pushState({ path: refresh }, '', refresh);
     return settings;
+}
+function saveSettings(event) {
+    const textfield = document.getElementById('peristedSettings');
+    const name = textfield.value;
+    db.get('pageSettings').then(data => {
+        return data;
+    }).catch(err => {
+        if('missing' === err.reason) {
+            return {
+                _id: 'pageSettings',
+                saves: {},
+            };
+        }
+        throw err;
+    }).then(data => {
+        const settings = getSettings();
+        data.saves[name] = settings;
+        return db.put(data).then(data => textfield.value = '');
+    });
+}
+function loadSettings(event) {
+    const textfield = document.getElementById('peristedSettings');
+    const name = textfield.value;
+    db.get('pageSettings').then(data => {
+        if(undefined === data.saves[name]) {
+            console.log(`Failed to find saved settings '${name}'`);
+            return ;
+        }
+        const newSettings = data.saves[name]
+        const settings = getDefaultSettings();
+        for(const key of Object.keys(newSettings)) {
+            const val = newSettings[key];
+            settings[key].set(val);
+        }
+        textfield.value = '';
+    });
+}
+function deleteSettings(event) {
+    const textfield = document.getElementById('peristedSettings');
+    const name = textfield.value;
+    db.get('pageSettings').then(data => {
+        if(undefined !== data.saves[name]) delete data.saves[name];
+        return db.put(data).then(data => textfield.value = '');
+    });
 }
 function changeExercise() {
     currentExerciseIndex = 0;
@@ -868,10 +913,22 @@ function loadLessons(lessons) {
             lessonsData = json;
         });
 }
-function cardOverlayOn() {
+function settingsOverlayOn() {
     document.getElementById("overlay").style.display = "block";
+    db.get('pageSettings').then(data => {
+        const saves = document.getElementById("saves");
+        saves.innerHTML = '';
+        for(const key of Object.keys(data.saves)) {
+            const save = document.createElement("option");
+            save.innerHTML = key;
+            saves.appendChild(save);
+        }
+    }).catch(err => {
+        if('missing' === err.reason) return ;
+        throw err;
+    });
 }
-function cardOverlayOff() {
+function settingsOverlayOff() {
     document.getElementById("overlay").style.display = "none";
     if(!settingsChanged()) return ;
     changeExercise();

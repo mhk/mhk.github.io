@@ -195,7 +195,7 @@
         fsrs = FSRS()
     </py-script>
     <div id="Test">abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ</div>
-    <div style="display: inline-block;"><input type="button" id="cardOverlayButton" value="Settings" onclick="cardOverlayOn()" /></div>
+    <div style="display: inline-block;"><input type="button" id="settingsOverlayButton" value="Settings" onclick="settingsOverlayOn()" /></div>
     <div id="sync-wrapper" style="color: white; display: inline-block;">
         <div id="sync-success">Sync active</div>
         <div id="sync-error">There was a problem syncing</div>
@@ -326,7 +326,7 @@
     </g></svg>
     </div>
     <div id="overlay">
-        <div><input id="closeOverlay" type="button" value="Close" onclick="cardOverlayOff()"></div>
+        <div><input id="closeOverlay" type="button" value="Close" onclick="settingsOverlayOff()"></div>
         <div>General Settings</div>
         <input class='ignoreKeyEvent' style="text-align:right;" type='number' name='failcount' id='failcount' value=1 onchange='changeMax(event, this.value)'/>
         <label for="failcount">Show hint</label>
@@ -366,6 +366,14 @@
         <div>Select tags to train</div>
         <ul id='cardLabels'>
         </ul>
+        <br/>
+        <div>Persist settings</div>
+        <input type='text' id='peristedSettings' list='saves' />
+        <datalist id='saves'>
+        </datalist>
+        <input id='Save' type='button' value='Save' onclick='saveSettings(event);'/>
+        <input id='Load' type='button' value='Load' onclick='loadSettings(event);'/>
+        <input id='Delete' type='button' value='Delete' onclick='deleteSettings(event);'/>
     </div>
     <div id='helpOverlay'>
         <div><input id='closeOverlay' type='button' value='Close' onclick='helpOverlayOff(event);'></div>

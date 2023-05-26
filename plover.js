@@ -255,20 +255,23 @@ function getPreslection() {
     return null;
 }
 function isFsrs() {
-    return document.getElementById('spacedRepetitionTraining').checked;
+    const settings = getDefaultSettings();
+    return settings.scheduler.get() === 'FSRS';
 }
 function isKeyboard() {
-    return !document.getElementById('hideStenoKeyboard').checked;
+    const settings = getDefaultSettings();
+    return settings.keyboard.getBool();
 }
 function showFsrsStats(tags) {
     const cardStats = document.getElementById('cardStats');
     cardStats.innerHTML = '';
     if(!isFsrs()) return ;
+    const settings = getDefaultSettings();
     const filteredCards = filterCardsByTags(tags);
     const minDue = cutOffDate(0);
     const maxDue = cutOffDate();
-    const newMax = parseInt(document.getElementById('newCards').value);
-    const cardsMax = parseInt(document.getElementById('maxCards').value);
+    const newMax = settings.newCards.getInt();
+    const cardsMax = settings.maxCards.getInt();
     let cardsUndefined = 0;
     let newCardsShownToday = 0;
     let newCardsLearnedToday = 0;
@@ -361,6 +364,7 @@ function getDefaultSettings() {
     const urlParams = new URLSearchParams(window.location.search);
     radioSetter = (name, value) => [...document.getElementsByName(name)].filter(c => c.value === value).map( c => c.checked = true);
     return {
+        urlParams: urlParams,
         tags: {
             get: () => Object.values(document.querySelectorAll('input[class="tagCheckbox"]:checked')).map(c => c.id),
             getUrl: () => (urlParams.get('tags') || '').split(',').filter(s => '' !== s) || [],
@@ -374,6 +378,7 @@ function getDefaultSettings() {
         randomize: {
             get: () => document.getElementById('randomizeExercises').checked? '1' : '0',
             getUrl: () => urlParams.get('randomize') || '0',
+            getBool: () => document.getElementById('randomizeExercises').checked,
             set: (randomize) => {
                 document.getElementById('randomizeExercises').checked = ('1' === randomize);
                 urlParams.set('randomize', randomize);
@@ -412,6 +417,7 @@ function getDefaultSettings() {
         keyboard: {
             get: () => document.getElementById('hideStenoKeyboard').checked? '0' : '1',
             getUrl: () => urlParams.get('keyboard') || '1',
+            getBool: () => document.getElementById('hideStenoKeyboard').checked,
             set: (keyboard) => {
                 document.getElementById('hideStenoKeyboard').checked = ('0' === keyboard);
                 urlParams.set('keyboard', keyboard);
@@ -423,6 +429,7 @@ function getDefaultSettings() {
         newCards: {
             get: () => document.getElementById('newCards').value,
             getUrl: () => urlParams.get('newCards') || '10',
+            getInt: () => parseInt(document.getElementById('newCards').value),
             set: (newCards) => {
                 document.getElementById('newCards').value = newCards;
                 urlParams.set('newCards', newCards);
@@ -432,6 +439,7 @@ function getDefaultSettings() {
         maxCards: {
             get: () => document.getElementById('maxCards').value,
             getUrl: () => urlParams.get('maxCards') || '100',
+            getInt: () => parseInt(document.getElementById('maxCards').value),
             set: (maxCards) => {
                 document.getElementById('maxCards').value = maxCards;
                 urlParams.set('maxCards', maxCards);
@@ -475,22 +483,22 @@ function getDefaultSettings() {
 }
 function getSettings() {
     const settings = getDefaultSettings();
-    return {'tags': settings.tags.get(),  'randomize': randomize.get(), 
-        "hand": settings.handedness.get(),  'scheduler': scheduler.get(), 
-        "failcount": settings.failcount.get(),  "keyboard": keyboard.get(), 
-        "newCards": settings.newCards.get(),  "maxCards": maxCards.get(), 
-        "quickSelect": settings.quickSelect.get(),  "dict": dictionary.get(), 
-        "cardPrios": settings.cardPrios.get(), 
+    return {'tags': settings.tags.get(),  'randomize': settings.randomize.get(),
+        "hand": settings.hand.get(),  'scheduler':settings. scheduler.get(),
+        "failcount": settings.failcount.get(),  "keyboard": settings.keyboard.get(),
+        "newCards": settings.newCards.get(),  "maxCards": settings.maxCards.get(),
+        "quickSelect": settings.quickSelect.get(),  "dict": settings.dict.get(),
+        "cardPrios": settings.cardPrios.get(),
     };
 }
 function getUrlSettings() {
     const settings = getDefaultSettings();
-    return {'tags': settings.tags.getUrl(),  'randomize': randomize.getUrl(), 
-        "hand": settings.handedness.getUrl(),  'scheduler': scheduler.getUrl(), 
-        "failcount": settings.failcount.getUrl(),  "keyboard": keyboard.getUrl(), 
-        "newCards": settings.newCards.getUrl(),  "maxCards": maxCards.getUrl(), 
-        "quickSelect": settings.quickSelect.getUrl(),  "dict": dictionary.getUrl(), 
-        "cardPrios": settings.cardPrios.getUrl(), 
+    return {'tags': settings.tags.getUrl(),  'randomize': settings.randomize.getUrl(),
+        "hand": settings.hand.getUrl(),  'scheduler': settings.scheduler.getUrl(),
+        "failcount": settings.failcount.getUrl(),  "keyboard": settings.keyboard.getUrl(),
+        "newCards": settings.newCards.getUrl(),  "maxCards": settings.maxCards.getUrl(),
+        "quickSelect": settings.quickSelect.getUrl(),  "dict": settings.dict.getUrl(),
+        "cardPrios": settings.cardPrios.getUrl(),
     };
 }
 function settingsChanged() {
@@ -515,6 +523,7 @@ function settingsChanged() {
 function setSettings() {
     const settings = getDefaultSettings();
     for(const key of Object.keys(settings)) {
+        if('urlParams'  === key) continue;
         const val = settings[key].getUrl()
         settings[key].set(val);
     }
@@ -523,6 +532,7 @@ function setSettings() {
 function setUrlSettings() {
     const settings = getDefaultSettings();
     for(const key of Object.keys(settings)) {
+        if('urlParams'  === key) continue;
         const val = settings[key].get()
         settings[key].set(val);
     }
@@ -652,8 +662,9 @@ function orderCardsDueAndNew(cards) {
     const cardsLearnedToday = cards.filter(c => (c.scheduling !== undefined &&
         "New" != c.state && c.scheduling.reviewLog.at(-1).review >= minDue &&
         c.scheduling.fsrsCard.due >= maxDue)).length;
-    const newCardsMax = Math.max(0, parseInt(document.getElementById('newCards').value) - newCardsLearnedToday);
-    const dueCardsMax = Math.max(0, parseInt(document.getElementById('maxCards').value) - cardsLearnedToday);
+    const settings = getDefaultSettings();
+    const newCardsMax = Math.max(0, settings.newCards.getInt() - newCardsLearnedToday);
+    const dueCardsMax = Math.max(0, settings.maxCards.getInt() - cardsLearnedToday);
     for(let i = 0; i < cards.length; ++i) {
         // only include cards that are new or due this day
         if(undefined !== cards[i].scheduling &&
@@ -698,11 +709,11 @@ function orderCardsDueAndNew(cards) {
     dueCards.push(...rlnCards); // next relearn to get back lost knowledge
     dueCards.push(...revCards); // finally review to steady knowledge
     dueCards.length = Math.min(dueCards.length, dueCardsMax);
-    if(document.getElementById('randomizeExercises').checked) {
+    if(settings.randomize.getBool()) {
         shuffleArray(newCards);
         shuffleArray(dueCards);
     }
-    if(!document.getElementById('newOverDue').checked) {
+    if(settings.cardPrios.get() === 'dueOverNew') {
         return dueCards.concat(newCards);
     }
     return newCards.concat(dueCards);
@@ -738,9 +749,10 @@ function filterCardsByTags(fqtags) {
 }
 function getCards(tags) {
     const filteredCards = filterCardsByTags(tags);
+    const settings = getDefaultSettings();
     if(isFsrs()) {
         return annotateCardsWithLocalData(filteredCards).then(cards => orderCardsDueAndNew(cards));
-    } else if(document.getElementById('randomizeExercises').checked) {
+    } else if(settings.randomize.getBool()) {
         shuffleArray(filteredCards);
     }
     return Promise.resolve(filteredCards);

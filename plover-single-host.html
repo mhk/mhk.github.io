@@ -366,14 +366,18 @@
         <div>Select tags to train</div>
         <ul id='cardLabels'>
         </ul>
-        <br/>
+        br/>
         <div>Persist settings</div>
         <input type='text' id='peristedSettings' list='saves' />
-        <datalist id='saves'>
-        </datalist>
+        <datalist id='saves'></datalist>
         <input id='Save' type='button' value='Save' onclick='saveSettings(event);'/>
         <input id='Load' type='button' value='Load' onclick='loadSettings(event);'/>
         <input id='Delete' type='button' value='Delete' onclick='deleteSettings(event);'/>
+        <br/>
+        <input type='text' id='dbUrl'/>
+        <input id='dbUrlOk' type='button' value='Ok' onclick='changeDbUrl(event);'/>
+        <label for='dbUrl'>remote database url</label>
+        <br/>
     </div>
     <div id='helpOverlay'>
         <div><input id='closeOverlay' type='button' value='Close' onclick='helpOverlayOff(event);'></div>

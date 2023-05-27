@@ -1,6 +1,6 @@
 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-const remoteCouch = 'http://admin:test@' + window.location.hostname + ':5984/plover';
 let db = new PouchDB('cardData');
+let dbSync = undefined;
 let cards = {};
 let cardStartTime = new Date;
 let lessonsData = {};
@@ -14,8 +14,6 @@ let failCount = 0;
 let mobileStenoKeyboard = true;
 let text_strokes = [];
 let strokes = [];
-let pouchDbSyncActiveEvent = false
-let pouchDbSyncChangeEvent = false
 
 function createObject(object, variableName) {
     // Bind a variable whose name is the string variableName
@@ -480,26 +478,37 @@ function getDefaultSettings() {
             set: (loop) => {},
             default: '1',
         },
+        dbUrl: {
+            get: () => document.getElementById('dbUrl').value,
+            getUrl: () => urlParams.get('dbUrl') || '',
+            set: (dbUrl) => {
+                document.getElementById('dbUrl').value = dbUrl;
+                urlParams.set('dbUrl', dbUrl);
+            },
+            default: '',
+        }
     };
 }
 function getSettings() {
+    // TODO: automate
     const settings = getDefaultSettings();
     return {'tags': settings.tags.get(),  'randomize': settings.randomize.get(),
         "hand": settings.hand.get(),  'scheduler':settings. scheduler.get(),
         "failcount": settings.failcount.get(),  "keyboard": settings.keyboard.get(),
         "newCards": settings.newCards.get(),  "maxCards": settings.maxCards.get(),
         "quickSelect": settings.quickSelect.get(),  "dict": settings.dict.get(),
-        "cardPrios": settings.cardPrios.get(),
+        "cardPrios": settings.cardPrios.getUrl(), "dbUrl": settings.dbUrl.get(),
     };
 }
 function getUrlSettings() {
+    // TODO: automate
     const settings = getDefaultSettings();
     return {'tags': settings.tags.getUrl(),  'randomize': settings.randomize.getUrl(),
         "hand": settings.hand.getUrl(),  'scheduler': settings.scheduler.getUrl(),
         "failcount": settings.failcount.getUrl(),  "keyboard": settings.keyboard.getUrl(),
         "newCards": settings.newCards.getUrl(),  "maxCards": settings.maxCards.getUrl(),
         "quickSelect": settings.quickSelect.getUrl(),  "dict": settings.dict.getUrl(),
-        "cardPrios": settings.cardPrios.getUrl(),
+        "cardPrios": settings.cardPrios.getUrl(), "dbUrl": settings.dbUrl.getUrl(),
     };
 }
 function settingsChanged() {
@@ -518,6 +527,7 @@ function settingsChanged() {
         settings.quickSelect === urlSettings.quickSelect &&
         settings.dict === urlSettings.dict &&
         settings.cardPrios === urlSettings.cardPrios &&
+        settings.dbUrl === urlSettings.dbUrl &&
         true
     );
 }
@@ -1030,18 +1040,27 @@ function getDefinitionOfWord(word) {
             }
         });
 }
+function changeDbUrl(event) {
+    const settings = getDefaultSettings();
+    const remoteCouch = settings.dbUrl.get();
+    if(undefined !== dbSync) {
+        dbSync.cancel();
+        dbSync = undefined;
+    }
+    // no check needed as sync already checks
+    sync();
+}
 function sync() {
-    /*
-    db.changes({
-      since: 'now',
-      live: true
-    }).on('change', showTodos);
-     */
-    var remote = new PouchDB(remoteCouch);
-    db.sync(remote, {
+    // TODO: use 'changes' and on('change', x => x)
+    const settings = getDefaultSettings();
+    const remoteCouch = settings.dbUrl.get();
+    if('' === remoteCouch || undefined === remoteCouch) return ;
+    const remote = new PouchDB(remoteCouch);
+    dbSync = db.sync(remote, {
         live: true,
         retry: true
-    }).on('paused', msg => {
+    });
+    dbSync.on('paused', msg => {
         remote.info()
           .then(info => syncWorking())
           .catch(err => syncError());

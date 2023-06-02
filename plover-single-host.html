@@ -76,6 +76,7 @@
         z-index: 2;
         cursor: pointer;
         overflow-y: auto;
+        margin-bottom: 16px;
     }
     #closeOverlay {
         font-size: 22pt;
@@ -134,9 +135,12 @@
     details summary {
         cursor: pointer;
     }
-
     details summary > * {
         display: inline;
+    }
+    .simpleButton {
+        width: 70px;
+        text-align: center;
     }
     </style>
     <link rel="stylesheet" href="./pyscript.css" />
@@ -197,8 +201,8 @@
     <div id="Test">abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ</div>
     <div style="display: inline-block;"><input type="button" id="settingsOverlayButton" value="Settings" onclick="settingsOverlayOn()" /></div>
     <div id="sync-wrapper" style="color: white; display: inline-block;">
-        <div id="sync-success">Sync active</div>
-        <div id="sync-error">There was a problem syncing</div>
+        <div id="sync-success">&#x1F7E2 Sync active</div>
+        <div id="sync-error">&#x1F534 There was a problem syncing</div>
     </div>
     <div id="cardStats" style="color: white; display: inline-block;">
     </div>
@@ -366,18 +370,24 @@
         <div>Select tags to train</div>
         <ul id='cardLabels'>
         </ul>
-        br/>
+        <br/>
         <div>Persist settings</div>
+        <div>
         <input type='text' id='peristedSettings' list='saves' />
         <datalist id='saves'></datalist>
-        <input id='Save' type='button' value='Save' onclick='saveSettings(event);'/>
-        <input id='Load' type='button' value='Load' onclick='loadSettings(event);'/>
-        <input id='Delete' type='button' value='Delete' onclick='deleteSettings(event);'/>
+        <input id='Save' type='button' class='simpleButton' value='Save' onclick='saveSettings(event);'/>
+        <input id='Load' type='button' class='simpleButton' value='Load' onclick='loadSettings(event);'/>
+        <input id='Delete' type='button' class='simpleButton' value='Delete' onclick='deleteSettings(event);'/>
+        </div>
         <br/>
+        <div>
         <input type='text' id='dbUrl'/>
-        <input id='dbUrlOk' type='button' value='Ok' onclick='changeDbUrl(event);'/>
+        <input id='dbUrlOk' type='button' class='simpleButton' value='Sync' onclick='changeDbUrl(event);'/>
         <label for='dbUrl'>remote database url</label>
-        <br/>
+        </div>
+        <div id='syncInfo'>
+        </div>
+        <div id="settings-bottom-spacer" style="margin-bottom: 20px; overflow: auto;"></div>
     </div>
     <div id='helpOverlay'>
         <div><input id='closeOverlay' type='button' value='Close' onclick='helpOverlayOff(event);'></div>

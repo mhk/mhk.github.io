@@ -14,6 +14,7 @@ let failCount = 0;
 let mobileStenoKeyboard = true;
 let text_strokes = [];
 let strokes = [];
+let lastSync = undefined;
 
 function createObject(object, variableName) {
     // Bind a variable whose name is the string variableName
@@ -538,6 +539,7 @@ function setSettings() {
         const val = settings[key].getUrl()
         settings[key].set(val);
     }
+    changeDbUrl(undefined);
     loadExercise(settings.tags.get());
 }
 function setUrlSettings() {
@@ -1069,10 +1071,17 @@ function sync() {
 function syncWorking() {
     const syncDom = document.getElementById('sync-wrapper');
     syncDom.setAttribute('data-sync-state', 'syncing');
+    const syncInfo = document.getElementById('syncInfo');
+    lastSync = new Date();
+    syncInfo.innerHTML = `${lastSync.toISOString()}: &#x1F7E2 Successfully synced<br/>`
 }
 function syncError() {
     const syncDom = document.getElementById('sync-wrapper');
     syncDom.setAttribute('data-sync-state', 'error');
+    const syncInfo = document.getElementById('syncInfo');
+    const now = new Date().toISOString();
+    const last = (lastSync === undefined)? 'never' : `at ${lastSync.toISOString()}`;
+    syncInfo.innerHTML = `${now}: &#x1F534 Last successful sync ${last}<br/>`
 }
 
 /*
@@ -1087,7 +1096,6 @@ db.info(function(err, info) {
 loadCards('rope/cards-all.json');
 loadLessons('learn-plover/lessons.json');
 document.addEventListener("DOMContentLoaded", function(event) {
-    sync();
     setStenoKeyboardWidth(mobileStenoKeyboard);
     if(!isMobile) hideFullScreenButton();
 });

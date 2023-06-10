@@ -25,7 +25,8 @@ function createObject(object, variableName) {
 }
 function ignoreKeyEvent(event) {
     return event.target.classList.contains('ignoreKeyEvent') ||
-        document.getElementById("overlay").style.display === "block";
+        document.getElementById("overlay").style.display === "block" ||
+        document.getElementById("helpOverlay").style.display === "block";
 }
 
 document.addEventListener('keydown', (event) => { logKeyDown(event) }, false);
@@ -121,6 +122,9 @@ const steno2key = {
     '-S'        : ';',
     '-D'        : '[',
     '-Z'        : '\'',
+    '*1'        : 'g',
+    '*2'        : 'h',
+    '*3'        : 'y',
 };
 function release(event) {
     const collection = document.getElementsByClassName("key");
@@ -950,6 +954,7 @@ function loadCards(deck) {
             setSettings();
             Object.keys(steno2key).forEach(id => {
                 const key = document.getElementById(id);
+                if(null === key) return ;
                 key.onclick = key.ontouchstart = handleStenoTouch;
             });
         });

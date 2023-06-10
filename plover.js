@@ -349,6 +349,10 @@ function exerciseHandler(t, s) {
     };
 async function loadExercise(tags) {
     const data = await getCards(tags);
+    if(tags.includes('difficult')) {
+        const d = await getDifficultCards();
+        data.push(...d);
+    }
     currentTags = tags;
     showFsrsStats(tags);
     if(0 === Object.keys(data).length) {
@@ -775,6 +779,33 @@ function orderCardsDueAndNew(cards) {
     }
     return newCards.concat(dueCards);
 }
+function getDifficultCards() {
+    const settings = getDefaultSettings();
+    const maxCards = settings.maxCards.getInt();
+    return db.allDocs({include_docs: true}).then(response => {
+        difficultCards = response.rows
+            .filter(a => a.doc._id.startsWith('all::'))
+            .sort((a, b) => b.doc.fsrsCard.difficulty - a.doc.fsrsCard.difficulty);
+        difficultCards.length = maxCards;
+
+        result = difficultCards.map(c => {
+            const s = c.id.split('::').filter(s => '' !== s);
+            if(s.length == 2) {
+                const collection = cards[s[0]];
+                const name = s[1];
+                if(collection === undefined) return undefined;
+                collection.cards[name].scheduling = c.doc;
+                return collection.cards[name]
+            }
+            return undefined
+        }).filter(a => a !== undefined);
+
+        if(settings.randomize.getBool()) {
+            shuffleArray(result);
+        }
+        return result;
+    });
+}
 // Fully Qualified Tags to tags per collection
 function fqtags2tagsByCollection(tags) {
     const tagsByCollection = tags.reduce(function(acc, cur, i) {
@@ -976,6 +1007,18 @@ function addCardTags() {
         listItem.appendChild(label);
         list.appendChild(listItem);
     }
+
+    const listItem = document.createElement("li");
+    const checkBox = document.createElement("input");
+    const label = document.createElement("label");
+    checkBox.type = 'checkbox';
+    checkBox.id = 'difficult';
+    checkBox.setAttribute('class', 'tagCheckbox');
+    label.setAttribute('for', checkBox.id);
+    label.innerHTML = 'Most difficult cards';
+    listItem.appendChild(checkBox);
+    listItem.appendChild(label);
+    list.appendChild(listItem);
 }
 function helpOverlayOff(event) {
     document.getElementById("helpOverlay").style.display = "none";

@@ -718,14 +718,14 @@ function orderCardsDueAndNew(cards) {
     const rlnCards = [];
     const dueCards = [];
     const newCardsLearnedToday = cards.filter(c => (c.scheduling !== undefined &&
-        "New" != c.state && c.scheduling.reviewLog.at(0).review >= minDue &&
+        c.scheduling.reviewLog.at(0).review >= minDue &&
         c.scheduling.fsrsCard.due >= maxDue)).length;
     const cardsLearnedToday = cards.filter(c => (c.scheduling !== undefined &&
-        "New" != c.state && c.scheduling.reviewLog.at(-1).review >= minDue &&
+        c.scheduling.reviewLog.at(-1).review >= minDue &&
         c.scheduling.fsrsCard.due >= maxDue)).length;
     const settings = getDefaultSettings();
     const newCardsMax = Math.max(0, settings.newCards.getInt() - newCardsLearnedToday);
-    const dueCardsMax = Math.max(0, settings.maxCards.getInt() - cardsLearnedToday);
+    const cardsMax = Math.max(0, settings.maxCards.getInt() - cardsLearnedToday);
     for(let i = 0; i < cards.length; ++i) {
         // only include cards that are new or due this day
         if(undefined !== cards[i].scheduling &&
@@ -737,7 +737,9 @@ function orderCardsDueAndNew(cards) {
             continue;
         }
         const state = cards[i].scheduling.fsrsCard.state;
-        if("New" == state) {
+        if(cards[i].scheduling.reviewLog.at(-1).review >= minDue) {
+            dueCards.push(cards[i]);
+        } else if("New" == state) {
             newCards.push(cards[i]);
         } else if("Learning" == state) {
             lrnCards.push(cards[i]);
@@ -751,6 +753,7 @@ function orderCardsDueAndNew(cards) {
     }
     // sort by due date (before rank was used for stability)
     const cmp = (a, b) => a.scheduling.fsrsCard.due.localeCompare(b.scheduling.fsrsCard.due);
+    dueCards.sort(cmp);
     newCards.sort(cmp);
     lrnCards.sort(cmp);
     rlnCards.sort(cmp);
@@ -769,15 +772,17 @@ function orderCardsDueAndNew(cards) {
     dueCards.push(...lrnCards); // first learn to increase knowledge
     dueCards.push(...rlnCards); // next relearn to get back lost knowledge
     dueCards.push(...revCards); // finally review to steady knowledge
-    dueCards.length = Math.min(dueCards.length, dueCardsMax);
-    if(settings.randomize.getBool()) {
-        shuffleArray(newCards);
-        shuffleArray(dueCards);
-    }
+    dueCards.length = Math.min(dueCards.length, cardsMax);
     if(settings.cardPrios.get() === 'dueOverNew') {
-        return dueCards.concat(newCards);
+        result = dueCards.concat(newCards);
+    } else {
+        result = newCards.concat(dueCards);
     }
-    return newCards.concat(dueCards);
+    result.length = Math.min(result.length, cardsMax);
+    if(settings.randomize.getBool()) {
+        shuffleArray(result);
+    }
+    return result;
 }
 function getDifficultCards() {
     const settings = getDefaultSettings();
@@ -989,6 +994,12 @@ function setHideStenoKeyboard(hide) {
         hideStenoKeyboard();
     } else {
         showStenoKeyboard();
+    }
+}
+function checkNewCardsSettings(event) {
+    const settings = getDefaultSettings();
+    if(settings.newCards.getInt() > settings.maxCards.getInt()) {
+        event.target.value = settings.maxCards.get();
     }
 }
 function addCardTags() {

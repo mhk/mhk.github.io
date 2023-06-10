@@ -357,15 +357,15 @@
         <br/>
 
         <div id="text">Card Settings</div>
-        <input style="text-align:right;" type='number' name='newCards' id='newCards' value=10 />
+        <input style="text-align:right;" type='number' name='newCards' id='newCards' value=10 onchange='checkNewCardsSettings(event);'/>
         <label for="newCards">Max new cards per day</label>
         <br/>
         <input style="text-align:right;" type='number' name='maxCards' id='maxCards' value=100 />
-        <label for="maxCards">Max learn/review cards per day</label>
+        <label for="maxCards">Max cards per day</label>
         <br/>
-        <input type="radio" id="newOverDue" name="cardPrios" value="newOverDue" checked /> <label for="newOverDue">First new cards, then due</label>
+        <input type="radio" id="newOverDue" name="cardPrios" value="newOverDue" checked /> <label for="newOverDue">Prioritize new cards over due</label>
         <br/>
-        <input type="radio" id="dueOverNew" name="cardPrios" value="dueOverNew" /> <label for="dueOverNew">First due cards, then new</label>
+        <input type="radio" id="dueOverNew" name="cardPrios" value="dueOverNew" /> <label for="dueOverNew">Prioritize due cards over new</label>
         <br/>
         <div>Select tags to train</div>
         <ul id='cardLabels'>

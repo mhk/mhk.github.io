@@ -690,20 +690,22 @@ const lastTouch = {};
 function handleStenoTouchMove(point, keys, event) {
     event.preventDefault();
     if(event.changedTouches.length == 0) return ;
-    point.x = event.changedTouches[0].clientX;
-    point.y = event.changedTouches[0].clientY;
-    const cursorpt =  point.matrixTransform(svg.getScreenCTM().inverse());
-    for(const key of keys) {
-        if(null === key) return ;
-        const eid = event.target.id;
-        const now = Date.now();;
-        if((key.isPointInFill(cursorpt) || key.isPointInStroke(cursorpt)) &&
-            0 !== touchMove[eid].length && touchMove[eid].at(-1) !== key.id &&
-            now - lastTouch[key.id] > 300) {
-            touchMove[eid].push(key.id);
-            lastTouch[key.id] = now;
-            toggle(key.id);
-            break;
+    for(let i = 0; i < event.changedTouches.length; ++i) {
+        point.x = event.changedTouches[i].clientX;
+        point.y = event.changedTouches[i].clientY;
+        const cursorpt =  point.matrixTransform(svg.getScreenCTM().inverse());
+        for(const key of keys) {
+            if(null === key) return ;
+            const eid = event.target.id;
+            const now = Date.now();;
+            if((key.isPointInFill(cursorpt) || key.isPointInStroke(cursorpt)) &&
+                0 !== touchMove[eid].length && touchMove[eid].at(-1) !== key.id &&
+                now - lastTouch[key.id] > 270) {
+                touchMove[eid].push(key.id);
+                lastTouch[key.id] = now;
+                toggle(key.id);
+                break;
+            }
         }
     }
 }

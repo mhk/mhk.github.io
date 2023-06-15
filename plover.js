@@ -685,33 +685,33 @@ function closeFullscreen() {
       document.msExitFullscreen();
     }
 }
-const touchMove = [];
-function handleStenoTouchMove(event) {
+const touchMove = {};
+const lastTouch = {};
+function handleStenoTouchMove(point, keys, event) {
     event.preventDefault();
     if(event.changedTouches.length == 0) return ;
-    const point = document.getElementById("svg").createSVGPoint();  // Created once for document
     point.x = event.changedTouches[0].clientX;
     point.y = event.changedTouches[0].clientY;
     const cursorpt =  point.matrixTransform(svg.getScreenCTM().inverse());
-    for(const id of Object.keys(steno2key)) {
-        const key = document.getElementById(id);
+    for(const key of keys) {
         if(null === key) return ;
+        const eid = event.target.id;
+        const now = Date.now();;
         if((key.isPointInFill(cursorpt) || key.isPointInStroke(cursorpt)) &&
-            0 !== touchMove.length && touchMove.at(-1) !== id) {
-            touchMove.push(id);
-            toggle(id);
+            0 !== touchMove[eid].length && touchMove[eid].at(-1) !== key.id &&
+            now - lastTouch[key.id] > 300) {
+            touchMove[eid].push(key.id);
+            lastTouch[key.id] = now;
+            toggle(key.id);
             break;
         }
     }
 }
-function handleStenoTouchEnd(event) {
-    event.preventDefault();
-    touchMove.length = 0;
-    console.log(event);
-}
 function handleStenoTouchStart(event) {
     event.preventDefault();
-    touchMove.push(event.target.id);
+    const eid = event.target.id;
+    touchMove[eid] = [eid];
+    lastTouch[eid] = Date.now();
     toggleEvent(event);
 }
 function cutOffDate(day=1) {
@@ -977,15 +977,23 @@ function loadCards(deck) {
             addCardTags();
 
             setSettings();
-            document.querySelector('svg').addEventListener('touchstart', () => {});
-            Object.keys(steno2key).forEach(id => {
-                const key = document.getElementById(id);
-                if(null === key) return ;
-                key.onclick = key.ontouchstart = handleStenoTouchStart;
-                key.ontouchmove = handleStenoTouchMove;
-                key.ontouchend = handleStenoTouchEnd;
-            });
+            setupTouch();
         });
+}
+function setupTouch() {
+    const keys = [];
+    Object.keys(steno2key).forEach(id => {
+        const key = document.getElementById(id);
+        if(null === key) return ;
+        keys.push(key);
+        lastTouch[id] = 0;
+    });
+    document.querySelector('svg').addEventListener('touchstart', () => {});
+    const point = document.getElementById("svg").createSVGPoint();  // Created once for document
+    keys.forEach(key => {
+        key.onclick = key.ontouchstart = handleStenoTouchStart;
+        key.ontouchmove = (event) => handleStenoTouchMove(point, keys, event);
+    });
 }
 function loadLessons(lessons) {
     fetch(lessons)

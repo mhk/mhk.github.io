@@ -685,8 +685,33 @@ function closeFullscreen() {
       document.msExitFullscreen();
     }
 }
-function handleStenoTouch(event) {
+const touchMove = [];
+function handleStenoTouchMove(event) {
     event.preventDefault();
+    if(event.changedTouches.length == 0) return ;
+    const point = document.getElementById("svg").createSVGPoint();  // Created once for document
+    point.x = event.changedTouches[0].clientX;
+    point.y = event.changedTouches[0].clientY;
+    const cursorpt =  point.matrixTransform(svg.getScreenCTM().inverse());
+    for(const id of Object.keys(steno2key)) {
+        const key = document.getElementById(id);
+        if(null === key) return ;
+        if((key.isPointInFill(cursorpt) || key.isPointInStroke(cursorpt)) &&
+            0 !== touchMove.length && touchMove.at(-1) !== id) {
+            touchMove.push(id);
+            toggle(id);
+            break;
+        }
+    }
+}
+function handleStenoTouchEnd(event) {
+    event.preventDefault();
+    touchMove.length = 0;
+    console.log(event);
+}
+function handleStenoTouchStart(event) {
+    event.preventDefault();
+    touchMove.push(event.target.id);
     toggleEvent(event);
 }
 function cutOffDate(day=1) {
@@ -952,10 +977,13 @@ function loadCards(deck) {
             addCardTags();
 
             setSettings();
+            document.querySelector('svg').addEventListener('touchstart', () => {});
             Object.keys(steno2key).forEach(id => {
                 const key = document.getElementById(id);
                 if(null === key) return ;
-                key.onclick = key.ontouchstart = handleStenoTouch;
+                key.onclick = key.ontouchstart = handleStenoTouchStart;
+                key.ontouchmove = handleStenoTouchMove;
+                key.ontouchend = handleStenoTouchEnd;
             });
         });
 }

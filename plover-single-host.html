@@ -199,7 +199,7 @@
         fsrs = FSRS()
     </py-script>
     <div id="Test">abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ</div>
-    <div style="display: inline-block;"><input type="button" id="settingsOverlayButton" value="Settings" onclick="settingsOverlayOn()" /></div>
+    <div style="display: inline-block;"><input type="button" id="settingsOverlayButton" value="Settings" onclick="settingsOverlayOn();" /></div>
     <div id="sync-wrapper" style="color: white; display: inline-block;">
         <div id="sync-success">&#x1F7E2 Sync active</div>
         <div id="sync-error">&#x1F534 There was a problem syncing</div>
@@ -208,6 +208,7 @@
     </div>
     <div id="debug" style="color: white; display: inline-block;">
     </div>
+    <div id='divCopyText' style="display: none;"><input type="button" id="copyText" value="Copy Text" onclick="copyDivToClipboard('exercise');" /></div>
     <table id='outputTable'>
         <tr id='toggleFullscreenRow'>
             <td colspan=4>
@@ -334,6 +335,8 @@
     <div id="overlay">
         <div><input id="closeOverlay" type="button" value="Close" onclick="settingsOverlayOff()"></div>
         <div>General Settings</div>
+        <input type="checkbox" id="isExercise" name="isExercise" value="isExercise" checked /> <label for="isExercise">exercise mode</label>
+        <br/>
         <input class='ignoreKeyEvent' style="text-align:right;" type='number' name='failcount' id='failcount' value=1 onchange='changeMax(event, this.value)'/>
         <label for="failcount">Show hint</label>
         <br/>

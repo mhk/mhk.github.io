@@ -15,6 +15,7 @@ let mobileStenoKeyboard = true;
 let text_strokes = [];
 let strokes = [];
 let lastSync = undefined;
+let update_text_fct = exerciseHandler;
 
 function createObject(object, variableName) {
     // Bind a variable whose name is the string variableName
@@ -69,7 +70,15 @@ window.addEventListener('resize', (event) => {
     exercise.innerHTML = txt.join('\n');
 });
 function update_text(t, s) {
-    steno.innerHTML = exerciseHandler(t, s);
+    update_text_fct(t, s);
+}
+function copyDivToClipboard(id) {
+    const range = document.createRange();
+    range.selectNode(document.getElementById(id));
+    window.getSelection().removeAllRanges(); // clear current selection
+    window.getSelection().addRange(range); // to select text
+    document.execCommand("copy");
+    window.getSelection().removeAllRanges();// to deselect
 }
 function on(key) {
     document.getElementById(key).setAttribute('fill', '#f3f70f');
@@ -311,6 +320,10 @@ function showFsrsStats(tags) {
 
     cardStats.innerHTML = 'New: ' + newCardsLearnedToday + '/' + newCardsShownToday + '/' + newCardsMax + ' Total: ' + cardsLearnedToday + '/' + cardsShownToday + '/' + dueCardsMax + '/' + filteredCards.length;
 }
+function textHandler(t, s) {
+    exercise.innerHTML = t;
+    steno.innerHTML = s;
+}
 function exerciseHandler(t, s) {
         console.log(currentExercise.length, t);
         if(currentExercise.length === 0 && repeatExercise) changeExercise();
@@ -345,11 +358,11 @@ function exerciseHandler(t, s) {
                 exercise.innerHTML = textToLength().join('\n');
                 initNextExercise();
             }
-            return '';
+            result = '';
         } else {
             showHint();
         }
-        return result;
+        steno.innerHTML = result;
     };
 async function loadExercise(tags) {
     const data = await getCards(tags);
@@ -495,7 +508,32 @@ function getDefaultSettings() {
                 urlParams.set('dbUrl', dbUrl);
             },
             default: '',
-        }
+        },
+        exercise: {
+            get: () => document.getElementById('isExercise').checked? '1' : '0',
+            getUrl: () => urlParams.get('isExercise') || '1',
+            getBool: () => document.getElementById('isExercise').checked,
+            set: (isExercise) => {
+                document.getElementById('isExercise').checked = ('1' == isExercise);
+                urlParams.set('isExercise', isExercise);
+                const div = document.getElementById('divCopyText');
+                const exc = document.getElementById('exercise');
+                if('1' == isExercise) {
+                    div.style.display = 'none';
+                    exc.style.overflow = 'hidden';
+                    update_text_fct = exerciseHandler;
+                } else {
+                    const cardStats = document.getElementById('cardStats');
+                    div.style.display = 'inline-block';
+                    exc.style.overflow = 'scroll';
+                    exc.innerHTML = '';
+                    steno.innerHTML = '';
+                    cardStats.innerHTML = '';
+                    update_text_fct = textHandler;
+                }
+            },
+            default: '',
+        },
     };
 }
 function getSettings() {
@@ -506,7 +544,8 @@ function getSettings() {
         "failcount": settings.failcount.get(),  "keyboard": settings.keyboard.get(),
         "newCards": settings.newCards.get(),  "maxCards": settings.maxCards.get(),
         "quickSelect": settings.quickSelect.get(),  "dict": settings.dict.get(),
-        "cardPrios": settings.cardPrios.getUrl(), "dbUrl": settings.dbUrl.get(),
+        "cardPrios": settings.cardPrios.get(), "dbUrl": settings.dbUrl.get(),
+        "exercise": settings.exercise.get(),
     };
 }
 function getUrlSettings() {
@@ -518,6 +557,7 @@ function getUrlSettings() {
         "newCards": settings.newCards.getUrl(),  "maxCards": settings.maxCards.getUrl(),
         "quickSelect": settings.quickSelect.getUrl(),  "dict": settings.dict.getUrl(),
         "cardPrios": settings.cardPrios.getUrl(), "dbUrl": settings.dbUrl.getUrl(),
+        "exercise": settings.exercise.getUrl(),
     };
 }
 function settingsChanged() {
@@ -537,6 +577,7 @@ function settingsChanged() {
         settings.dict === urlSettings.dict &&
         settings.cardPrios === urlSettings.cardPrios &&
         settings.dbUrl === urlSettings.dbUrl &&
+        settings.exercise === urlSettings.exercise &&
         true
     );
 }
@@ -548,6 +589,7 @@ function setSettings() {
         settings[key].set(val);
     }
     changeDbUrl(undefined);
+    if(!settings.exercise.getBool()) return;
     loadExercise(settings.tags.get());
 }
 function setUrlSettings() {
@@ -609,6 +651,7 @@ function changeExercise() {
     currentExerciseIndex = 0;
     initNextExercise();
     settings = setUrlSettings();
+    if(!settings.exercise.getBool()) return;
     loadExercise(settings.tags.get());
 }
 function textToLength() {

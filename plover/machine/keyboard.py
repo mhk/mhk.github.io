@@ -16,8 +16,8 @@ class ExternalKeyboardCapture(Capture):
         try:
             import js
             from pyodide.ffi import create_proxy
-            js.createObject(create_proxy(self.pyKeyDown), "pyKeyDown")
-            js.createObject(create_proxy(self.pyKeyUp)  , "pyKeyUp")
+            js.createObject(create_proxy(self.pyKeyDown), "pyCallback_key_down")
+            js.createObject(create_proxy(self.pyKeyUp)  , "pyCallback_key_up")
             self.start = self.web_start
             self.cancel = self.web_cancel
             self.suppress_keyboard = self.web_suppress
@@ -193,7 +193,7 @@ class Keyboard(StenotypeBase):
         try:
             import js
             for key in steno_keys:
-                js.on(key)
+                js.jsCallback_on(key)
         except ImportError:
             pass
 
@@ -219,9 +219,9 @@ class Keyboard(StenotypeBase):
             import js
             from plover.steno import Stroke
             stroke = Stroke(steno_keys)
-            js.stroke(f"{stroke.rtfcre}")
+            js.jsCallback_stroke(f"{stroke.rtfcre}")
             for key in steno_keys:
-                js.off(key)
+                js.jsCallback_off(key)
         except ImportError:
             pass
         if steno_keys:

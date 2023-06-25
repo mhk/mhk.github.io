@@ -13,7 +13,7 @@ class FakeKeyboardEmulation:
         try:
             import js
             from pyodide.ffi import create_proxy
-            js.createObject(create_proxy(self.reset_text), "reset_text")
+            js.createObject(create_proxy(self.reset_text), "pyCallback_reset_text")
         except ImportError:
             pass
 
@@ -23,7 +23,7 @@ class FakeKeyboardEmulation:
     def _update_text(self, text, s):
         try:
             import js
-            js.update_text(text, s)
+            js.jsCallback_update_text(text, s)
         except ImportError:
             print(s)
 
@@ -70,7 +70,7 @@ def main(config, controller):
         import js
         from pyodide.ffi import create_proxy
         setDict = lambda path: setDictionary(engine, path)
-        js.createObject(create_proxy(setDict), "setDictionary")
+        js.createObject(create_proxy(setDict), "pyCallback_set_dictionary")
     except ImportError:
         pass
     try:

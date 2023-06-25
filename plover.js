@@ -34,14 +34,14 @@ document.addEventListener('keydown', (event) => { logKeyDown(event) }, false);
 function logKeyDown(event) {
     if(ignoreKeyEvent(event)) return ;
     if(!Object.values(steno2key).includes(event.key)) return ;
-    pyKeyDown(event.key);
+    pyCallback_key_down(event.key);
 }
 
 document.addEventListener('keyup', (event) => { logKeyUp(event) }, false);
 function logKeyUp(event) {
     if(ignoreKeyEvent(event)) return ;
     if(!Object.values(steno2key).includes(event.key)) return ;
-    pyKeyUp(event.key);
+    pyCallback_key_up(event.key);
 }
 function hideFullScreenButton() {
     const row = document.getElementById("toggleFullscreenRow");
@@ -69,7 +69,7 @@ window.addEventListener('resize', (event) => {
     const row = document.getElementById("toggleFullscreenRow");
     exercise.innerHTML = txt.join('\n');
 });
-function update_text(t, s) {
+function jsCallback_update_text(t, s) {
     update_text_fct(t, s);
 }
 function copyDivToClipboard(id) {
@@ -79,6 +79,12 @@ function copyDivToClipboard(id) {
     window.getSelection().addRange(range); // to select text
     document.execCommand("copy");
     window.getSelection().removeAllRanges();// to deselect
+}
+function jsCallback_on(key) {
+    return on(key);
+}
+function jsCallback_off(key) {
+    return off(key);
 }
 function on(key) {
     document.getElementById(key).setAttribute('fill', '#f3f70f');
@@ -92,7 +98,7 @@ function off(key) {
     document.getElementById(key).setAttribute('fill', '#666666');
     // document.getElementById('char_'+key).setAttribute('fill', '#efefef');
 }
-function stroke(s) {
+function jsCallback_stroke(s) {
     strokes.push(s);
 }
 function isOff(key) {
@@ -140,13 +146,13 @@ function release(event) {
     for (let i = 0; i < collection.length; i++) {
         const stenoKey = collection[i].getAttribute('id');
         if(!isOff(stenoKey)) {
-            pyKeyDown(steno2key[stenoKey]);
+            pyCallback_key_down(steno2key[stenoKey]);
         }
     }
     for (let i = 0; i < collection.length; i++) {
         const stenoKey = collection[i].getAttribute('id');
         if(!isOff(stenoKey)) {
-            pyKeyUp(steno2key[stenoKey]);
+            pyCallback_key_up(steno2key[stenoKey]);
             off(stenoKey);
         }
     }
@@ -184,7 +190,7 @@ function showHint(i=1) {
     hints.innerHTML = hintList.join(', ');
 }
 function initNextExercise() {
-    reset_text();
+    pyCallback_reset_text();
     resetHint();
     strokes.length = 0;
     text_strokes.length = 0;

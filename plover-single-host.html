@@ -353,9 +353,9 @@
         <input type="radio" id="leftHanded" value='left' name="handedness" onchange="leftHandedStenoKeyboard();"><label for="leftHanded">left handed</label>
         <br/>
         <div>Select steno dictionary</div>
-        <input type="radio" id="plover" value='plover' name="dictionary" onchange="setDictionary('main.json');" checked><label for="plover">Plover</label><br/>
-        <input type="radio" id="rope" value='rope' name="dictionary" onchange="setDictionary('rope_30_main.json');"><label for="rope">Rope 3.0</label><br/>
-        <input type="radio" id="regenpfeifer" value='regenpfeifer' name="dictionary" onchange="setDictionary('regenpfeifer_main.json');"><label for="regenpfeifer">Regenpfeifer</label><br/>
+        <input type="radio" id="plover" value='plover' name="dictionary" onchange="pyCallback_set_dictionary('main.json');" checked><label for="plover">Plover</label><br/>
+        <input type="radio" id="rope" value='rope' name="dictionary" onchange="pyCallback_set_dictionary('rope_30_main.json');"><label for="rope">Rope 3.0</label><br/>
+        <input type="radio" id="regenpfeifer" value='regenpfeifer' name="dictionary" onchange="pyCallback_set_dictionary('regenpfeifer_main.json');"><label for="regenpfeifer">Regenpfeifer</label><br/>
         <br>
         <div>Select card scheduler</div>
         <input type="radio" id="roundRobinTraining" value="roundRobin" name="trainingType" checked><label for="roundRobinTraining">Round Robin</label><br>

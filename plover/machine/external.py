@@ -24,8 +24,8 @@ class ExternalKeyboardCapture(Capture):
             # not used
             import js
             from pyodide.ffi import create_proxy
-            js.createObject(create_proxy(self.pyKeyDown), "pyKeyDown")
-            js.createObject(create_proxy(self.pyKeyUp)  , "pyKeyUp")
+            js.createObject(create_proxy(self.pyKeyDown), "pyCallback_key_down")
+            js.createObject(create_proxy(self.pyKeyUp)  , "pyCallback_key_up")
             self.start = self.web_start
             self.cancel = self.web_cancel
             self.suppress_keyboard = self.web_suppress

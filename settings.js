@@ -192,13 +192,20 @@
      *               Public Methods             *
      ********************************************/
 
+	settings.setSettings = (newSettings) => {
+        for(const key of Object.keys(newSettings)) {
+            const val = newSettings[key];
+            settings.options[key].set(val);
+        }
+        updateUrl();
+        return settings;
+    }
 	settings.setUrlSettings = () => {
 		for(const key of Object.keys(settings.options)) {
 			const val = settings.options[key].getDom()
             settings.options[key].set(val);
         }
-        const refresh = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + urlParams.toString();
-        window.history.pushState({ path: refresh }, '', refresh);
+        updateUrl();
         return settings;
     }
     settings.setDomSettings = () => {
@@ -220,12 +227,7 @@
             return map;
         }, {});
     }
-    settings.settingsChanged = () => {
-        for(const key of Object.keys(settings.options)) {
-            if(!settings.options[key].domEqualUrl()) return true;
-        }
-        return false;
-    }
+    settings.settingsChanged = _settingsChanged,
     settings.saveSettings = (db, error = (e) => {}) => {
         const textfield = getSettingsName();
         const name = textfield.value;
@@ -260,10 +262,11 @@
                 error(s);
                 return ;
             }
-            for(const key of Object.keys(newSettings)) {
-                const val = newSettings[key];
-                settings.options[key].set(val);
-            }
+            settings.setSettings(newSettings);
+            settings.settingsChanged = () => {
+                settings.settingsChanged = _settingsChanged;
+                return true;
+            };
             textfield.value = '';
         });
     }
@@ -283,8 +286,18 @@
      *              Private Methods             *
      ********************************************/
 
+    function _settingsChanged() {
+        for(const key of Object.keys(settings.options)) {
+            if(!settings.options[key].domEqualUrl()) return true;
+        }
+        return false;
+    }
     function getSettingsName() {
         return document.getElementById('peristedSettings');
+    }
+    function updateUrl() {
+        const refresh = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + urlParams.toString();
+        window.history.pushState({ path: refresh }, '', refresh);
     }
     function boolToStr(b) {
         return String(Number(b));

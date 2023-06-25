@@ -268,23 +268,20 @@ function getPreslection() {
     return null;
 }
 function isFsrs() {
-    const settings = getDefaultSettings();
-    return settings.scheduler.get() === 'FSRS';
+    return settings.options.scheduler.get() === 'FSRS';
 }
 function isKeyboard() {
-    const settings = getDefaultSettings();
-    return settings.keyboard.getBool();
+    return settings.options.keyboard.getBool();
 }
 function showFsrsStats(tags) {
     const cardStats = document.getElementById('cardStats');
     cardStats.innerHTML = '';
     if(!isFsrs()) return ;
-    const settings = getDefaultSettings();
     const filteredCards = filterCardsByTags(tags);
     const minDue = cutOffDate(0);
     const maxDue = cutOffDate();
-    const newMax = settings.newCards.getInt();
-    const cardsMax = settings.maxCards.getInt();
+    const newMax = settings.options.newCards.getInt();
+    const cardsMax = settings.options.maxCards.getInt();
     let cardsUndefined = 0;
     let newCardsShownToday = 0;
     let newCardsLearnedToday = 0;
@@ -381,278 +378,20 @@ async function loadExercise(tags) {
     showHint(0);
     cardStartTime = new Date;
 }
-function getDefaultSettings() {
-    const urlParams = new URLSearchParams(window.location.search);
-    radioSetter = (name, value) => [...document.getElementsByName(name)].filter(c => c.value === value).map( c => c.checked = true);
-    return {
-        urlParams: urlParams,
-        tags: {
-            get: () => Object.values(document.querySelectorAll('input[class="tagCheckbox"]:checked')).map(c => c.id),
-            getUrl: () => (urlParams.get('tags') || '').split(',').filter(s => '' !== s) || [],
-            set: (tags) => {
-                const tagSet = new Set(tags);
-                [...document.getElementsByClassName("tagCheckbox")].map(c => c.checked = tagSet.has(c.id));
-                urlParams.set('tags', [...tagSet].join(','));
-            },
-            default: [],
-        },
-        randomize: {
-            get: () => document.getElementById('randomizeExercises').checked? '1' : '0',
-            getUrl: () => urlParams.get('randomize') || '0',
-            getBool: () => document.getElementById('randomizeExercises').checked,
-            set: (randomize) => {
-                document.getElementById('randomizeExercises').checked = ('1' === randomize);
-                urlParams.set('randomize', randomize);
-            },
-            default: '0',
-        },
-        hand: {
-            get: () => document.querySelector('input[name="handedness"]:checked').value,
-            getUrl: () => urlParams.get('hand') || 'right',
-            set: (hand) => {
-                if('left' === hand) leftHandedStenoKeyboard();
-                else rightHandedStenoKeyboard();
-                urlParams.set('hand', hand);
-            },
-            default: 'right',
-        },
-        scheduler: {
-            get:  () => document.querySelector('input[name="trainingType"]:checked').value,
-            getUrl: () => urlParams.get('scheduler') || 'roundRobin',
-            set: (scheduler) => {
-                radioSetter('trainingType', scheduler);
-                urlParams.set('scheduler', scheduler);
-            },
-            default: 'roundRobin',
-        },
-        failcount: {
-            get: () => document.getElementById('failcount').value,
-            getUrl: () => urlParams.get('failcount') || '2',
-            set: (failcount) => {
-                document.getElementById('failcount').value = failcount;
-                urlParams.set('failcount', failcount);
-                changeMax(undefined, failcount);
-            },
-            default: '2',
-        },
-        keyboard: {
-            get: () => document.getElementById('hideStenoKeyboard').checked? '0' : '1',
-            getUrl: () => urlParams.get('keyboard') || '1',
-            getBool: () => !document.getElementById('hideStenoKeyboard').checked,
-            set: (keyboard) => {
-                document.getElementById('hideStenoKeyboard').checked = ('0' === keyboard);
-                urlParams.set('keyboard', keyboard);
-                if('0' === keyboard) hideStenoKeyboard();
-                else showStenoKeyboard();
-            },
-            default: '1',
-        },
-        newCards: {
-            get: () => document.getElementById('newCards').value,
-            getUrl: () => urlParams.get('newCards') || '10',
-            getInt: () => parseInt(document.getElementById('newCards').value),
-            set: (newCards) => {
-                document.getElementById('newCards').value = newCards;
-                urlParams.set('newCards', newCards);
-            },
-            default: '10',
-        },
-        maxCards: {
-            get: () => document.getElementById('maxCards').value,
-            getUrl: () => urlParams.get('maxCards') || '100',
-            getInt: () => parseInt(document.getElementById('maxCards').value),
-            set: (maxCards) => {
-                document.getElementById('maxCards').value = maxCards;
-                urlParams.set('maxCards', maxCards);
-            },
-            default: '100',
-        },
-        quickSelect: {
-            get: () => document.getElementById('quickSelect').checked? '1' : '0',
-            getUrl: () => urlParams.get('quickSelect') || '0',
-            set: (quickSelect) => {
-                document.getElementById('quickSelect').checked = ('1' == quickSelect);
-                urlParams.set('quickSelect', quickSelect);
-            },
-            default: '0',
-        },
-        dict: {
-            get: () => document.querySelector('input[name="dictionary"]:checked').value,
-            getUrl: () => urlParams.get('dict') || 'plover',
-            set: (dict) => {
-                radioSetter('dictionary', dict);
-                urlParams.set('dict', dict);
-            },
-            default: 'plover',
-        },
-        cardPrios: {
-            get: () => document.querySelector('input[name="cardPrios"]:checked').value,
-            getUrl: () => urlParams.get('cardPrios') || 'newOverDue',
-            set: (cardPrios) => {
-                radioSetter('cardPrios', cardPrios);
-                urlParams.set('cardPrios', cardPrios);
-            },
-            default: 'newOverDue',
-        },
-        loop: {
-            get: () => '1',
-            getUrl: () => urlParams.get('loop') || '1',
-            set: (loop) => {},
-            default: '1',
-        },
-        dbUrl: {
-            get: () => document.getElementById('dbUrl').value,
-            getUrl: () => urlParams.get('dbUrl') || '',
-            set: (dbUrl) => {
-                document.getElementById('dbUrl').value = dbUrl;
-                urlParams.set('dbUrl', dbUrl);
-            },
-            default: '',
-        },
-        exercise: {
-            get: () => document.getElementById('isExercise').checked? '1' : '0',
-            getUrl: () => urlParams.get('isExercise') || '1',
-            getBool: () => document.getElementById('isExercise').checked,
-            set: (isExercise) => {
-                document.getElementById('isExercise').checked = ('1' == isExercise);
-                urlParams.set('isExercise', isExercise);
-                const div = document.getElementById('divCopyText');
-                const exc = document.getElementById('exercise');
-                if('1' == isExercise) {
-                    div.style.display = 'none';
-                    exc.style.overflow = 'hidden';
-                    update_text_fct = exerciseHandler;
-                } else {
-                    const cardStats = document.getElementById('cardStats');
-                    div.style.display = 'inline-block';
-                    exc.style.overflow = 'scroll';
-                    exc.innerHTML = '';
-                    steno.innerHTML = '';
-                    cardStats.innerHTML = '';
-                    update_text_fct = textHandler;
-                }
-            },
-            default: '',
-        },
-    };
-}
-function getSettings() {
-    // TODO: automate
-    const settings = getDefaultSettings();
-    return {'tags': settings.tags.get(),  'randomize': settings.randomize.get(),
-        "hand": settings.hand.get(),  'scheduler':settings. scheduler.get(),
-        "failcount": settings.failcount.get(),  "keyboard": settings.keyboard.get(),
-        "newCards": settings.newCards.get(),  "maxCards": settings.maxCards.get(),
-        "quickSelect": settings.quickSelect.get(),  "dict": settings.dict.get(),
-        "cardPrios": settings.cardPrios.get(), "dbUrl": settings.dbUrl.get(),
-        "exercise": settings.exercise.get(),
-    };
-}
-function getUrlSettings() {
-    // TODO: automate
-    const settings = getDefaultSettings();
-    return {'tags': settings.tags.getUrl(),  'randomize': settings.randomize.getUrl(),
-        "hand": settings.hand.getUrl(),  'scheduler': settings.scheduler.getUrl(),
-        "failcount": settings.failcount.getUrl(),  "keyboard": settings.keyboard.getUrl(),
-        "newCards": settings.newCards.getUrl(),  "maxCards": settings.maxCards.getUrl(),
-        "quickSelect": settings.quickSelect.getUrl(),  "dict": settings.dict.getUrl(),
-        "cardPrios": settings.cardPrios.getUrl(), "dbUrl": settings.dbUrl.getUrl(),
-        "exercise": settings.exercise.getUrl(),
-    };
-}
-function settingsChanged() {
-    const urlSettings = getUrlSettings();
-    const settings = getSettings();
-    const intersection = intersect(settings.tags, urlSettings.tags);
-    return !(intersection.length === settings.tags.length &&
-        settings.tags.length === urlSettings.tags.length &&
-        settings.randomize === urlSettings.randomize &&
-        settings.hand === urlSettings.hand &&
-        settings.scheduler === urlSettings.scheduler &&
-        settings.failcount === urlSettings.failcount &&
-        settings.keyboard === urlSettings.keyboard &&
-        settings.newCards === urlSettings.newCards &&
-        settings.maxCards === urlSettings.maxCards &&
-        settings.quickSelect === urlSettings.quickSelect &&
-        settings.dict === urlSettings.dict &&
-        settings.cardPrios === urlSettings.cardPrios &&
-        settings.dbUrl === urlSettings.dbUrl &&
-        settings.exercise === urlSettings.exercise &&
-        true
-    );
-}
-function setSettings() {
-    const settings = getDefaultSettings();
-    for(const key of Object.keys(settings)) {
-        if('urlParams'  === key) continue;
-        const val = settings[key].getUrl()
-        settings[key].set(val);
-    }
-    changeDbUrl(undefined);
-    if(!settings.exercise.getBool()) return;
-    loadExercise(settings.tags.get());
-}
-function setUrlSettings() {
-    const settings = getDefaultSettings();
-    for(const key of Object.keys(settings)) {
-        if('urlParams'  === key) continue;
-        const val = settings[key].get()
-        settings[key].set(val);
-    }
-    const refresh = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + settings.urlParams.toString();
-    window.history.pushState({ path: refresh }, '', refresh);
-    return settings;
+function loadSettings(event) {
+    settings.loadSettings(db, (s) => alert(s));
 }
 function saveSettings(event) {
-    const textfield = document.getElementById('peristedSettings');
-    const name = textfield.value;
-    db.get('pageSettings').then(data => {
-        return data;
-    }).catch(err => {
-        if('missing' === err.reason) {
-            return {
-                _id: 'pageSettings',
-                saves: {},
-            };
-        }
-        throw err;
-    }).then(data => {
-        const settings = getSettings();
-        data.saves[name] = settings;
-        return db.put(data).then(data => textfield.value = '');
-    });
-}
-function loadSettings(event) {
-    const textfield = document.getElementById('peristedSettings');
-    const name = textfield.value;
-    db.get('pageSettings').then(data => {
-        if(undefined === data.saves[name]) {
-            console.log(`Failed to find saved settings '${name}'`);
-            return ;
-        }
-        const newSettings = data.saves[name]
-        const settings = getDefaultSettings();
-        for(const key of Object.keys(newSettings)) {
-            const val = newSettings[key];
-            settings[key].set(val);
-        }
-        textfield.value = '';
-    });
+    settings.saveSettings(db, (s) => alert(s));
 }
 function deleteSettings(event) {
-    const textfield = document.getElementById('peristedSettings');
-    const name = textfield.value;
-    db.get('pageSettings').then(data => {
-        if(undefined !== data.saves[name]) delete data.saves[name];
-        return db.put(data).then(data => textfield.value = '');
-    });
+    settings.deleteSettings(db, (s) => alert(s));
 }
 function changeExercise() {
     currentExerciseIndex = 0;
     initNextExercise();
-    settings = setUrlSettings();
-    if(!settings.exercise.getBool()) return;
-    loadExercise(settings.tags.get());
+    if(!settings.options.exercise.getBool()) return;
+    loadExercise(settings.options.tags.get());
 }
 function textToLength() {
     const exc = document.getElementById('exercise');
@@ -797,9 +536,8 @@ function orderCardsDueAndNew(cards) {
     const cardsLearnedToday = cards.filter(c => (c.scheduling !== undefined &&
         c.scheduling.reviewLog.at(-1).review >= minDue &&
         c.scheduling.fsrsCard.due >= maxDue)).length;
-    const settings = getDefaultSettings();
-    const newCardsMax = Math.max(0, settings.newCards.getInt() - newCardsLearnedToday);
-    const cardsMax = Math.max(0, settings.maxCards.getInt() - cardsLearnedToday);
+    const newCardsMax = Math.max(0, settings.options.newCards.getInt() - newCardsLearnedToday);
+    const cardsMax = Math.max(0, settings.options.maxCards.getInt() - cardsLearnedToday);
     for(let i = 0; i < cards.length; ++i) {
         // only include cards that are new or due this day
         if(undefined !== cards[i].scheduling &&
@@ -847,20 +585,19 @@ function orderCardsDueAndNew(cards) {
     dueCards.push(...rlnCards); // next relearn to get back lost knowledge
     dueCards.push(...revCards); // finally review to steady knowledge
     dueCards.length = Math.min(dueCards.length, cardsMax);
-    if(settings.cardPrios.get() === 'dueOverNew') {
+    if(settings.options.cardPrios.get() === 'dueOverNew') {
         result = dueCards.concat(newCards);
     } else {
         result = newCards.concat(dueCards);
     }
     result.length = Math.min(result.length, cardsMax);
-    if(settings.randomize.getBool()) {
+    if(settings.options.randomize.getBool()) {
         shuffleArray(result);
     }
     return result;
 }
 function getDifficultCards() {
-    const settings = getDefaultSettings();
-    const maxCards = settings.maxCards.getInt();
+    const maxCards = settings.options.maxCards.getInt();
     return db.allDocs({include_docs: true}).then(response => {
         difficultCards = response.rows
             .filter(a => a.doc._id.startsWith('all::'))
@@ -879,7 +616,7 @@ function getDifficultCards() {
             return undefined
         }).filter(a => a !== undefined);
 
-        if(settings.randomize.getBool()) {
+        if(settings.options.randomize.getBool()) {
             shuffleArray(result);
         }
         return result;
@@ -916,10 +653,9 @@ function filterCardsByTags(fqtags) {
 }
 function getCards(tags) {
     const filteredCards = filterCardsByTags(tags);
-    const settings = getDefaultSettings();
     if(isFsrs()) {
         return annotateCardsWithLocalData(filteredCards).then(cards => orderCardsDueAndNew(cards));
-    } else if(settings.randomize.getBool()) {
+    } else if(settings.options.randomize.getBool()) {
         shuffleArray(filteredCards);
     }
     return Promise.resolve(filteredCards);
@@ -1021,7 +757,11 @@ function loadCards(deck) {
 
             addCardTags();
 
-            setSettings();
+            settings.setDomSettings();
+            changeDbUrl(undefined);
+            if(settings.options.exercise.getBool()) {
+                loadExercise(settings.options.tags.get());
+            }
             setupTouch();
         });
 }
@@ -1064,7 +804,8 @@ function settingsOverlayOn() {
 }
 function settingsOverlayOff() {
     document.getElementById("overlay").style.display = "none";
-    if(!settingsChanged()) return ;
+    if(!settings.settingsChanged()) return ;
+    settings.setUrlSettings();
     changeExercise();
 }
 function showStenoKeyboard() {
@@ -1083,9 +824,8 @@ function setHideStenoKeyboard(hide) {
     }
 }
 function checkNewCardsSettings(event) {
-    const settings = getDefaultSettings();
-    if(settings.newCards.getInt() > settings.maxCards.getInt()) {
-        event.target.value = settings.maxCards.get();
+    if(settings.options.newCards.getInt() > settings.options.maxCards.getInt()) {
+        event.target.value = settings.options.maxCards.getDom();
     }
 }
 function addCardTags() {
@@ -1183,8 +923,7 @@ function getDefinitionOfWord(word) {
         });
 }
 function changeDbUrl(event) {
-    const settings = getDefaultSettings();
-    const remoteCouch = settings.dbUrl.get();
+    const remoteCouch = settings.options.dbUrl.get();
     if(undefined !== dbSync) {
         dbSync.cancel();
         dbSync = undefined;
@@ -1194,8 +933,7 @@ function changeDbUrl(event) {
 }
 function sync() {
     // TODO: use 'changes' and on('change', x => x)
-    const settings = getDefaultSettings();
-    const remoteCouch = settings.dbUrl.get();
+    const remoteCouch = settings.options.dbUrl.get();
     if('' === remoteCouch || undefined === remoteCouch) return ;
     const remote = new PouchDB(remoteCouch);
     dbSync = db.sync(remote, {

@@ -154,15 +154,19 @@
         },
     };
 
+    /********************************************
+     *               Public Methods             *
+     ********************************************/
+
 	settings.setUrlSettings = () => {
 		for(const key of Object.keys(settings.options)) {
 			const val = settings.options[key].get()
-			settings.options[key].set(val);
-		}
-		const refresh = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + urlParams.toString();
-		window.history.pushState({ path: refresh }, '', refresh);
-		return settings;
-	}
+            settings.options[key].set(val);
+        }
+        const refresh = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + urlParams.toString();
+        window.history.pushState({ path: refresh }, '', refresh);
+        return settings;
+    }
 
     settings.setDomSettings = () => {
         for(const key of Object.keys(settings.options)) {
@@ -173,28 +177,110 @@
         changeDbUrl(undefined);
         if(!settings.options.exercise.getBool()) return;
         loadExercise(settings.options.tags.get());
-		return settings;
+        return settings;
     }
 
-    //Private Property
-    var isHot = true;
+    settings.getSettings = () => {
+        // TODO: automate
+        return {'tags': settings.options.tags.get(),  'randomize': settings.options.randomize.get(),
+            "hand": settings.options.hand.get(),  'scheduler':settings.options. scheduler.get(),
+            "failcount": settings.options.failcount.get(),  "keyboard": settings.options.keyboard.get(),
+            "newCards": settings.options.newCards.get(),  "maxCards": settings.options.maxCards.get(),
+            "quickSelect": settings.options.quickSelect.get(),  "dict": settings.options.dict.get(),
+            "cardPrios": settings.options.cardPrios.get(), "dbUrl": settings.options.dbUrl.get(),
+            "exercise": settings.options.exercise.get(),
+        };
+    }
+    settings.getUrlSettings = () => {
+        // TODO: automate
+        return {'tags': settings.options.tags.getUrl(),  'randomize': settings.options.randomize.getUrl(),
+            "hand": settings.options.hand.getUrl(),  'scheduler': settings.options.scheduler.getUrl(),
+            "failcount": settings.options.failcount.getUrl(),  "keyboard": settings.options.keyboard.getUrl(),
+            "newCards": settings.options.newCards.getUrl(),  "maxCards": settings.options.maxCards.getUrl(),
+            "quickSelect": settings.options.quickSelect.getUrl(),  "dict": settings.options.dict.getUrl(),
+            "cardPrios": settings.options.cardPrios.getUrl(), "dbUrl": settings.options.dbUrl.getUrl(),
+            "exercise": settings.options.exercise.getUrl(),
+        };
+    }
+    setting.settingsChanged = () => {
+        const urlSettings = getUrlSettings();
+        const settings = getSettings();
+        const intersection = intersect(settings.tags, urlSettings.tags);
+        return !(intersection.length === settings.tags.length &&
+            settings.tags.length === urlSettings.tags.length &&
+            settings.randomize === urlSettings.randomize &&
+            settings.hand === urlSettings.hand &&
+            settings.scheduler === urlSettings.scheduler &&
+            settings.failcount === urlSettings.failcount &&
+            settings.keyboard === urlSettings.keyboard &&
+            settings.newCards === urlSettings.newCards &&
+            settings.maxCards === urlSettings.maxCards &&
+            settings.quickSelect === urlSettings.quickSelect &&
+            settings.dict === urlSettings.dict &&
+            settings.cardPrios === urlSettings.cardPrios &&
+            settings.dbUrl === urlSettings.dbUrl &&
+            settings.exercise === urlSettings.exercise &&
+            true
+        );
+    }
 
-    //Public Property
-    settings.ingredient = "Bacon Strips";
+    settings.saveSettings = (db) => {
+        const textfield = getSettingsName();
+        const name = textfield.value;
+        db.get('pageSettings').then(data => {
+            return data;
+        }).catch(err => {
+            if('missing' === err.reason) {
+                return {
+                    _id: 'pageSettings',
+                    saves: {},
+                };
+            }
+            throw err;
+        }).then(data => {
+            const settings = getSettings();
+            data.saves[name] = settings;
+            return db.put(data).then(data => textfield.value = '');
+        });
+    }
+    settings.loadSettings = (db) => {
+        const textfield = getSettingsName();
+        const name = textfield.value;
+        db.get('pageSettings').then(data => {
+            if(undefined === data.saves[name]) {
+                console.log(`Failed to find saved settings '${name}'`);
+                return ;
+            }
+            const newSettings = data.saves[name]
+            const settings = getDefaultSettings();
+            for(const key of Object.keys(newSettings)) {
+                const val = newSettings[key];
+                settings[key].set(val);
+            }
+            textfield.value = '';
+        });
+    }
+    settings.deleteSettings = (db) => {
+        const textfield = getSettingsName();
+        const name = textfield.value;
+        db.get('pageSettings').then(data => {
+            if(undefined !== data.saves[name]) delete data.saves[name];
+            return db.put(data).then(data => textfield.value = '');
+        });
+    }
 
-    //Public Method
-    settings.fry = function() {
-        var oliveOil;
+    /********************************************
+     *              Private Methods             *
+     ********************************************/
 
-        addItem( "\t\n Butter \n\t" );
-        addItem( oliveOil );
-        console.log( "Frying " + settings.ingredient );
-    };
+    function getSettingsName() {
+        return document.getElementById('peristedSettings');
+    }
 
-    //Private Method
-    function addItem( item ) {
-        if ( item !== undefined ) {
-            console.log( "Adding " + $.trim(item) );
-        }
+    function boolToStr(b) {
+        return String(Number(b));
+    }
+    function StrToBool(s) {
+        return Boolean(Number(s));
     }
 }( window.settings = window.settings || {} ));

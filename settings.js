@@ -15,8 +15,8 @@
                 const urlTags = settings.options.tags.getUrl();
                 const domTags = settings.options.tags.getDom();
                 const intersection = intersect(domTags, urlTags);
-                return = (intersection.length === domTags.length &&
-                    domTags.length === urlTags.length);
+                return intersection.length === domTags.length &&
+                    domTags.length === urlTags.length;
             },
             default: [],
         },
@@ -194,7 +194,7 @@
 
 	settings.setUrlSettings = () => {
 		for(const key of Object.keys(settings.options)) {
-			const val = settings.options[key].get()
+			const val = settings.options[key].getDom()
             settings.options[key].set(val);
         }
         const refresh = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + urlParams.toString();
@@ -206,14 +206,11 @@
             const val = settings.options[key].getUrl()
             settings.options[key].set(val);
         }
-        changeDbUrl(undefined);
-        if(!settings.options.exercise.getBool()) return;
-        loadExercise(settings.options.tags.get());
         return settings;
     }
     settings.getDomSettings = () => {
         return Object.keys(settings.options).reduce((map, key) => {
-            map[key] = settings.options[key].get();
+            map[key] = settings.options[key].getDom();
             return map;
         }, {});
     }
@@ -223,13 +220,13 @@
             return map;
         }, {});
     }
-    setting.settingsChanged = () => {
-        for(const key of Object.keys(settings)) {
+    settings.settingsChanged = () => {
+        for(const key of Object.keys(settings.options)) {
             if(!settings.options[key].domEqualUrl()) return true;
         }
         return false;
     }
-    settings.saveSettings = (db) => {
+    settings.saveSettings = (db, error = (e) => {}) => {
         const textfield = getSettingsName();
         const name = textfield.value;
         db.get('pageSettings').then(data => {
@@ -241,36 +238,44 @@
                     saves: {},
                 };
             }
+            error(`Failed to get pageSettings: ${err.reason}`);
             throw err;
         }).then(data => {
             const settings = getDomSettings();
             data.saves[name] = settings;
-            return db.put(data).then(data => textfield.value = '');
+            return db.put(data).then(data => textfield.value = '').catch(err => {
+                error(`Failed to save settings`);
+                throw err;
+            });
         });
     }
-    settings.loadSettings = (db) => {
+    settings.loadSettings = (db, error = (e) => {}) => {
         const textfield = getSettingsName();
         const name = textfield.value;
         db.get('pageSettings').then(data => {
-            if(undefined === data.saves[name]) {
-                console.log(`Failed to find saved settings '${name}'`);
+            const newSettings = data.saves[name];
+            if(undefined === newSettings) {
+                const s = `Failed to find settings '${name}'`;
+                console.log(s);
+                error(s);
                 return ;
             }
-            const newSettings = data.saves[name]
-            const settings = getDefaultSettings();
             for(const key of Object.keys(newSettings)) {
                 const val = newSettings[key];
-                settings[key].set(val);
+                settings.options[key].set(val);
             }
             textfield.value = '';
         });
     }
-    settings.deleteSettings = (db) => {
+    settings.deleteSettings = (db, error = (e) => {}) => {
         const textfield = getSettingsName();
         const name = textfield.value;
         db.get('pageSettings').then(data => {
             if(undefined !== data.saves[name]) delete data.saves[name];
+            else error(`Failed to find settings '${name}'`);
             return db.put(data).then(data => textfield.value = '');
+        }).catch(err => {
+            error(`Error while getting '${name}'`);
         });
     }
 

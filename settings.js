@@ -179,28 +179,17 @@
         loadExercise(settings.options.tags.get());
         return settings;
     }
-
     settings.getSettings = () => {
-        // TODO: automate
-        return {'tags': settings.options.tags.get(),  'randomize': settings.options.randomize.get(),
-            "hand": settings.options.hand.get(),  'scheduler':settings.options. scheduler.get(),
-            "failcount": settings.options.failcount.get(),  "keyboard": settings.options.keyboard.get(),
-            "newCards": settings.options.newCards.get(),  "maxCards": settings.options.maxCards.get(),
-            "quickSelect": settings.options.quickSelect.get(),  "dict": settings.options.dict.get(),
-            "cardPrios": settings.options.cardPrios.get(), "dbUrl": settings.options.dbUrl.get(),
-            "exercise": settings.options.exercise.get(),
-        };
+        return Object.keys(settings.options).reduce((map, key) => {
+            map[key] = settings.options[key].get();
+            return map;
+        }, {});
     }
     settings.getUrlSettings = () => {
-        // TODO: automate
-        return {'tags': settings.options.tags.getUrl(),  'randomize': settings.options.randomize.getUrl(),
-            "hand": settings.options.hand.getUrl(),  'scheduler': settings.options.scheduler.getUrl(),
-            "failcount": settings.options.failcount.getUrl(),  "keyboard": settings.options.keyboard.getUrl(),
-            "newCards": settings.options.newCards.getUrl(),  "maxCards": settings.options.maxCards.getUrl(),
-            "quickSelect": settings.options.quickSelect.getUrl(),  "dict": settings.options.dict.getUrl(),
-            "cardPrios": settings.options.cardPrios.getUrl(), "dbUrl": settings.options.dbUrl.getUrl(),
-            "exercise": settings.options.exercise.getUrl(),
-        };
+        return Object.keys(settings.options).reduce((map, key) => {
+            map[key] = settings.options[key].getUrl();
+            return map;
+        }, {});
     }
     setting.settingsChanged = () => {
         const urlSettings = getUrlSettings();

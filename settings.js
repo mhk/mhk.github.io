@@ -201,10 +201,8 @@
         window.history.pushState({ path: refresh }, '', refresh);
         return settings;
     }
-
     settings.setDomSettings = () => {
         for(const key of Object.keys(settings.options)) {
-            if('urlParams'  === key) continue;
             const val = settings.options[key].getUrl()
             settings.options[key].set(val);
         }
@@ -213,7 +211,7 @@
         loadExercise(settings.options.tags.get());
         return settings;
     }
-    settings.getSettings = () => {
+    settings.getDomSettings = () => {
         return Object.keys(settings.options).reduce((map, key) => {
             map[key] = settings.options[key].get();
             return map;
@@ -245,7 +243,7 @@
             }
             throw err;
         }).then(data => {
-            const settings = getSettings();
+            const settings = getDomSettings();
             data.saves[name] = settings;
             return db.put(data).then(data => textfield.value = '');
         });
@@ -283,11 +281,10 @@
     function getSettingsName() {
         return document.getElementById('peristedSettings');
     }
-
     function boolToStr(b) {
         return String(Number(b));
     }
     function StrToBool(s) {
         return Boolean(Number(s));
     }
-}( window.settings = window.settings || {} ));
+}(window.settings = window.settings || {}));

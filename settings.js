@@ -4,7 +4,7 @@
     settings.options = {
         tags: {
             get: () => Object.values(document.querySelectorAll('input[class="tagCheckbox"]:checked')).map(c => c.id),
-            getUrl: () => (urlParams.get('tags') || '').split(',').filter(s => '' !== s) || [],
+            getUrl: () => (urlParams.get('tags') || '').split(',').filter(s => '' !== s) || settings.options.tag.default,
             set: (tags) => {
                 const tagSet = new Set(tags);
                 [...document.getElementsByClassName("tagCheckbox")].map(c => c.checked = tagSet.has(c.id));
@@ -14,17 +14,17 @@
         },
         randomize: {
             get: () => document.getElementById('randomizeExercises').checked? '1' : '0',
-            getUrl: () => urlParams.get('randomize') || '0',
+            getUrl: () => urlParams.get('randomize') || settings.options.randomize.default,
             getBool: () => document.getElementById('randomizeExercises').checked,
             set: (randomize) => {
-                document.getElementById('randomizeExercises').checked = ('1' === randomize);
+                document.getElementById('randomizeExercises').checked = (settings.options.randomize.default !== randomize);
                 urlParams.set('randomize', randomize);
             },
             default: '0',
         },
         hand: {
             get: () => document.querySelector('input[name="handedness"]:checked').value,
-            getUrl: () => urlParams.get('hand') || 'right',
+            getUrl: () => urlParams.get('hand') || settings.options.hand.default,
             set: (hand) => {
                 if('left' === hand) leftHandedStenoKeyboard();
                 else rightHandedStenoKeyboard();
@@ -34,7 +34,7 @@
         },
         scheduler: {
             get:  () => document.querySelector('input[name="trainingType"]:checked').value,
-            getUrl: () => urlParams.get('scheduler') || 'roundRobin',
+            getUrl: () => urlParams.get('scheduler') || settings.options.scheduler.default,
             set: (scheduler) => {
                 radioSetter('trainingType', scheduler);
                 urlParams.set('scheduler', scheduler);
@@ -43,7 +43,7 @@
         },
         failcount: {
             get: () => document.getElementById('failcount').value,
-            getUrl: () => urlParams.get('failcount') || '2',
+            getUrl: () => urlParams.get('failcount') || settings.options.failcount.default,
             set: (failcount) => {
                 document.getElementById('failcount').value = failcount;
                 urlParams.set('failcount', failcount);
@@ -53,19 +53,20 @@
         },
         keyboard: {
             get: () => document.getElementById('hideStenoKeyboard').checked? '0' : '1',
-            getUrl: () => urlParams.get('keyboard') || '1',
+            getUrl: () => urlParams.get('keyboard') || settings.options.keyboard.default,
             getBool: () => !document.getElementById('hideStenoKeyboard').checked,
             set: (keyboard) => {
-                document.getElementById('hideStenoKeyboard').checked = ('0' === keyboard);
+                const hide = (settings.options.keyboard.default !== keyboard);
+                document.getElementById('hideStenoKeyboard').checked = hide;
                 urlParams.set('keyboard', keyboard);
-                if('0' === keyboard) hideStenoKeyboard();
+                if(hide) hideStenoKeyboard();
                 else showStenoKeyboard();
             },
             default: '1',
         },
         newCards: {
             get: () => document.getElementById('newCards').value,
-            getUrl: () => urlParams.get('newCards') || '10',
+            getUrl: () => urlParams.get('newCards') || settings.options.newCards.default,
             getInt: () => parseInt(document.getElementById('newCards').value),
             set: (newCards) => {
                 document.getElementById('newCards').value = newCards;
@@ -75,7 +76,7 @@
         },
         maxCards: {
             get: () => document.getElementById('maxCards').value,
-            getUrl: () => urlParams.get('maxCards') || '100',
+            getUrl: () => urlParams.get('maxCards') || settings.options.maxCards.default,
             getInt: () => parseInt(document.getElementById('maxCards').value),
             set: (maxCards) => {
                 document.getElementById('maxCards').value = maxCards;
@@ -85,16 +86,16 @@
         },
         quickSelect: {
             get: () => document.getElementById('quickSelect').checked? '1' : '0',
-            getUrl: () => urlParams.get('quickSelect') || '0',
+            getUrl: () => urlParams.get('quickSelect') || settings.options.quickSelect.default,
             set: (quickSelect) => {
-                document.getElementById('quickSelect').checked = ('1' == quickSelect);
+                document.getElementById('quickSelect').checked = (settings.options.quickSelect.default !== quickSelect);
                 urlParams.set('quickSelect', quickSelect);
             },
             default: '0',
         },
         dict: {
             get: () => document.querySelector('input[name="dictionary"]:checked').value,
-            getUrl: () => urlParams.get('dict') || 'plover',
+            getUrl: () => urlParams.get('dict') || settings.options.dict.default,
             set: (dict) => {
                 radioSetter('dictionary', dict);
                 urlParams.set('dict', dict);
@@ -103,7 +104,7 @@
         },
         cardPrios: {
             get: () => document.querySelector('input[name="cardPrios"]:checked').value,
-            getUrl: () => urlParams.get('cardPrios') || 'newOverDue',
+            getUrl: () => urlParams.get('cardPrios') || settings.options.cardPrios.default,
             set: (cardPrios) => {
                 radioSetter('cardPrios', cardPrios);
                 urlParams.set('cardPrios', cardPrios);
@@ -111,14 +112,14 @@
             default: 'newOverDue',
         },
         loop: {
-            get: () => '1',
-            getUrl: () => urlParams.get('loop') || '1',
+            get: () => settings.options.loop.default,
+            getUrl: () => urlParams.get('loop') || settings.options.loop.default,
             set: (loop) => {},
             default: '1',
         },
         dbUrl: {
             get: () => document.getElementById('dbUrl').value,
-            getUrl: () => urlParams.get('dbUrl') || '',
+            getUrl: () => urlParams.get('dbUrl') || settings.options.dbUrl.default,
             set: (dbUrl) => {
                 document.getElementById('dbUrl').value = dbUrl;
                 urlParams.set('dbUrl', dbUrl);
@@ -127,14 +128,15 @@
         },
         exercise: {
             get: () => document.getElementById('isExercise').checked? '1' : '0',
-            getUrl: () => urlParams.get('isExercise') || '1',
+            getUrl: () => urlParams.get('isExercise') || settings.options.exercise.default,
             getBool: () => document.getElementById('isExercise').checked,
             set: (isExercise) => {
-                document.getElementById('isExercise').checked = ('1' == isExercise);
+                const isExcBool = (settings.options.exercise.default === isExercise);
+                document.getElementById('isExercise').checked = isExcBool;
                 urlParams.set('isExercise', isExercise);
                 const div = document.getElementById('divCopyText');
                 const exc = document.getElementById('exercise');
-                if('1' == isExercise) {
+                if(isExcBool) {
                     div.style.display = 'none';
                     exc.style.overflow = 'hidden';
                     update_text_fct = exerciseHandler;
@@ -148,7 +150,7 @@
                     update_text_fct = textHandler;
                 }
             },
-            default: '',
+            default: '1',
         },
     };
 

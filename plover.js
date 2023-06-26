@@ -267,7 +267,7 @@ function isKeyboard() {
 function showFsrsStats(tags) {
     const cardStats = document.getElementById('cardStats');
     cardStats.innerHTML = '';
-    if(!exercises.isFsrs()) return ;
+    if(!settings.isFsrs()) return ;
     const stats = exercises.getFsrsStats(tags);
     cardStats.innerHTML =
         'New: ' + stats.newCardsLearnedToday + '/' + stats.newCardsShownToday + '/' + stats.newCardsMax + ' ' +
@@ -300,7 +300,7 @@ function exerciseHandler(t, s) {
         if(result === curExc.word) {
             const answer_strokes = text_strokes.join(', ');
             console.log(answer_strokes);
-            if(exercises.isFsrs()) {
+            if(settings.isFsrs()) {
                 putCardBack = ease => {
                     exercises.putCardBack2(curExc, answer_strokes, ease);
                     showFsrsStats(currentTags);

@@ -4,12 +4,9 @@
      *               Public Methods             *
      ********************************************/
 
-    exercises.isFsrs = () => {
-        return settings.options.scheduler.get() === 'FSRS';
-    }
     exercises.getCards = (tags) => {
         const filteredCards = filterCardsByTags(tags);
-        if(exercises.isFsrs()) {
+        if(settings.isFsrs()) {
             return annotateCardsWithLocalData(filteredCards).then(cards => orderCardsDueAndNew(cards));
         } else if(settings.options.randomize.getBool()) {
             shuffleArray(filteredCards);

@@ -1,6 +1,8 @@
-let db = new PouchDB('cardData');
+(function(database, undefined) {
+database.db = new PouchDB('cardData');
+let dbSync = undefined;
 
-function changeDbUrl(event) {
+database.changeDbUrl = (event = undefined) => {
     const remoteCouch = settings.options.dbUrl.get();
     if(undefined !== dbSync) {
         dbSync.cancel();
@@ -14,7 +16,7 @@ function sync() {
     const remoteCouch = settings.options.dbUrl.get();
     if('' === remoteCouch || undefined === remoteCouch) return ;
     const remote = new PouchDB(remoteCouch);
-    dbSync = db.sync(remote, {
+    dbSync = database.db.sync(remote, {
         live: true,
         retry: true
     });
@@ -25,6 +27,7 @@ function sync() {
     });
 }
 
-db.info(function(err, info) {
-    db.changes({since: info.update_seq, continuous: true});
+database.db.info(function(err, info) {
+    database.db.changes({since: info.update_seq, continuous: true});
 });
+}(window.database = window.database || {}));

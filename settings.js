@@ -234,7 +234,7 @@
     settings.saveSettings = (db, error = (e) => {}) => {
         const textfield = getSettingsName();
         const name = textfield.value;
-        db.get('pageSettings').then(data => {
+        database.db.get('pageSettings').then(data => {
             return data;
         }).catch(err => {
             if('missing' === err.reason) {
@@ -246,9 +246,8 @@
             error(`Failed to get pageSettings: ${err.reason}`);
             throw err;
         }).then(data => {
-            const settings = getDomSettings();
-            data.saves[name] = settings;
-            return db.put(data).then(data => textfield.value = '').catch(err => {
+            data.saves[name] = settings.getDomSettings();
+            return database.db.put(data).then(data => textfield.value = '').catch(err => {
                 error(`Failed to save settings`);
                 throw err;
             });
@@ -257,7 +256,7 @@
     settings.loadSettings = (db, error = (e) => {}) => {
         const textfield = getSettingsName();
         const name = textfield.value;
-        db.get('pageSettings').then(data => {
+        database.db.get('pageSettings').then(data => {
             const newSettings = data.saves[name];
             if(undefined === newSettings) {
                 const s = `Failed to find settings '${name}'`;
@@ -276,10 +275,10 @@
     settings.deleteSettings = (db, error = (e) => {}) => {
         const textfield = getSettingsName();
         const name = textfield.value;
-        db.get('pageSettings').then(data => {
+        database.db.get('pageSettings').then(data => {
             if(undefined !== data.saves[name]) delete data.saves[name];
             else error(`Failed to find settings '${name}'`);
-            return db.put(data).then(data => textfield.value = '');
+            return database.db.put(data).then(data => textfield.value = '');
         }).catch(err => {
             error(`Error while getting '${name}'`);
         });

@@ -15,7 +15,7 @@
     }
     exercises.getDifficultCards = () => {
         const maxCards = settings.options.maxCards.getInt();
-        return db.allDocs({include_docs: true}).then(response => {
+        return database.db.allDocs({include_docs: true}).then(response => {
             difficultCards = response.rows
                 .filter(a => a.doc._id.startsWith('all::'))
                 .sort((a, b) => b.doc.fsrsCard.difficulty - a.doc.fsrsCard.difficulty);
@@ -76,7 +76,7 @@
         card.scheduling.fsrsCard = newCards[ease].card;
         card.scheduling.reviewLog.push(newCards[ease].review_log);
         card.scheduling._id = card.collection + '::' + card.word;
-        db.put(card.scheduling, function(err, response) {
+        database.db.put(card.scheduling, function(err, response) {
             if (err) { return console.log(err); }
             // handle response
             console.log(response);
@@ -146,7 +146,7 @@
         for(const card of cards) {
             const id = card.collection + '::' + card.word;
             promises.push(
-                db.get(id).then(data => {
+                database.db.get(id).then(data => {
                     if(null !== data) card.scheduling = data;
                     return card;
                 }).catch(err => {

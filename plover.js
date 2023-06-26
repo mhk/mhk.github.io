@@ -333,13 +333,13 @@ async function loadExercise(tags) {
     cardStartTime = new Date;
 }
 function loadSettings(event) {
-    settings.loadSettings(db, (s) => alert(s));
+    settings.loadSettings(database.db, (s) => alert(s));
 }
 function saveSettings(event) {
-    settings.saveSettings(db, (s) => alert(s));
+    settings.saveSettings(database.db, (s) => alert(s));
 }
 function deleteSettings(event) {
-    settings.deleteSettings(db, (s) => alert(s));
+    settings.deleteSettings(database.db, (s) => alert(s));
 }
 function changeExercise() {
     currentExerciseIndex = 0;
@@ -497,12 +497,15 @@ function loadCards(deck) {
             addCardTags();
 
             settings.setDomSettings();
-            changeDbUrl();
+            database.changeDbUrl();
             if(settings.options.exercise.getBool()) {
                 loadExercise(settings.options.tags.get());
             }
             setupTouch();
         });
+}
+function changeDbUrl() {
+    database.changeDbUrl();
 }
 function setupTouch() {
     const keys = [];
@@ -528,7 +531,7 @@ function loadLessons(lessons) {
 }
 function settingsOverlayOn() {
     document.getElementById("overlay").style.display = "block";
-    db.get('pageSettings').then(data => {
+    database.db.get('pageSettings').then(data => {
         const saves = document.getElementById("saves");
         saves.innerHTML = '';
         for(const key of Object.keys(data.saves)) {

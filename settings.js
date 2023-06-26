@@ -231,7 +231,7 @@
     settings.isFsrs = () => {
         return settings.options.scheduler.get() === 'FSRS';
     }
-    settings.saveSettings = (db, error = (e) => {}) => {
+    settings.saveSettings = (db, error = (e) => {}, updateUi = () => {}) => {
         const textfield = getSettingsName();
         const name = textfield.value;
         database.db.get('pageSettings').then(data => {
@@ -250,7 +250,7 @@
             return database.db.put(data).then(data => textfield.value = '').catch(err => {
                 error(`Failed to save settings`);
                 throw err;
-            });
+            }).then(data => updateUi());
         });
     }
     settings.loadSettings = (db, error = (e) => {}) => {
@@ -272,7 +272,7 @@
             textfield.value = '';
         });
     }
-    settings.deleteSettings = (db, error = (e) => {}) => {
+    settings.deleteSettings = (db, error = (e) => {}, updateUi = () => {}) => {
         const textfield = getSettingsName();
         const name = textfield.value;
         database.db.get('pageSettings').then(data => {
@@ -281,7 +281,7 @@
             return database.db.put(data).then(data => textfield.value = '');
         }).catch(err => {
             error(`Error while getting '${name}'`);
-        });
+        }).then(data => updateUi());
     }
 
     /********************************************

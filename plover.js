@@ -336,10 +336,10 @@ function loadSettings(event) {
     settings.loadSettings(database.db, (s) => alert(s));
 }
 function saveSettings(event) {
-    settings.saveSettings(database.db, (s) => alert(s));
+    settings.saveSettings(database.db, (s) => alert(s), uiLoadSaves);
 }
 function deleteSettings(event) {
-    settings.deleteSettings(database.db, (s) => alert(s));
+    settings.deleteSettings(database.db, (s) => alert(s), uiLoadSaves);
 }
 function changeExercise() {
     currentExerciseIndex = 0;
@@ -529,8 +529,7 @@ function loadLessons(lessons) {
             lessonsData = json;
         });
 }
-function settingsOverlayOn() {
-    document.getElementById("overlay").style.display = "block";
+function uiLoadSaves() {
     database.db.get('pageSettings').then(data => {
         const saves = document.getElementById("saves");
         saves.innerHTML = '';
@@ -543,6 +542,10 @@ function settingsOverlayOn() {
         if('missing' === err.reason) return ;
         throw err;
     });
+}
+function settingsOverlayOn() {
+    document.getElementById("overlay").style.display = "block";
+    uiLoadSaves();
 }
 function settingsOverlayOff() {
     document.getElementById("overlay").style.display = "none";

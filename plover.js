@@ -1,6 +1,4 @@
 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-let db = new PouchDB('cardData');
-let dbSync = undefined;
 let cards = {};
 let cardStartTime = new Date;
 let lessonsData = {};
@@ -499,7 +497,7 @@ function loadCards(deck) {
             addCardTags();
 
             settings.setDomSettings();
-            changeDbUrl(undefined);
+            changeDbUrl();
             if(settings.options.exercise.getBool()) {
                 loadExercise(settings.options.tags.get());
             }
@@ -663,30 +661,6 @@ function getDefinitionOfWord(word) {
             }
         });
 }
-function changeDbUrl(event) {
-    const remoteCouch = settings.options.dbUrl.get();
-    if(undefined !== dbSync) {
-        dbSync.cancel();
-        dbSync = undefined;
-    }
-    // no check needed as sync already checks
-    sync();
-}
-function sync() {
-    // TODO: use 'changes' and on('change', x => x)
-    const remoteCouch = settings.options.dbUrl.get();
-    if('' === remoteCouch || undefined === remoteCouch) return ;
-    const remote = new PouchDB(remoteCouch);
-    dbSync = db.sync(remote, {
-        live: true,
-        retry: true
-    });
-    dbSync.on('paused', msg => {
-        remote.info()
-          .then(info => syncWorking())
-          .catch(err => syncError());
-    });
-}
 function syncWorking() {
     const syncDom = document.getElementById('sync-wrapper');
     syncDom.setAttribute('data-sync-state', 'syncing');
@@ -702,16 +676,12 @@ function syncError() {
     const last = (lastSync === undefined)? 'never' : `at ${lastSync.toISOString()}`;
     syncInfo.innerHTML = `${now}: &#x1F534 Last successful sync ${last}<br/>`
 }
-
 /*
  ********************
  *       MAIN       *
  ********************
  */
 
-db.info(function(err, info) {
-    db.changes({since: info.update_seq, continuous: true});
-});
 loadCards('rope/cards-all.json');
 loadLessons('learn-plover/lessons.json');
 document.addEventListener("DOMContentLoaded", function(event) {

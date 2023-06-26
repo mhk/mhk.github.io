@@ -4,7 +4,6 @@ let dbSync = undefined;
 let cards = {};
 let cardStartTime = new Date;
 let lessonsData = {};
-let exercises = {};
 let currentExercise = [];
 let currentTags = [];
 let currentExerciseIndex = 0;
@@ -234,11 +233,11 @@ function showDifficulty(card=null) {
     }
 
     if(null !== card) {
-        const newCards = getCardDifficulties(card);
+        const newCards = exercises.getCardDifficulties(card);
         for(const ease of Object.keys(newCards)) {
             document.getElementById(ease.toLowerCase()).style.padding = '9px 28px';
             document.getElementById(ease.toLowerCase()).innerHTML =
-                ease + '<br/><small>' + getEstimate(newCards[ease].card.due) + '</small>';
+                ease + '<br/><small>' + exercises.getEstimate(newCards[ease].card.due) + '</small>';
         }
     }
 }
@@ -268,8 +267,8 @@ function isKeyboard() {
 function showFsrsStats(tags) {
     const cardStats = document.getElementById('cardStats');
     cardStats.innerHTML = '';
-    if(!isFsrs()) return ;
-    const stats = getFsrsStats(tags);
+    if(!exercises.isFsrs()) return ;
+    const stats = exercises.getFsrsStats(tags);
     cardStats.innerHTML =
         'New: ' + stats.newCardsLearnedToday + '/' + stats.newCardsShownToday + '/' + stats.newCardsMax + ' ' +
         'Total: ' + stats.cardsLearnedToday + '/' + stats.cardsShownToday + '/' + stats.dueCardsMax + '/' + stats.total;
@@ -301,9 +300,9 @@ function exerciseHandler(t, s) {
         if(result === curExc.word) {
             const answer_strokes = text_strokes.join(', ');
             console.log(answer_strokes);
-            if(isFsrs()) {
+            if(exercises.isFsrs()) {
                 putCardBack = ease => {
-                    putCardBack2(curExc, answer_strokes, ease);
+                    exercises.putCardBack2(curExc, answer_strokes, ease);
                     showFsrsStats(currentTags);
                 }
                 showDifficulty(curExc);
@@ -319,9 +318,9 @@ function exerciseHandler(t, s) {
         steno.innerHTML = result;
     };
 async function loadExercise(tags) {
-    const data = await getCards(tags);
+    const data = await exercises.getCards(tags);
     if(tags.includes('difficult')) {
-        const d = await getDifficultCards();
+        const d = await exercises.getDifficultCards();
         data.push(...d);
     }
     currentTags = tags;
@@ -476,7 +475,7 @@ function py2js(pyObj) {
     );
     return toObject(pyObj.toJs());
 }
-let putCardBack = ease => putCardBack2(null, null, ease);
+let putCardBack = ease => exercise.putCardBack2(null, null, ease);
 function onAgain(event) {
     putCardBack('Again');
 }

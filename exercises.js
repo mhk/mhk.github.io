@@ -1,14 +1,8 @@
-function getExerciseData(ex, chap) {
-    for(let i = 0; i < exercises.length; ++i) {
-        if(exercises[i].name !== ex) continue;
-        for(let j = 0; j < exercises[i].chapters.length; ++j) {
-            const chapter = exercises[i].chapters[j];
-            if(chapter.name !== chap) continue;
-            return chapter.data;
-        }
-    }
-    return '';
-}
+(function(exercises, undefined) {
+    /********************************************
+     *               Public Methods             *
+     ********************************************/
+
 function annotateCardsWithLocalData(cards) { // modifies input
     const promises = [];
     for(const card of cards) {
@@ -128,19 +122,19 @@ function filterCardsByTags(fqtags) {
     }
     return result;
 }
-function isFsrs() {
+exercises.isFsrs = () => {
     return settings.options.scheduler.get() === 'FSRS';
 }
-function getCards(tags) {
+exercises.getCards = (tags) => {
     const filteredCards = filterCardsByTags(tags);
-    if(isFsrs()) {
+    if(exercises.isFsrs()) {
         return annotateCardsWithLocalData(filteredCards).then(cards => orderCardsDueAndNew(cards));
     } else if(settings.options.randomize.getBool()) {
         shuffleArray(filteredCards);
     }
     return Promise.resolve(filteredCards);
 }
-function getDifficultCards() {
+exercises.getDifficultCards = () => {
     const maxCards = settings.options.maxCards.getInt();
     return db.allDocs({include_docs: true}).then(response => {
         difficultCards = response.rows
@@ -166,7 +160,7 @@ function getDifficultCards() {
         return result;
     });
 }
-function getEstimate(due) {
+exercises.getEstimate = (due) => {
     const now = new Date;
     const next = new Date(due);
     const diffM = Math.ceil((next - now) / 60000);
@@ -183,7 +177,7 @@ function getEstimate(due) {
     const diffY = Math.ceil(diffD / 365);
     return `&lt; ${diffY} year${diffY === 1? '' : 's'}`;
 }
-function getCardDifficulties(card) {
+exercises.getCardDifficulties = (card) => {
     const now = new Date().toISOString();
     const fsrsPy = pyscript.interpreter.globals.get('fsrs');
     if(undefined === card.scheduling) {
@@ -197,8 +191,8 @@ function getCardDifficulties(card) {
     const newCardsPy = fsrsPy.repeatJs(card.scheduling.fsrsCard, now);
     return py2js(newCardsPy);
 }
-function putCardBack2(card, answer, ease) {
-    const newCards = getCardDifficulties(card);
+exercises.putCardBack2 = (card, answer, ease) => {
+    const newCards = exercises.getCardDifficulties(card);
     newCards[ease].review_log.answer = answer;
     card.scheduling.fsrsCard = newCards[ease].card;
     card.scheduling.reviewLog.push(newCards[ease].review_log);
@@ -215,7 +209,7 @@ function putCardBack2(card, answer, ease) {
     exercise.innerHTML = textToLength().join('\n');
     initNextExercise();
 }
-function getFsrsStats(tags) {
+exercises.getFsrsStats = (tags) => {
     const filteredCards = filterCardsByTags(tags);
     const minDue = cutOffDate(0);
     const maxDue = cutOffDate();
@@ -263,3 +257,9 @@ function getFsrsStats(tags) {
         total               : filteredCards.length,
     };
 }
+
+    /********************************************
+     *              Private Methods             *
+     ********************************************/
+
+}(window.exercises = window.exercises || {}));

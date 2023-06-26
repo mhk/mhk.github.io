@@ -1,4 +1,4 @@
-(function( settings, undefined ) {
+(function(settings, undefined) {
     const urlParams = new URLSearchParams(window.location.search);
     const radioSetter = (name, value) => [...document.getElementsByName(name)].filter(c => c.value === value).map( c => c.checked = true);
     settings.options = {
@@ -187,6 +187,7 @@
             default: '1',
         },
     };
+    settings.settingsChanged = _settingsChanged;
 
     /********************************************
      *               Public Methods             *
@@ -227,7 +228,9 @@
             return map;
         }, {});
     }
-    settings.settingsChanged = _settingsChanged,
+    settings.isFsrs = () => {
+        return settings.options.scheduler.get() === 'FSRS';
+    }
     settings.saveSettings = (db, error = (e) => {}) => {
         const textfield = getSettingsName();
         const name = textfield.value;

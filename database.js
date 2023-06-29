@@ -15,6 +15,20 @@
         // no check needed as sync already checks
         sync();
     }
+    database.resolveConflicts = () => {
+        return database.db.allDocs({include_docs: true, conflicts: true})
+            .then(response => Promise.all(response.rows
+                .filter(r => r.doc._conflicts !== undefined)
+                .map(r => database.db.resolveConflicts(r.doc, resolveCardConflict)))
+            ).then(conflicts => {
+                if(conflicts.length > 0) {
+                    console.log('Resolved conflicts for:');
+                    console.log(conflicts);
+                } else {
+                    console.log('No conflicts');
+                }
+            });
+    }
 
     /********************************************
      *              Private Methods             *
@@ -35,6 +49,20 @@
                 .catch(err => syncError());
         });
     }
+
+    function resolveCardConflict(a, b) {
+        // take version that was more recently viewed
+        if(a.fsrsCard.last_review > b.fsrsCard.last_review) return a
+        if(a.fsrsCard.last_review < b.fsrsCard.last_review) return b
+        // take version with high difficulty
+        if(a.fsrsCard.difficulty > b.fsrsCard.difficulty) return a
+        if(a.fsrsCard.difficulty < b.fsrsCard.difficulty) return b
+        // take version with lower stability
+        if(a.fsrsCard.stability < b.fsrsCard.stability) return a
+        if(a.fsrsCard.stability > b.fsrsCard.stability) return b
+        return a;
+    }
+
 
     database.db.info(function(err, info) {
         database.db.changes({since: info.update_seq, continuous: true});

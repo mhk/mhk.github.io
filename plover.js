@@ -186,6 +186,7 @@ function showHint(i=1) {
     const hintList = steno_hints(currentExercise[currentExerciseIndex].word).toJs();
     hints.innerHTML = hintList.join(', ');
 }
+pyCallback_reset_text = () => {};
 function initNextExercise() {
     pyCallback_reset_text();
     resetHint();
@@ -345,6 +346,7 @@ function changeExercise() {
     currentExerciseIndex = 0;
     initNextExercise();
     if(!settings.options.exercise.getBool()) return;
+    database.resolveConflicts();
     loadExercise(settings.options.tags.get());
 }
 function textToLength() {
@@ -498,9 +500,7 @@ function loadCards(deck) {
 
             settings.setDomSettings();
             database.changeDbUrl();
-            if(settings.options.exercise.getBool()) {
-                loadExercise(settings.options.tags.get());
-            }
+            changeExercise();
             setupTouch();
         });
 }

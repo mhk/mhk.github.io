@@ -77,8 +77,11 @@ class ExternalKeyboardCapture(Capture):
     def thread_run(self):
         finished = False
         while not (finished or self._cancelled):
-            key_events = input('--> ');
-            finished = not self._handler(key_events)
+            try:
+                key_events = input('--> ');
+                finished = not self._handler(key_events)
+            except EOFError:
+                finished = True
 
     def thread_start(self):
         pass

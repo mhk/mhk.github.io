@@ -138,7 +138,7 @@ class StenoEngine:
         else:
             self._queue.put((func, args, kwargs))
 
-    def hints(self, s):
+    def _hints(self, s):
         hs = self.reverse_lookup(s)
         if(False and len(hs) == 0): # not working because casereserve returns a set
             s = self.casereverse_lookup(s.lower())
@@ -147,12 +147,18 @@ class StenoEngine:
         result = list(map(lambda h : '/'.join(h), hs))
         return sorted(result, key=lambda stroke : len(stroke) + stroke.count('/') * 10);
 
+    def _get_suggestions(self, s):
+        s = self.get_suggestions(s)
+        result = list(map(lambda s : s.text + ': ' + ', '.join(list(map(lambda t : '/'.join(t), s.steno_list))), s))
+        return result;
+
     def run(self):
         self._machine.run()
         try:
             import js
             from pyodide.ffi import create_proxy
-            js.createObject(create_proxy(self.hints), "pyCallback_steno_hints")
+            js.createObject(create_proxy(self._hints), "pyCallback_steno_hints")
+            js.createObject(create_proxy(self._get_suggestions), "pyCallback_get_suggestions")
         except ImportError:
             pass
         return

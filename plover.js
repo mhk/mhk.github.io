@@ -77,6 +77,14 @@ function copyDivToClipboard(id) {
     document.execCommand("copy");
     window.getSelection().removeAllRanges();// to deselect
 }
+function showStrokes(id) {
+    const div = document.getElementById(id);
+    const text = div.innerHTML;
+    const words = text.split(' ');
+    const lastWord = words.at(-1);
+    const suggestions = pyCallback_get_suggestions(lastWord).toJs();
+    hints.innerHTML = suggestions.join(', ');
+}
 function jsCallback_on(key) {
     return on(key);
 }

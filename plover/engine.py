@@ -149,7 +149,7 @@ class StenoEngine:
 
     def _get_suggestions(self, s):
         s = self.get_suggestions(s)
-        result = list(map(lambda s : s.text + ': ' + ', '.join(list(map(lambda t : '/'.join(t), s.steno_list))), s))
+        result = list(map(lambda s : s.text + ': (' + ', '.join(list(map(lambda t : '/'.join(t), s.steno_list))) + ')', s))
         return result;
 
     def run(self):

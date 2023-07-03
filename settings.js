@@ -167,7 +167,7 @@
                 const isExcBool = (settings.options.exercise.default === isExercise);
                 document.getElementById('isExercise').checked = isExcBool;
                 urlParams.set('isExercise', isExercise);
-                const div = document.getElementById('divCopyText');
+                const div = document.getElementById('divNormal');
                 const exc = document.getElementById('exercise');
                 if(isExcBool) {
                     div.style.display = 'none';

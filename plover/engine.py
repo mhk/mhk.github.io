@@ -152,7 +152,7 @@ class StenoEngine:
         try:
             import js
             from pyodide.ffi import create_proxy
-            js.createObject(create_proxy(self.hints), "steno_hints")
+            js.createObject(create_proxy(self.hints), "pyCallback_steno_hints")
         except ImportError:
             pass
         return

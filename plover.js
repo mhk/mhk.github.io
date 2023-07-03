@@ -183,7 +183,7 @@ function showHint(i=1) {
     if(-1 === MAX_FAILURE) return ;
     failCount += i;
     if(failCount < MAX_FAILURE) return ;
-    const hintList = steno_hints(currentExercise[currentExerciseIndex].word).toJs();
+    const hintList = pyCallback_steno_hints(currentExercise[currentExerciseIndex].word).toJs();
     hints.innerHTML = hintList.join(', ');
 }
 pyCallback_reset_text = () => {};

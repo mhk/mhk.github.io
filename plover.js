@@ -275,6 +275,8 @@ function showFsrsStats(tags) {
 function textHandler(t, s) {
     exercise.innerHTML = t;
     steno.innerHTML = s;
+    const hintList = pyCallback_steno_hints(s.trim()).toJs();
+    hints.innerHTML = hintList.join(', ');
 }
 function exerciseHandler(t, s) {
         console.log(currentExercise.length, t);

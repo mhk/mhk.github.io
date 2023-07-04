@@ -509,13 +509,13 @@ function loadCards(deck) {
             addCardTags();
 
             settings.setDomSettings();
-            database.changeDbUrl();
+            database.changeDbUrl(syncWorking, syncError);
             changeExercise();
             setupTouch();
         });
 }
 function changeDbUrl() {
-    database.changeDbUrl();
+    database.changeDbUrl(syncWorking, syncError);
 }
 function setupTouch() {
     const keys = [];

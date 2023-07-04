@@ -6,14 +6,14 @@
      *               Public Methods             *
      ********************************************/
 
-    database.changeDbUrl = (event = undefined) => {
+    database.changeDbUrl = (syncWorking, syncError) => {
         const remoteCouch = settings.options.dbUrl.get();
         if(undefined !== dbSync) {
             dbSync.cancel();
             dbSync = undefined;
         }
         // no check needed as sync already checks
-        sync();
+        sync(syncWorking, syncError);
     }
     database.resolveConflicts = () => {
         return database.db.allDocs({include_docs: true, conflicts: true})
@@ -34,7 +34,7 @@
      *              Private Methods             *
      ********************************************/
 
-    function sync() {
+    function sync(syncWorking, syncError) {
         // TODO: use 'changes' and on('change', x => x)
         const remoteCouch = settings.options.dbUrl.get();
         if('' === remoteCouch || undefined === remoteCouch) return ;

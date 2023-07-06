@@ -285,6 +285,7 @@ function textHandler(t, s) {
     steno.innerHTML = s;
     const hintList = pyCallback_steno_hints(s.trim()).toJs();
     hints.innerHTML = hintList.join(', ');
+    exercise.scrollTop = exercise.scrollHeight;
 }
 function exerciseHandler(t, s) {
         console.log(currentExercise.length, t);

@@ -176,7 +176,7 @@
                 } else {
                     const cardStats = document.getElementById('cardStats');
                     div.style.display = 'inline-block';
-                    exc.style.overflow = 'scroll';
+                    exc.style.overflow = 'auto';
                     exc.innerHTML = '';
                     steno.innerHTML = '';
                     cardStats.innerHTML = '';

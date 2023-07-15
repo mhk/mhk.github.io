@@ -191,6 +191,9 @@ function showHint(i=1) {
     if(-1 === MAX_FAILURE) return ;
     failCount += i;
     if(failCount < MAX_FAILURE) return ;
+    forceShowHint();
+}
+function forceShowHint() {
     const hintList = pyCallback_steno_hints(currentExercise[currentExerciseIndex].word).toJs();
     hints.innerHTML = hintList.join(', ');
 }
@@ -314,8 +317,9 @@ function exerciseHandler(t, s) {
                 putCardBack = ease => {
                     exercises.putCardBack2(curExc, answer_strokes, ease);
                     showFsrsStats(currentTags);
-                }
+                };
                 showDifficulty(curExc);
+                forceShowHint();
             } else {
                 ++currentExerciseIndex;
                 exercise.innerHTML = textToLength().join('\n');

@@ -693,6 +693,10 @@ function syncError() {
     const last = (lastSync === undefined)? 'never' : `at ${lastSync.toISOString()}`;
     syncInfo.innerHTML = `${now}: &#x1F534 Last successful sync ${last}<br/>`
 }
+function onlyVerticalScroll(event) {
+    event.preventDefault();  // stop scrolling in another direction
+    hints.scrollLeft += (event.deltaY + event.deltaX);
+}
 /*
  ********************
  *       MAIN       *

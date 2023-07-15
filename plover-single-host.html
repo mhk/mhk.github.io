@@ -50,6 +50,14 @@
       background-color: #666666;
       color: #FFFFFF;
     }
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    #hints {
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    #hints::-webkit-scrollbar {
+        display: none;
+    }
     .block {
         display: block;
         width: 100%;
@@ -213,7 +221,7 @@
     <div id="debug" style="color: white; display: inline-block;">
     </div>
     <div id='divNormal' style="display: none;"><input type="button" id="copyText" value="Copy Text" onclick="copyDivToClipboard('exercise');" /><input type="button" id="showStrokes" value="Show Strokes" onclick="showStrokes('exercise');" /></div>
-    <table id='outputTable'>
+    <table id='outputTable' style='table-layout: fixed;'>
         <tr id='toggleFullscreenRow'>
             <td colspan=4>
                 <button id='toggleFullscreen' type="button" style='background-color: #966606;' class="block" onclick="openFullscreen();">fullscreen</button>
@@ -235,7 +243,7 @@
                 <div class="textSmall" id='steno' readonly></div>
             </td>
             <td colspan=3 style="width: 100%">
-                <div class="textSmall" id='hints' readonly></div>
+                <div class="textSmall" id='hints' onwheel='onlyVerticalScroll(event);' readonly></div>
             </td>
         </tr>
         <tr id='releaseKeys'>

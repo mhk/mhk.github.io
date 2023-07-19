@@ -52,7 +52,7 @@
         const diffW = Math.ceil(diffD / 7);
         if(diffW < 5) return `&lt; ${diffW} week${diffW === 1? '' : 's'}`;
         const diffMon = Math.ceil(diffD / 30.416);
-        if(diffW < 13) return `&lt; ${diffMon} month${diffMon === 1? '' : 's'}`;
+        if(diffMon < 13) return `&lt; ${diffMon} month${diffMon === 1? '' : 's'}`;
         const diffY = Math.ceil(diffD / 365);
         return `&lt; ${diffY} year${diffY === 1? '' : 's'}`;
     }

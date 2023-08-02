@@ -231,6 +231,9 @@
     settings.isFsrs = () => {
         return settings.options.scheduler.get() === 'FSRS';
     }
+    settings.isRoundRobinAllCorrect = () => {
+        return settings.options.scheduler.get() === 'roundRobin1';
+    }
     settings.saveSettings = (db, error = (e) => {}, updateUi = () => {}) => {
         const textfield = getSettingsName();
         const name = textfield.value;

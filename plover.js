@@ -10,6 +10,7 @@ let MAX_FAILURE = 1;
 let failCount = 0;
 let mobileStenoKeyboard = true;
 let text_strokes = [];
+let all_strokes = [];
 let strokes = [];
 let lastSync = undefined;
 let update_text_fct = exerciseHandler;
@@ -302,6 +303,9 @@ function exerciseHandler(t, s) {
         if(wc > text_strokes.length) {
             text_strokes.push(strokes.join('/'));
             strokes.length = 0;
+        } else if(strokes.length === 1 && strokes[0] === '*') {
+            text_strokes.push(strokes[0]);
+            strokes.length = 0;
         } else if(text_strokes.length > 0) {
             const last = text_strokes.length - 1;
             text_strokes[last] = [text_strokes[last]].concat(strokes).join('/');
@@ -329,6 +333,9 @@ function exerciseHandler(t, s) {
             result = '';
         } else {
             showHint();
+            if(settings.isRoundRobinAllCorrect() && failCount === 1) {
+                currentExercise.push(curExc);
+            }
         }
         steno.innerHTML = result;
     };

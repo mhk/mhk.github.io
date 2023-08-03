@@ -7,7 +7,6 @@ let currentTags = [];
 let currentExerciseIndex = 0;
 let repeatExercise = true;
 let MAX_FAILURE = 1;
-let failCount = 0;
 let mobileStenoKeyboard = true;
 let text_strokes = [];
 let all_strokes = [];
@@ -186,13 +185,16 @@ function shuffleArray(array) {
 }
 function changeMax(event, val) {
     MAX_FAILURE = parseInt(val);
-    showHint(0);
+    showHint();
 }
-function showHint(i=1) {
+function getFailCount() {
+    const failCount = text_strokes.length - (text_strokes.length > 0);
+    return failCount;
+}
+function showHint() {
     if(currentExercise.length === 0) return ;
     if(-1 === MAX_FAILURE) return ;
-    failCount += i;
-    if(failCount < MAX_FAILURE) return ;
+    if(getFailCount() < MAX_FAILURE) return ;
     forceShowHint();
 }
 function forceShowHint() {
@@ -202,15 +204,14 @@ function forceShowHint() {
 pyCallback_reset_text = () => {};
 function initNextExercise() {
     pyCallback_reset_text();
-    resetHint();
     strokes.length = 0;
     text_strokes.length = 0;
+    resetHint();
     cardStartTime = new Date;
 }
 function resetHint() {
-    failCount = 0;
     hints.innerHTML = '';
-    showHint(0);
+    showHint();
 }
 function preselectDifficulty(recommendedEase, height) {
     for(const ease of ["again", "hard", "good", "easy"]) {
@@ -238,6 +239,7 @@ function showDifficulty(card=null) {
     if(isAutoaccept()) {
         const now = new Date;
         const diffS = Math.ceil((now - cardStartTime) / 1000);
+        const failCount = getFailCount();
         if(failCount > 1) preselectDifficulty('again', height);
         else if(failCount > 0) preselectDifficulty('hard', height);
         else if(diffS <= 10) preselectDifficulty('easy', height);
@@ -363,7 +365,7 @@ async function loadExercise(tags) {
     }
     currentExercise = [...data];
     exercise.innerHTML = textToLength().join('\n');
-    showHint(0);
+    showHint();
     cardStartTime = new Date;
 }
 function loadSettings(event) {

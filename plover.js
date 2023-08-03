@@ -294,30 +294,43 @@ function textHandler(t, s) {
 }
 function exerciseHandler(t, s) {
     console.log(currentExercise.length, t);
+    const curExc = currentExercise[currentExerciseIndex];
     if(currentExercise.length === 0 && repeatExercise) changeExercise();
     if(currentExercise.length === 0) return s;
-    let result = t.trim();
-    // document strokes
-    const wc = result.split(' ').filter(ss => ss !== '').length;
-    // TODO: Handle '*'
-    if(wc > text_strokes.length) {
-        text_strokes.push(strokes.join('/'));
-        strokes.length = 0;
-    } else if(strokes.length === 1 && strokes[0] === '*') {
-        text_strokes.push(strokes[0]);
-        strokes.length = 0;
-    } else if(text_strokes.length > 0) {
-        const last = text_strokes.length - 1;
-        text_strokes[last] = [text_strokes[last]].concat(strokes).join('/');
-        strokes.length = 0;
+    if(undefined === curExc) {
+        console.log(`currentExerciseIndex is out of bounds (${currentExerciseIndex} >= ${currentExercise.length})`);
+        return s;
     }
-    if(undefined !== currentExercise[currentExerciseIndex].word) {
+    let result = t.trim();
+    const getWordCount = (t) => t.trim().split(' ').filter(ss => ss !== '').length;
+    // document strokes
+    const wc = getWordCount(t);
+    const lastWc = getWordCount((text_strokes.at(-1) || {text: ''}).text);
+    // TODO: Handle '*'
+    if(strokes.length === 1 && strokes[0] === '*') {
+        text_strokes.push({strokes: strokes[0], text: t});
+        strokes.length = 0;
+    } else if(wc > lastWc || 0 === text_strokes.length) {
+        text_strokes.push({strokes: strokes.join('/'), text: t});
+        strokes.length = 0;
+    } else if(wc === lastWc) {
+        const last = text_strokes.at(-1);
+        last.strokes = [last.strokes].concat(strokes).join('/');
+        last.text = t;
+        strokes.length = 0;
+    } else {
+        const lt = (text_strokes.at(-1) || {text: '<undefined>'}).text;
+        console.log(`Problem: wc: ${wc} lastWc: ${lastWc}, t: '${t}', lt: '${lt}' strokes: ${strokes}`);
+    }
+    if(undefined !== curExc.word) {
         result = result.split(' ').at(-1);
     }
-    const curExc = currentExercise[currentExerciseIndex];
     if(result === curExc.word) {
-        const answer_strokes = text_strokes.join(', ');
+        const answer_strokes = text_strokes.map(ts => ts.strokes).join(', ');
         console.log(answer_strokes);
+        if(settings.isRoundRobinAllCorrect() && text_strokes.length > 1) {
+            currentExercise.push(curExc);
+        }
         if(settings.isFsrs()) {
             putCardBack = ease => {
                 exercises.putCardBack2(curExc, answer_strokes, ease);
@@ -333,9 +346,6 @@ function exerciseHandler(t, s) {
         result = '';
     } else {
         showHint();
-        if(settings.isRoundRobinAllCorrect() && failCount === 1) {
-            currentExercise.push(curExc);
-        }
     }
     steno.innerHTML = result;
 };

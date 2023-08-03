@@ -293,52 +293,52 @@ function textHandler(t, s) {
     exercise.scrollTop = exercise.scrollHeight;
 }
 function exerciseHandler(t, s) {
-        console.log(currentExercise.length, t);
-        if(currentExercise.length === 0 && repeatExercise) changeExercise();
-        if(currentExercise.length === 0) return s;
-        let result = t.trim();
-        // document strokes
-        const wc = result.split(' ').filter(ss => ss !== '').length;
-        // TODO: Handle '*'
-        if(wc > text_strokes.length) {
-            text_strokes.push(strokes.join('/'));
-            strokes.length = 0;
-        } else if(strokes.length === 1 && strokes[0] === '*') {
-            text_strokes.push(strokes[0]);
-            strokes.length = 0;
-        } else if(text_strokes.length > 0) {
-            const last = text_strokes.length - 1;
-            text_strokes[last] = [text_strokes[last]].concat(strokes).join('/');
-            strokes.length = 0;
-        }
-        if(undefined !== currentExercise[currentExerciseIndex].word) {
-            result = result.split(' ').at(-1);
-        }
-        const curExc = currentExercise[currentExerciseIndex];
-        if(result === curExc.word) {
-            const answer_strokes = text_strokes.join(', ');
-            console.log(answer_strokes);
-            if(settings.isFsrs()) {
-                putCardBack = ease => {
-                    exercises.putCardBack2(curExc, answer_strokes, ease);
-                    showFsrsStats(currentTags);
-                };
-                showDifficulty(curExc);
-                forceShowHint();
-            } else {
-                ++currentExerciseIndex;
-                exercise.innerHTML = textToLength().join('\n');
-                initNextExercise();
-            }
-            result = '';
+    console.log(currentExercise.length, t);
+    if(currentExercise.length === 0 && repeatExercise) changeExercise();
+    if(currentExercise.length === 0) return s;
+    let result = t.trim();
+    // document strokes
+    const wc = result.split(' ').filter(ss => ss !== '').length;
+    // TODO: Handle '*'
+    if(wc > text_strokes.length) {
+        text_strokes.push(strokes.join('/'));
+        strokes.length = 0;
+    } else if(strokes.length === 1 && strokes[0] === '*') {
+        text_strokes.push(strokes[0]);
+        strokes.length = 0;
+    } else if(text_strokes.length > 0) {
+        const last = text_strokes.length - 1;
+        text_strokes[last] = [text_strokes[last]].concat(strokes).join('/');
+        strokes.length = 0;
+    }
+    if(undefined !== currentExercise[currentExerciseIndex].word) {
+        result = result.split(' ').at(-1);
+    }
+    const curExc = currentExercise[currentExerciseIndex];
+    if(result === curExc.word) {
+        const answer_strokes = text_strokes.join(', ');
+        console.log(answer_strokes);
+        if(settings.isFsrs()) {
+            putCardBack = ease => {
+                exercises.putCardBack2(curExc, answer_strokes, ease);
+                showFsrsStats(currentTags);
+            };
+            showDifficulty(curExc);
+            forceShowHint();
         } else {
-            showHint();
-            if(settings.isRoundRobinAllCorrect() && failCount === 1) {
-                currentExercise.push(curExc);
-            }
+            ++currentExerciseIndex;
+            exercise.innerHTML = textToLength().join('\n');
+            initNextExercise();
         }
-        steno.innerHTML = result;
-    };
+        result = '';
+    } else {
+        showHint();
+        if(settings.isRoundRobinAllCorrect() && failCount === 1) {
+            currentExercise.push(curExc);
+        }
+    }
+    steno.innerHTML = result;
+};
 async function loadExercise(tags) {
     const data = await exercises.getCards(tags);
     if(tags.includes('difficult')) {

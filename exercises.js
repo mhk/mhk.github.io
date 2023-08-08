@@ -127,17 +127,26 @@
         // console.log(`cardsUndefined: ${cardsUndefined}, newCardsShownToday ${newCardsShownToday}, newCardsCount: ${newCardsCount}, newCardsLearnedToday ${newCardsLearnedToday}, newMax: ${newMax}, newCardsMax: ${newCardsMax}`);
         // console.log(`cardsUndefined: ${cardsUndefined}, cardsLearnedToday: ${cardsLearnedToday}, cardsShownToday: ${cardsShownToday}, cardsDue: ${cardsDue}, cardsMax: ${cardsMax}, dueCardsMax: ${dueCardsMax}`);
         return {
-            newCardsLearnedToday: newCardsLearnedToday,
-            newCardsShownToday  : newCardsShownToday,
-            newCardsMax         : newCardsMax,
-            cardsLearnedToday   : cardsLearnedToday,
-            cardsShownToday     : cardsShownToday,
-            dueCardsMax         : dueCardsMax,
-            total               : filteredCards.length,
+            newCardsLearned: newCardsLearnedToday,
+            newCardsShown  : newCardsShownToday,
+            newCardsMax    : newCardsMax,
+            cardsLearned   : cardsLearnedToday,
+            cardsShown     : cardsShownToday,
+            cardsMax       : dueCardsMax,
+            total          : filteredCards.length,
         };
     }
     exercises.getFsrsStats2 = (tags) => {
-        return getFsrsStats3(filterCardsByTags(tags));
+        const stats = getFsrsStats3(filterCardsByTags(tags));
+        return {
+            newCardsLearned: stats.newCardsLearned.length,
+            newCardsShown  : stats.newCardsShown.length,
+            newCardsMax    : stats.newCardsMax,
+            cardsLearned   : stats.oldCardsLearned.length + stats.newCardsLearned.length,
+            cardsShown     : stats.oldCardsShown.length + stats.newCardsShown.length,
+            cardsMax       : stats.oldCardsMax + stats.newCardsMax,
+            total          : stats.total,
+        };
     }
 
     /********************************************

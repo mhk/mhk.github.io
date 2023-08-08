@@ -282,10 +282,10 @@ function showFsrsStats(tags) {
     const cardStats = document.getElementById('cardStats');
     cardStats.innerHTML = '';
     if(!settings.isFsrs()) return ;
-    const stats = exercises.getFsrsStats(tags);
+    const stats = exercises.getFsrsStats2(tags);
     cardStats.innerHTML =
-        'New: ' + stats.newCardsLearnedToday + '/' + stats.newCardsShownToday + '/' + stats.newCardsMax + ' ' +
-        'Total: ' + stats.cardsLearnedToday + '/' + stats.cardsShownToday + '/' + stats.dueCardsMax + '/' + stats.total;
+        'New: ' + stats.newCardsLearned + '/' + stats.newCardsShown + '/' + stats.newCardsMax + ' ' +
+        'Total: ' + stats.cardsLearned + '/' + stats.cardsShown + '/' + stats.cardsMax + '/' + stats.total;
 }
 function textHandler(t, s) {
     exercise.innerHTML = t;

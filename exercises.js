@@ -136,6 +136,9 @@
             total               : filteredCards.length,
         };
     }
+    exercises.getFsrsStats2 = (tags) => {
+        return getFsrsStats3(filterCardsByTags(tags));
+    }
 
     /********************************************
      *              Private Methods             *
@@ -226,6 +229,133 @@
             result = newCards.concat(dueCards);
         }
         result.length = Math.min(result.length, cardsMax);
+        if(settings.options.randomize.getBool()) {
+            shuffleArray(result);
+        }
+        return result;
+    }
+    function getFsrsStats3(cards) {
+        const minDue = cutOffDate(0);
+        const maxDue = cutOffDate();
+        const newMax = settings.options.newCards.getInt();
+        const allMax = settings.options.maxCards.getInt();
+        let undefinedCards = [];
+        let newCardsShown = [];
+        let newCardsLearning = [];
+        let newCardsLearned = [];
+        let newCards = [];
+        let oldCardsLearning = [];
+        let oldCardsLearned = [];
+        let oldCards = [];
+        let oldCardsShown = [];
+        let oldCardsDue = [];
+        for(const c of cards) {
+            if(c.scheduling === undefined) {
+                undefinedCards.push(c);
+                continue;
+            }
+            // all cards have scheduling information
+            const due = c.scheduling.fsrsCard.due;
+            const state = c.scheduling.fsrsCard.state;
+            const firstReview = c.scheduling.reviewLog.at(0).review;
+            const lastReview = c.scheduling.reviewLog.at(-1).review;
+
+            if("New" === state) { // new cards 1
+                newCards.push(c);
+                newCardsLearning.push(c);
+                // alert since this state should not be visible
+                alert('New state detected');
+            } else if(firstReview >= minDue) { // new cards 2
+                newCards.push(c);
+                newCardsShown.push(c);
+                if(due < maxDue) { // new cards learning today
+                    newCardsLearning.push(c);
+                } else { // new cards successfully learned today
+                    newCardsLearned.push(c);
+                }
+            } else if(lastReview >= minDue) {
+                // card shown today
+                oldCards.push(c);
+                oldCardsShown.push(c);
+                if(due < maxDue) { // old cards learning today
+                    oldCardsLearning.push(c);
+                } else { // old cards successfully learned today
+                    oldCardsLearned.push(c);
+                }
+            } else if(due < maxDue) {
+                oldCards.push(c);
+                oldCardsDue.push(c);
+            }
+        }
+        const newCardsMax = Math.min(undefinedCards.length + newCards.length, newMax);
+        const oldCardsMax = Math.min(oldCards.length, allMax - newCardsMax);
+        // console.log(`undefinedCards: ${undefinedCards}, newCardsShown ${newCardsShown}, newCards: ${newCards}, newCardsLearned ${newCardsLearned}, newMax: ${newMax}, newCardsMax: ${newCardsMax}`);
+        // console.log(`undefinedCards: ${undefinedCards}, oldCardsLearned: ${oldCardsLearned}, oldCardsShown: ${oldCardsShown}, oldCardsDue: ${oldCardsDue}, allMax: ${allMax}, dueCardsMax: ${dueCardsMax}`);
+        return {
+            undefinedCards  : undefinedCards,
+            newCardsLearning: newCardsLearning,
+            newCardsLearned : newCardsLearned,
+            newCardsShown   : newCardsShown,
+            oldCardsLearning: oldCardsLearning,
+            oldCardsLearned : oldCardsLearned,
+            oldCardsShown   : oldCardsShown,
+            oldCardsDue     : oldCardsDue,
+            newCardsMax     : newCardsMax,
+            oldCardsMax     : oldCardsMax,
+            allCardsMax     : allMax,
+            total           : cards.length,
+        };
+    }
+    function orderCardsDueAndNew2(cards) {
+        const stats = getFsrsStats3(cards);
+        const newCards = [];
+        const oldCards = [];
+        const state2no = (c) => {
+            if(undefined === c.scheduling) return 0;
+            const state = c.scheduling.fsrsCard.state;
+            if("New" === state) return 1;
+            if("Learning" === state) return 2;
+            if("Relearning" === state) return 3;
+            if("Review" === state) return 4;
+            console.log('Invalid state found: ' + cards[i]);
+            return 64;
+        };
+        const cmpUndefined = (a, b) => {
+            if(undefined === a.rank && undefined !== b.rank) return 1
+            if(undefined !== a.rank && undefined === b.rank) return -1
+            if(undefined === a.rank && undefined === b.rank) return a.word.localeCompare(b.word);
+            return a.rank - b.rank;
+        };
+        // sort by due date (before rank was used for stability)
+        const cmpDue = (a, b) => a.scheduling.fsrsCard.due.localeCompare(b.scheduling.fsrsCard.due);
+        const cmpState = (a, b) => state2no(a) - state2no(b);
+        const cmpOld = (a, b) => {
+            const s = cmpState(a, b);
+            if(s === 0) return cmpDue(a, b);
+            return s;
+        };
+
+        stats.newCardsLearning.sort(cmpDue);
+        stats.undefinedCards.sort(cmpUndefined);
+        stats.oldCardsLearning.sort(cmpDue);
+        stats.oldCardsDue.sort(cmpOld);
+
+        newCards.push(stats.newCardsLearning);
+        newCards.push(stats.undefinedCards);
+        const newCardsMax = stats.newCardsMax - stats.newCardsLearned.length;
+        newCards.length = Math.min(newCards.length, newCardsMax);
+
+        oldCards.push(stats.oldCardsLearning);
+        oldCards.push(stats.oldCardsDue);
+        const oldCardsMax = stats.oldCardsMax - stats.oldCardsLearned.length;
+        oldCards.length = Math.min(oldCards.length, oldCardsMax);
+
+        if(settings.options.cardPrios.get() === 'dueOverNew') {
+            result = oldCards.concat(newCards);
+        } else {
+            result = newCards.concat(oldCards);
+        }
+        result.length = Math.min(result.length, stats.allCardsMax); // just to be safe
         if(settings.options.randomize.getBool()) {
             shuffleArray(result);
         }

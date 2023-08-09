@@ -583,11 +583,11 @@ function uiLoadSaves() {
     });
 }
 function settingsOverlayOn() {
-    document.getElementById("overlay").style.display = "block";
+    document.getElementById("settingsOverlay").style.display = "block";
     uiLoadSaves();
 }
 function settingsOverlayOff() {
-    document.getElementById("overlay").style.display = "none";
+    document.getElementById("settingsOverlay").style.display = "none";
     if(!settings.settingsChanged()) return ;
     settings.setUrlSettings();
     changeExercise();

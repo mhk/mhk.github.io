@@ -393,8 +393,8 @@
         return result;
     }
     function orderCardsDueAndNew(cards) {
-        orderCardsDueAndNewV2(cards);
-        return orderCardsDueAndNewV1(cards);
+        orderCardsDueAndNewV1(cards);
+        return orderCardsDueAndNewV2(cards);
     }
     // Fully Qualified Tags to tags per collection
     function fqtags2tagsByCollection(tags) {

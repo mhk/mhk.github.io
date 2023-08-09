@@ -23,8 +23,9 @@ function createObject(object, variableName) {
 }
 function ignoreKeyEvent(event) {
     return event.target.classList.contains('ignoreKeyEvent') ||
-        document.getElementById("overlay").style.display === "block" ||
-        document.getElementById("helpOverlay").style.display === "block";
+        document.getElementById("settingsOverlay").style.display === "block" ||
+        document.getElementById("helpOverlay").style.display === "block" ||
+        document.getElementById("debugOverlay").style.display === "block";
 }
 
 document.addEventListener('keydown', (event) => { logKeyDown(event) }, false);
@@ -282,10 +283,13 @@ function showFsrsStats(tags) {
     const cardStats = document.getElementById('cardStats');
     cardStats.innerHTML = '';
     if(!settings.isFsrs()) return ;
-    const stats = exercises.getFsrsStats2(tags);
+    const stats = exercises.getFsrsStats(tags);
+    const stats2 = exercises.getFsrsStats2(tags);
     cardStats.innerHTML =
-        'New: ' + stats.newCardsLearned + '/' + stats.newCardsShown + '/' + stats.newCardsMax + ' ' +
-        'Total: ' + stats.cardsLearned + '/' + stats.cardsShown + '/' + stats.cardsMax + '/' + stats.total;
+        'New: ' + stats2.newCardsLearned + '/' + stats2.newCardsShown + '/' + stats2.newCardsMax + ' ' +
+        'Total: ' + stats2.cardsLearned + '/' + stats2.cardsShown + '/' + stats2.cardsMax + '/' + stats2.total +
+        ' (' + stats.newCardsLearned + '/' + stats.newCardsShown + '/' + stats.newCardsMax + ' ' +
+        ' ' + stats.cardsLearned + '/' + stats.cardsShown + '/' + stats.cardsMax + '/' + stats.total + ')';
 }
 function textHandler(t, s) {
     exercise.innerHTML = t;
@@ -666,6 +670,18 @@ function helpOverlayOn(event) {
         }
     }
     document.getElementById("helpOverlay").style.display = "block";
+}
+function debugOverlayOn() {
+    document.getElementById("debugOverlay").style.display = "block";
+}
+function debugOverlayOff(event) {
+    document.getElementById("debugOverlay").style.display = "none";
+}
+function debugAdd(s) {
+    const now = new Date();
+    const truncate = (s, maxLength=(1<<18)) => (s.length > maxLength)? s.slice(0, maxLength) : s;
+    const debug = document.getElementById("debug");
+    debug.innerHTML = truncate(`${now.toISOString()}:<br/>` + s + '<br/>' + debug.innerHTML);
 }
 function getDefinitionOfWord(word) {
     const definition = document.getElementById("definition");

@@ -168,7 +168,7 @@
         }
         return Promise.all(promises);
     }
-    function orderCardsDueAndNew(cards) {
+    function orderCardsDueAndNewV1(cards) {
         const maxDue = cutOffDate();
         const minDue = cutOffDate(0);
         const nonCards = [];
@@ -232,6 +232,18 @@
         dueCards.push(...rlnCards); // next relearn to get back lost knowledge
         dueCards.push(...revCards); // finally review to steady knowledge
         dueCards.length = Math.min(dueCards.length, cardsMax);
+
+        // debug
+        let d = [];
+        d = [...dueCards];
+        d.sort((a, b) => a.word.localeCompare(b.word));
+        debugAdd('V1 Old: (' + d.length + ')' + '<br/>' + d.map(c => c.word).join(', '));
+
+        d = [...newCards];
+        d.sort((a, b) => a.word.localeCompare(b.word));
+        debugAdd('V1 New: (' + d.length + ')' + '<br/>' + d.map(c => c.word).join(', '));
+
+
         if(settings.options.cardPrios.get() === 'dueOverNew') {
             result = dueCards.concat(newCards);
         } else {
@@ -315,7 +327,7 @@
             total           : cards.length,
         };
     }
-    function orderCardsDueAndNew2(cards) {
+    function orderCardsDueAndNewV2(cards) {
         const stats = getFsrsStats3(cards);
         const newCards = [];
         const oldCards = [];
@@ -349,15 +361,25 @@
         stats.oldCardsLearning.sort(cmpDue);
         stats.oldCardsDue.sort(cmpOld);
 
-        newCards.push(stats.newCardsLearning);
-        newCards.push(stats.undefinedCards);
+        newCards.push(...stats.newCardsLearning);
+        newCards.push(...stats.undefinedCards);
         const newCardsMax = stats.newCardsMax - stats.newCardsLearned.length;
         newCards.length = Math.min(newCards.length, newCardsMax);
 
-        oldCards.push(stats.oldCardsLearning);
-        oldCards.push(stats.oldCardsDue);
+        oldCards.push(...stats.oldCardsLearning);
+        oldCards.push(...stats.oldCardsDue);
         const oldCardsMax = stats.oldCardsMax - stats.oldCardsLearned.length;
         oldCards.length = Math.min(oldCards.length, oldCardsMax);
+
+        // debug
+        let d = [];
+        d = [...oldCards];
+        d.sort((a, b) => a.word.localeCompare(b.word));
+        debugAdd('V2 Old: (' + d.length + ')' + '<br/>' + d.map(c => c.word).join(', '));
+
+        d = [...newCards];
+        d.sort((a, b) => a.word.localeCompare(b.word));
+        debugAdd('V2 New: (' + d.length + ')' + '<br/>' + d.map(c => c.word).join(', '));
 
         if(settings.options.cardPrios.get() === 'dueOverNew') {
             result = oldCards.concat(newCards);
@@ -369,6 +391,10 @@
             shuffleArray(result);
         }
         return result;
+    }
+    function orderCardsDueAndNew(cards) {
+        orderCardsDueAndNewV2(cards);
+        return orderCardsDueAndNewV1(cards);
     }
     // Fully Qualified Tags to tags per collection
     function fqtags2tagsByCollection(tags) {

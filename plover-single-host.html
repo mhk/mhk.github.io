@@ -70,7 +70,7 @@
         color: #FFFFFF;
         touch-action: manipulation;
     }
-    #overlay {
+    .overlay {
         position: fixed;
         display: none;
         width: 100%;
@@ -84,30 +84,17 @@
         z-index: 2;
         cursor: pointer;
         overflow-y: auto;
+    }
+    #overlay {
         margin-bottom: 16px;
     }
-    #closeOverlay {
+    .closeOverlay {
         font-size: 22pt;
         margin-top: 1px;
         margin-right: 2px;
         position:absolute;
         top:0;
         right:0;
-    }
-    #helpOverlay {
-        position: fixed;
-        display: none;
-        width: 100%;
-        height: 100%;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        color: #FFFFFF;
-        background-color: rgba(0,0,0,1.0);
-        z-index: 2;
-        cursor: pointer;
-        overflow-y: auto;
     }
     #checkboxes label {
       float: left;
@@ -219,9 +206,11 @@
     </div>
     <div id="cardStats" style="color: white; display: inline-block;">
     </div>
+    <!--
     <div id="debug" style="color: white; display: inline-block;">
-    </div>
+    </div>-->
     <div id='divNormal' style="display: none;"><input type="button" id="copyText" value="Copy Text" onclick="copyDivToClipboard('exercise');" /><input type="button" id="showStrokes" value="Show Strokes" onclick="showStrokes('exercise');" /></div>
+    <div style="display: inline-block;"><input type="button" id="debugOverlayButton" value="Debug" onclick="debugOverlayOn();" /></div>
     <table id='outputTable' style='table-layout: fixed;'>
         <tr id='toggleFullscreenRow'>
             <td colspan=4>
@@ -345,8 +334,8 @@
       -->
     </g></svg>
     </div>
-    <div id="overlay">
-        <div><input id="closeOverlay" type="button" value="Close" onclick="settingsOverlayOff()"></div>
+    <div id="overlay" class="overlay">
+        <div><input id="closeOverlay" class="closeOverlay" type="button" value="Close" onclick="settingsOverlayOff()"></div>
         <div>General Settings</div>
         <input type="checkbox" id="isExercise" name="isExercise" value="isExercise" checked /> <label for="isExercise">exercise mode</label>
         <br/>
@@ -408,12 +397,16 @@
         </div>
         <div id="settings-bottom-spacer" style="margin-bottom: 20px; overflow: auto;"></div>
     </div>
-    <div id='helpOverlay'>
-        <div><input id='closeOverlay' type='button' value='Close' onclick='helpOverlayOff(event);'></div>
+    <div id='helpOverlay' class='overlay'>
+        <div><input id='closeHelpOverlay' class='closeOverlay' type='button' value='Close' onclick='helpOverlayOff(event);'></div>
         <div id='definition'></div>
         <div id='story'></div>
         <div id='rope-story'></div>
         <div id='plover-lesson'></div>
+    </div>
+    <div id='debugOverlay' class='overlay'>
+        <div><input id='closeDebugOverlay' class='closeOverlay' type='button' value='Close' onclick='debugOverlayOff(event);'></div>
+        <div id='debug'></div>
     </div>
   </body>
 </html>
